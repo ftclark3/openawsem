@@ -305,14 +305,31 @@ def compute_theta_for_each_helix(output="angles.csv", dumpName="../dump.lammpstr
 
 
 
-def check_and_correct_fragment_memory(fragFile="fragsLAMW.mem"):
+def check_and_correct_fragment_memory(fragFile="fragsLAMW.mem",fragmem_structure=None,openawsem_location='.'): # typically, called with fragFile='frags.mem'
+    if fragmem_structure:
+        import MDAnalysis as mda
+        from MDAnalysis.analysis import align
+        fragmem_structure_u = mda.Universe(fragmem_structure)
     with open("tmp.mem", "w") as out:
         with open(fragFile, "r") as f:
             for i in range(4):
                 line = next(f)
                 out.write(line)
             for line in f:
-                gro, _, i, n, _ = line.split()
+                # assuming that our fasta file for the sequence that we want to build and fold is the same length
+                # as the fragmem_structure, so that there is a one to one mapping of indices in the fragFile to our fragmem_structure
+                # fragFile start indices are 1-indexed, and so are residue numbers in gro files, so the mapping makes no change to the index
+                gro, our_protein_start, i, n, _ = line.split() # n is number of residues, i is start residue (determined by index in fragFile)
+                our_protein_start = int(our_protein_start)
+                n = int(n)
+                i = int(i)
+                chain = gro.split('.')[-2][-1].upper()
+                # it is okay to access the installation-wide data base here because we are still in the awsem_create stage before
+                # anything has been copied over to the project fraglib directory
+                pdb = f"{openawsem_location}/data/PDBs/{gro.split('/')[-1][:4].upper()}.pdb" # assuming CODECHAIN.gro filename format for gros
+                assert os.path.isfile(pdb), f"PDB NOT FOUND: {pdb}"
+                # are there any differences between PDB and gro files? pdb2gro.py can potentially modify residue numbers and atom numbers
+                # by skipping over some residues that do not satisfy is_regular_res, for example. 
                 delete = False
                 # logging.info(f"{gro}, {i}, {n}")
                 # name = gro.split("/")[-1]
@@ -350,7 +367,31 @@ def check_and_correct_fragment_memory(fragFile="fragsLAMW.mem"):
                             delete = True
                         if test not in all_residues:
                             logging.warning(f"ATTENTION: {gro} {i} {n} missing: {test}")
+                            delete = True              
+                if fragmem_structure and not delete:
+                    #pass
+                    #'''
+                    print(f'PDB testing: {pdb}')
+                    # MDAnalysis resid is defined by the topology, with first:last being inclusive of both endpoints
+                    fragmem_structure_segment = fragmem_structure_u.select_atoms(f'resid {our_protein_start}:{our_protein_start+n-1} and name CA')
+                    current_structure_segment = mda.Universe(pdb).select_atoms(f'resid {i}:{i+n-1} and name CA and segid {chain} and not (altLoc B or altLoc C)')
+                    try:
+                        old_rmsd, new_rmsd = align.alignto(current_structure_segment, fragmem_structure_segment,strict=True)
+                    except Exception as e:
+                        print(f"fragmem_structure_segment: {fragmem_structure_segment.atoms}")
+                        print(f"current_structure_segment: {current_structure_segment.atoms}")
+                        if "ERROR: Reference and trajectory atom selections do not contain the same number of atoms" in e and "and also not the same number of residues" in e:
+                            print("PROBABLE MISSING RESIDUES IN FRAGMENT MEMORY. PRINTING MESSAGE BELOW AND WILL DELETE THIS MEMORY")
+                            print(e)
                             delete = True
+                        else:
+                            raise
+                    if '1R69' not in pdb and '1r69' not in pdb:
+                        assert 0 < new_rmsd < old_rmsd, f"new_rmsd: {new_rmsd}, old_rmsd: {old_rmsd}"
+                    if new_rmsd > 2: # throw out fragmems that are structurally disimilar to protein design target
+                        delete = True
+                    #'''
+
                 if not delete:
                     out.write(line)
     os.system(f"mv {fragFile} fragsLAMW_back")
