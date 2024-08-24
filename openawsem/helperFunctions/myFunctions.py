@@ -386,9 +386,23 @@ def check_and_correct_fragment_memory(fragFile="fragsLAMW.mem",fragmem_structure
                             delete = True
                         else:
                             raise
+                    coords = fragmem_structure_segment.positions 
+                    distance_matrix = np.zeros([coords.shape[0],coords.shape[0]])
+                    native_distance_matrix = np.zeros([coords.shape[0],coords.shape[0]])
+                    for i in range(coords.shape[0]):
+                        for j in range(i+3,coords.shape[0]): # j > i+2
+                            # getting rid of sequence separation because we're working with short fragments
+                            distance_matrix[i,j] = np.linalg.norm(coords[i,:] - coords[j,:])
+                            native_distance_matrix[i,j] = np.linalg.norm(current_structure_segment.positions[i,:]-current_structure_segment.positions[j,:])
+                    diff_weights = native_distance_matrix - distance_matrix
+                    for i in range(diff_weights.shape[0]):
+                        for j in range(i+3,diff_weights.shape[1]): # j > i+2
+                            diff_weights[i,j] = np.exp(-(diff_weights[i,j]**2)/(2*((abs(i-j)**.15)**2)))
+                    q = (2/((diff_weights.shape[0]-2)*(diff_weights.shape[1]-3))) * np.sum(diff_weights)
                     if '1R69' not in pdb and '1r69' not in pdb:
                         assert 0 < new_rmsd < old_rmsd, f"new_rmsd: {new_rmsd}, old_rmsd: {old_rmsd}"
-                    if new_rmsd > 2: # throw out fragmems that are structurally disimilar to protein design target
+                    #if new_rmsd > 2: # throw out fragmems that are structurally disimilar to protein design target
+                    if q < 0.6:
                         delete = True
                     #'''
 
