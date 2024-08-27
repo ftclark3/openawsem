@@ -311,8 +311,8 @@ def check_and_correct_fragment_memory(fragFile="fragsLAMW.mem",fragmem_structure
         from MDAnalysis.analysis import align
         fragmem_structure_u = mda.Universe(fragmem_structure)
     with open("tmp.mem", "w") as out:
-        with open(fragFile, "r") as f:
-            for i in range(4):
+        with open(fragFile, "r") as f: 
+            for i in range(4): # this takes care of the target query header thing
                 line = next(f)
                 out.write(line)
             for line in f:
@@ -329,7 +329,9 @@ def check_and_correct_fragment_memory(fragFile="fragsLAMW.mem",fragmem_structure
                 pdb = f"{openawsem_location}/data/PDBs/{gro.split('/')[-1][:4].upper()}.pdb" # assuming CODECHAIN.gro filename format for gros
                 assert os.path.isfile(pdb), f"PDB NOT FOUND: {pdb}"
                 # are there any differences between PDB and gro files? pdb2gro.py can potentially modify residue numbers and atom numbers
-                # by skipping over some residues that do not satisfy is_regular_res, for example. 
+                # by skipping over some residues that do not satisfy is_regular_res, for example.
+                # also, pdb2gro.py will just take the first altLoc listed in the file for atoms with multiple positions,
+                # except the case which Wei has documented below 
                 delete = False
                 # logging.info(f"{gro}, {i}, {n}")
                 # name = gro.split("/")[-1]
@@ -369,43 +371,51 @@ def check_and_correct_fragment_memory(fragFile="fragsLAMW.mem",fragmem_structure
                             logging.warning(f"ATTENTION: {gro} {i} {n} missing: {test}")
                             delete = True              
                 if fragmem_structure and not delete:
-                    #pass
-                    #'''
                     print(f'PDB testing: {pdb}')
-                    # MDAnalysis resid is defined by the topology, with first:last being inclusive of both endpoints
+                    # MDAnalysis resid follows numbering in topology file, with first:last being inclusive of both endpoints
                     fragmem_structure_segment = fragmem_structure_u.select_atoms(f'resid {our_protein_start}:{our_protein_start+n-1} and name CA')
-                    current_structure_segment = mda.Universe(pdb).select_atoms(f'resid {i}:{i+n-1} and name CA and segid {chain} and not (altLoc B or altLoc C)')
+                    to_delete = []
+                    current_structure_segment = mda.Universe(pdb).select_atoms(f'resid {i}:{i+n-1} and name CA and segid {chain}')
+                    for counter1 in range(len(current_structure_segment)):
+                        for counter2 in range(counter1+1, len(current_structure_segment)):
+                            if current_structure_segment[counter1].resid == current_structure_segment[counter2].resid:
+                                to_delete.append(counter2)
+                    current_structure_segment -= current_structure_segment[to_delete] # take only the first occurance of atoms with altLocs
+                    #current_structure_segment = mda.Universe(pdb).select_atoms(f'resid {i}:{i+n-1} and name CA and segid {chain}')
+                    # i don't think it's possible to do empty string or A for altLoc selection
+                    # if we get altLoc D or something like that it would be annoying, but should throw an error so it's not dangerous
                     try:
+                        # align.alignto uses syntax (mobile, ref), so we're moving the structure containing the hit onto the appropriate region
+                        # of our target structure (the "fragmem" structure)
                         old_rmsd, new_rmsd = align.alignto(current_structure_segment, fragmem_structure_segment,strict=True)
                     except Exception as e:
                         print(f"fragmem_structure_segment: {fragmem_structure_segment.atoms}")
                         print(f"current_structure_segment: {current_structure_segment.atoms}")
-                        if "ERROR: Reference and trajectory atom selections do not contain the same number of atoms" in e and "and also not the same number of residues" in e:
-                            print("PROBABLE MISSING RESIDUES IN FRAGMENT MEMORY. PRINTING MESSAGE BELOW AND WILL DELETE THIS MEMORY")
-                            print(e)
-                            delete = True
+                        if "Reference and trajectory atom selections do not contain the same number of atoms" in str(e) and "and also not the same number of residues" in str(e):
+                            # in the future, we can put alternative error handling here if needed. 
+                            #print("PROBABLE MISSING RESIDUES IN FRAGMENT MEMORY. PRINTING MESSAGE BELOW AND WILL DELETE THIS MEMORY")
+                            raise
+                            #delete = True
                         else:
                             raise
-                    coords = fragmem_structure_segment.positions 
-                    distance_matrix = np.zeros([coords.shape[0],coords.shape[0]])
-                    native_distance_matrix = np.zeros([coords.shape[0],coords.shape[0]])
-                    for i in range(coords.shape[0]):
-                        for j in range(i+3,coords.shape[0]): # j > i+2
-                            # getting rid of sequence separation because we're working with short fragments
-                            distance_matrix[i,j] = np.linalg.norm(coords[i,:] - coords[j,:])
-                            native_distance_matrix[i,j] = np.linalg.norm(current_structure_segment.positions[i,:]-current_structure_segment.positions[j,:])
-                    diff_weights = native_distance_matrix - distance_matrix
-                    for i in range(diff_weights.shape[0]):
-                        for j in range(i+3,diff_weights.shape[1]): # j > i+2
-                            diff_weights[i,j] = np.exp(-(diff_weights[i,j]**2)/(2*((abs(i-j)**.15)**2)))
-                    q = (2/((diff_weights.shape[0]-2)*(diff_weights.shape[1]-3))) * np.sum(diff_weights)
-                    if '1R69' not in pdb and '1r69' not in pdb:
-                        assert 0 < new_rmsd < old_rmsd, f"new_rmsd: {new_rmsd}, old_rmsd: {old_rmsd}"
-                    #if new_rmsd > 2: # throw out fragmems that are structurally disimilar to protein design target
-                    if q < 0.6:
-                        delete = True
-                    #'''
-
+                    else: # try-except-else
+                        coords = fragmem_structure_segment.positions 
+                        distance_matrix = np.zeros([coords.shape[0],coords.shape[0]])
+                        native_distance_matrix = np.zeros([coords.shape[0],coords.shape[0]])
+                        for i in range(coords.shape[0]):
+                            for j in range(i+3,coords.shape[0]): # j > i+2
+                                distance_matrix[i,j] = np.linalg.norm(coords[i,:] - coords[j,:])
+                                native_distance_matrix[i,j] = np.linalg.norm(current_structure_segment.positions[i,:]-current_structure_segment.positions[j,:])
+                        diff_weights = native_distance_matrix - distance_matrix
+                        for i in range(diff_weights.shape[0]):
+                            for j in range(i+3,diff_weights.shape[1]): # j > i+2
+                                diff_weights[i,j] = np.exp(-(diff_weights[i,j]**2)/(2*((abs(i-j)**.15)**2)))
+                        q = (2/((diff_weights.shape[0]-2)*(diff_weights.shape[1]-3))) * np.sum(diff_weights)
+                        if '1R69' not in pdb and '1r69' not in pdb:
+                            assert 0 < new_rmsd < old_rmsd, f"new_rmsd: {new_rmsd}, old_rmsd: {old_rmsd}"
+                        #if new_rmsd > 2: # throw out fragmems that are structurally dissimilar to protein design target
+                        if q < 0.6:
+                            delete = True
                 if not delete:
                     out.write(line)
     os.system(f"mv {fragFile} fragsLAMW_back")
