@@ -15,7 +15,7 @@ from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB import PDBList
 from pdbfixer import PDBFixer
 try:
-    from openmm.app import PDBFile
+    from openmm.app import PDBFile, PDBxFile
 except ModuleNotFoundError:
     from simtk.openmm.app import PDBFile
 import logging
@@ -501,7 +501,7 @@ def downloadPdb(pdb_list, membrane_protein=False, location="original_pdbs/"):
 
 
 
-def cleanPdb(pdb_list, chain=None, source=None, toFolder="cleaned_pdbs", formatName=False, 
+def cleanPdb(pdb_list, chain=None, source=None, toFolder="cleaned_pdbs", formatName=False,extension="pdb" 
                 removeDNAchains=True, verbose=False, removeTwoEndsMissingResidues=True, addMissingResidues=True, removeHeterogens=True, keepIds=False):
     os.system(f"mkdir -p {toFolder}")
     for pdb_id in pdb_list:
@@ -513,20 +513,21 @@ def cleanPdb(pdb_list, chain=None, source=None, toFolder="cleaned_pdbs", formatN
             pdb = f"{pdb_id.lower()[:4]}"
         else:
             pdb = pdb_id
-        pdbFile = pdb + ".pdb"
+        pdbFile = pdb + f".{extension}"
         if source is None:
             fromFile = os.path.join("original_pdbs", pdbFile)
-        elif source[-4:] == ".pdb":
+        elif source[-4:] == f".{extension}":
             fromFile = source
         else:
             fromFile = os.path.join(source, pdbFile)
 
         if verbose:
-            logging.info('Fixing PDB using PDBFixer')
+            logging.info('Fixing PDB or mmCIF/PDBx using PDBFixer')
             logging.info(os.getcwd())
             logging.info(fromFile)
             
         # clean pdb
+        # this class can take PDB or mmCIF/PDBx files
         fixer = PDBFixer(filename=fromFile)
 
         try:
@@ -587,7 +588,10 @@ def cleanPdb(pdb_list, chain=None, source=None, toFolder="cleaned_pdbs", formatN
             logging.warning("Unable to add missing atoms")
             continue
         fixer.addMissingHydrogens(7.0)
-        PDBFile.writeFile(fixer.topology, fixer.positions, open(os.path.join(toFolder, pdbFile), 'w'), keepIds=keepIds)
+        if extension=="pdb":
+            PDBFile.writeFile(fixer.topology, fixer.positions, open(os.path.join(toFolder, pdbFile), 'w'), keepIds=keepIds)
+        elif extension == "cif":
+            PDBxFile.writeFile(fixer.topology, fixer.positions, open(os.path.join(toFolder, pdbFile), 'w'), keepIds=keepIds)
 
 
 def getAllChains(pdbFile, removeDNAchains=True):
@@ -607,6 +611,9 @@ def getAllChains(pdbFile, removeDNAchains=True):
             logging.info(f"chain {c.id} is a DNA chain. it will be removed")
             continue
         if c.id in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789':
+            a += c.id
+        elif pdbFile[-4:] == ".cif": 
+            # if we're actually working with a cif file, we can handle other characters for chain names
             a += c.id
     # return ''.join(sorted(set(a.upper().replace(" ", ""))))
     return ''.join(sorted(set(a.replace(" ", ""))))

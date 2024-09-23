@@ -19,6 +19,7 @@ class AWSEMSimulationProject:
         self.data_path=__location__
         self.base_folder=Path.cwd() #Project folder
         self.args=args
+        self.cif = False
                 
     def run_command(self, command, stdout=None):
         logging.debug('Command: '+ str(command))
@@ -68,6 +69,37 @@ class AWSEMSimulationProject:
         (original_pdbs_dir / pdb).write_bytes(protein_path.read_bytes())
         
         return name, pdb
+    
+    def prepare_input_files_from_cif(self, parent_folder="."):
+        """
+        Prepare input files from a mmCIF/PDBx file.
+        
+        This function checks if the .cif file exists, extracts the name of the protein,
+        and copies the .cif file to the 'original_pdbs' directory.
+        
+        Returns:
+            name (str): Protein name without the file extension.
+            cif (str): filename.
+        """
+        ###########################################################
+        # only substantial difference from prepare_input_files_from_pdb
+        self.cif = True
+        ###########################################################
+        logging.info("Creating simulation folder from mmCIF/PDBx file.")
+        protein_path = Path(self.args.protein)
+        parent_folder = Path(parent_folder)
+        assert protein_path.exists(), f"The protein path {str(protein_path)} does not exist"
+        
+        #Get the name of the pdb
+        name = protein_path.stem
+        cif = protein_path.name
+        
+        #Create a pdb backup
+        original_pdbs_dir = parent_folder / "original_pdbs"
+        original_pdbs_dir.mkdir(parents=True, exist_ok=True)
+        (original_pdbs_dir / cif).write_bytes(protein_path.read_bytes())
+        
+        return name, cif
 
     def prepare_input_files_from_fasta(self, parent_folder="."):
         """
@@ -131,42 +163,46 @@ class AWSEMSimulationProject:
 
     def process_pdb_files(self):
         """
-        Process the PDB files by cleaning, preparing, and generating additional required files.
+        Process the PDB or mmCIF/PDBx files by cleaning, preparing, and generating additional required files.
         """
 
         removeHeterogens = False if self.args.keepLigands is True else True
         chain = self.args.chain
 
-        
-        if not Path("crystal_structure.pdb").exists():
-            logging.info("Creating crystal_structure.pdb file")
+        if self.cif:
+            extension  = "cif"
+        else:
+            extension = "pdb"
+        if not Path(f"crystal_structure.{extension}").exists():
+            logging.info(f"Creating crystal_structure.{extension} file")
             openawsem.helperFunctions.cleanPdb(
                 [self.name],
                 chain=chain,
                 toFolder="cleaned_pdbs",
                 verbose=self.args.verbose,
                 keepIds=True,
-                removeHeterogens=removeHeterogens
+                removeHeterogens=removeHeterogens,
+                extension=extension
             )
             cleaned_pdb_path = Path(f"cleaned_pdbs/{self.pdb}")
-            shutil.copy(cleaned_pdb_path,"crystal_structure.pdb")
+            shutil.copy(cleaned_pdb_path,f"crystal_structure.{extension}")
         else:
-            logging.info("Using existing crystal_structure.pdb file")
+            logging.info(f"Using existing crystal_structure.{extension} file")
 
         if chain == "-1":
-            logging.info("Reading chains info from crystal_structure.pdb")
+            logging.info(f"Reading chains info from crystal_structure.{extension}")
             chain = openawsem.helperFunctions.getAllChains(
-                "crystal_structure.pdb",
+                f"crystal_structure.{extension}",
                 removeDNAchains=True
             )
-            logging.info("Chains info read from crystal_structure.pdb, chains to simulate: ", chain)
+            logging.info(f"Chains info read from crystal_structure.{extension}, chains to simulate: ", chain)
         else:
             logging.info(f"Selected chains: {chain}")
 
 
         # for compute Q
         input_pdb_filename, cleaned_pdb_filename = openawsem.prepare_pdb(
-            "crystal_structure.pdb",
+            f"crystal_structure.{extension}",
             chain,
             use_cis_proline=False,
             keepIds=self.args.keepIds,
@@ -366,14 +402,14 @@ class AWSEMSimulationProject:
             # Prepare the input files
             if self.args.protein[-4:] == '.pdb':
                 self.name, self.pdb = self.prepare_input_files_from_pdb(project_folder)
-            elif self.args.protein[-6:] == ".cif":
+            elif self.args.protein[-4:] == ".cif":
                 self.name, self.pdb = self.prepare_input_files_from_cif(project_folder)
             elif self.args.protein[-6:] == ".fasta":
                 self.name, self.pdb = self.prepare_input_files_from_fasta(project_folder)
             else:
                 self.name, self.pdb = self.prepare_input_files_from_name(project_folder)
                 
-            logging.info(f"Protein name: {self.name}, PDB file: {self.pdb}")
+            logging.info(f"Protein name: {self.name}, PDB or mmCIF/PDBx file: {self.pdb}")
             
             #Change the directory
             with self.change_directory(project_folder):

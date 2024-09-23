@@ -8,7 +8,7 @@ except ModuleNotFoundError:
     from simtk.openmm import *
     from simtk.unit import *
 import sys
-from pdbfixer import *
+from pdbfixer import * # this gets us PDBFile and PDBxFile
 import mdtraj as md
 from Bio.PDB.Polypeptide import *
 from Bio.PDB.PDBParser import PDBParser
@@ -364,9 +364,10 @@ def line_number():
 def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds=False, removeHeterogens=True):
     # for more information about PDB Fixer, see:
     # http://htmlpreview.github.io/?https://raw.github.com/pandegroup/pdbfixer/master/Manual.html
-    # fix up input pdb
-    cleaned_pdb_filename = "%s-cleaned.pdb" % pdb_filename[:-4]
-    input_pdb_filename = "%s-openmmawsem.pdb" % pdb_filename[:-4]
+    # fix up input pdb or cif
+    extension = pdb_filename[-3:]
+    cleaned_pdb_filename = f"{pdb_filename[:-4]}-cleaned.{extension}" 
+    input_pdb_filename = f"{pdb_filename[:-4]}-openmmawsem.{extension}"
 
     fixer = PDBFixer(filename=pdb_filename)
 
@@ -393,14 +394,22 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     
     #Add Missing Hydrogens
     fixer.addMissingHydrogens(7.0)
-    PDBFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=keepIds)
+    if extension == "pdb":
+        PDBFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=keepIds)
+    elif extension == "cif":
+        PDBxFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=keepIds)    
     
     #Read sequence
-    structure = PDBParser().get_structure('X', cleaned_pdb_filename)
+    # looks like this structure variable is never used, so commenting out
+    #structure = PDBParser().get_structure('X', cleaned_pdb_filename)
 
     # identify terminal residues
     terminal_residues = identify_terminal_residues(cleaned_pdb_filename)
 
+    # this part will need to be different because PDBx/mmCIF different from PDB
+    # why do we need to do it like this? why can't we just use biopython again?
+    # biopython can't write PDBx/mmCIF format, but pdbfixer can so we'll try that
+    '''
     # process pdb for input into OpenMM
     #Selects only atoms needed for the awsem topology
     output = open(input_pdb_filename, 'w')
@@ -448,6 +457,18 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
             counter+=1
     #print("The system contains %i atoms"%counter)
     output.close()
+    '''
+    awsem_atoms = ["CA", "O", "CB", "C", "H", "N"]
+    dont_remove = []
+    for bond in fixer.topology._bonds:
+        for atom in bond:
+            if atom.name not in awsem_atoms:
+                dont_remove.append(bond)
+    fixer.topology._bonds = dont_remove
+    if extension == "pdb":
+        PDBFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=False)
+    elif extension == "cif":
+        PDBxFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=False)  
 
     #Fix Virtual Site Coordinates:
     # prepare_virtual_sites(input_pdb_filename, use_cis_proline=use_cis_proline)
