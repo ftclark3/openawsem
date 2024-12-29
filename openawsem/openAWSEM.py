@@ -14,6 +14,9 @@ from Bio.PDB.Polypeptide import *
 from Bio.PDB.PDBParser import PDBParser
 from Bio.PDB import PDBList
 from Bio.PDB import PDBIO
+from Bio.PDB.MMCIF2Dict import MMCIF2Dict
+from Bio.PDB.mmcifio import MMCIFIO
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -366,6 +369,8 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     # http://htmlpreview.github.io/?https://raw.github.com/pandegroup/pdbfixer/master/Manual.html
     # fix up input pdb or cif
     extension = pdb_filename[-3:]
+    if extension != "pdb" and extension != "cif":
+        raise ValueError(f"Filename must end in 'pdb' or 'cif' but was {extension}")
     cleaned_pdb_filename = f"{pdb_filename[:-4]}-cleaned.{extension}" 
     input_pdb_filename = f"{pdb_filename[:-4]}-openmmawsem.{extension}"
 
@@ -409,6 +414,10 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     # this part will need to be different because PDBx/mmCIF different from PDB
     # why do we need to do it like this? why can't we just use biopython again?
     # biopython can't write PDBx/mmCIF format, but pdbfixer can so we'll try that
+    #output = open(input_pdb_filename,'w')
+    #counter=0
+    #cif_info = MMCIF2Dict(cleaned_pdb_filename)
+
     '''
     # process pdb for input into OpenMM
     #Selects only atoms needed for the awsem topology
@@ -458,18 +467,72 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     #print("The system contains %i atoms"%counter)
     output.close()
     '''
-    awsem_atoms = ["CA", "O", "CB", "C", "H", "N"]
-    dont_remove = []
-    for bond in fixer.topology._bonds:
-        for atom in bond:
-            if atom.name not in awsem_atoms:
-                dont_remove.append(bond)
-    fixer.topology._bonds = dont_remove
-    if extension == "pdb":
-        PDBFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=False)
-    elif extension == "cif":
-        PDBxFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=False)  
+    # get chains and residues from old topology
+    remove_bonds = []
+    remove_atoms = []
+    chain_info = {}
+    for chain in fixer.topology.chains():
+        chain_info.update({chain.name:{}})
+        for residue in chain.residues():
+            chain_info[chain.name].update({residue.index:[residue.name,residue.chain,residue.id,residue.insertionCode]})
+            #chain_info[chain.name][residue.index].append(residue.name)
+            #chain_info[chain.name][residue.index].append(residue.index)
+            #chain_info[chain.name][residue.index].append(residue.chain)
+            #chain_info[chain.name][residue.index].append(residue.id)
+            #chain_info[chain.name][residue.index].append(residue.insertionCode)
+            if residue.name in ["ALA","CYS","ASP","GLU","PHE","HIS","ILE","LYS","LEU","MET","ASN","PRO","GLN","ARG","SER","THR","VAL","TRP","TYR"]:
+                awsem_atoms = ["CA","O","CB","C","H","N"]
+            elif residue.name == "GLY":
+                awsem_atoms = ["CA","O","C","H","N"]
+            else:
+                raise ValueError(f"Unrecognized residue name: {residue.name}")
+            for atom in residue.atoms():
+                if atom.name not in awsem_atoms:
+                    remove_atoms.append(atom)
+            for bond in residue.bonds():
+                for atom in bond.atoms():
+                    if atom in remove_atoms:
+                        remove_bonds.append(bond)
+                        break
+    # set up new topology with same chains and residues
+    new_topology = topology.Topology() # openmm.app.topology.Topology
+    for chain_name in chain_info.keys():
+        chain = new_topology.addChain(id=chain_name)
+        for residue_index in chain_info[chain_name].keys():
+            assert residue_index == list(range(len(chain_info[chain_name].keys()))), f"residue_index: {residue_index}"
+            chain.addResidue(chain_info[chain_name][residue_index][0],
+                             chain_info[chain_name][residue_index][1],
+                             chain_info[chain_name][residue_index][2],
+                             chain_info[chain_name][residue_index][3],
+                             )
+    # add AWSEM atoms to the new topology
+    # will not add bonds becase they don't get written to the output file
+    for atom in fixer.topology.atoms():
+        if atom not in remove_atoms:
+            new_topology.addAtom(atom.name,atom.element,atom.residue.index) # avoid specifying id to allow it to reorder as appropriate
+    #for bond in fixer.topology.bonds():
+    #    if bond not in remove_bonds:
+    #        new_topology.addBond()
 
+    #for bond in fixer.topology.bonds():
+    #    for atom in bond:
+    #        if atom.name not in awsem_atoms[atom]:
+    #            remove_bonds.append(bond)
+    #            break
+    #        
+    #        if atom.name not in awsem_atoms:
+    #            dont_remove.append(bond)
+    #fixer.topology._bonds = dont_remove
+    
+    if extension == "pdb":
+        #PDBFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=False)
+        PDBFile.writeFile(new_topology,  fixer.getPositions(asNumpy=True)[[atom.index for atom in fixer.topology.atoms() if atom not in remove_atoms],:], 
+                          #open(cleaned_pdb_filename, 'w'), keepIds=False)
+                          open('foo.pdb','w'), keepIds=False)
+    elif extension == "cif":
+        PDBxFile.writeFile(new_topology, fixer.getPositions(asNumpy=True)[[atom.index for atom in fixer.topology.atoms() if atom not in remove_atoms],:], 
+                           open(cleaned_pdb_filename, 'w'), keepIds=False)  
+    exit()
     #Fix Virtual Site Coordinates:
     # prepare_virtual_sites(input_pdb_filename, use_cis_proline=use_cis_proline)
     prepare_virtual_sites_v2(input_pdb_filename, use_cis_proline=use_cis_proline)

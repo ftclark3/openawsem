@@ -175,7 +175,7 @@ class AWSEMSimulationProject:
             extension = "pdb"
         if not Path(f"crystal_structure.{extension}").exists():
             logging.info(f"Creating crystal_structure.{extension} file")
-            openawsem.helperFunctions.cleanPdb(
+            openawsem.helperFunctions.cleanPdb( # see openawsem/helperFunctions/myFunctions.py
                 [self.name],
                 chain=chain,
                 toFolder="cleaned_pdbs",
@@ -201,7 +201,7 @@ class AWSEMSimulationProject:
 
 
         # for compute Q
-        input_pdb_filename, cleaned_pdb_filename = openawsem.prepare_pdb(
+        input_pdb_filename, cleaned_pdb_filename = openawsem.prepare_pdb( # function is in openAWSEM.py
             f"crystal_structure.{extension}",
             chain,
             use_cis_proline=False,
