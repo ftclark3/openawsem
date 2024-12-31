@@ -402,7 +402,7 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     io_class = get_openmm_io_class(file_type)
     cleaned_pdb_filename = f"{pdb_filename[:-4]}-cleaned.{file_type}" 
     input_pdb_filename = f"{pdb_filename[:-4]}-openmmawsem.{file_type}"
-
+    print(pdb_filename) 
     fixer = PDBFixer(filename=pdb_filename)
 
     # remove unwanted chains
@@ -636,17 +636,17 @@ def prepare_virtual_sites_v2_openmm(pdb_file, use_cis_proline=False, file_type='
        #        atom_count += 6 #CA, C, O, CB, N, H
     # overwrite the file that we read in
     #io_class.writeFile(pdb_file)
-    io_class.writeFile(top, pos, file=f'{pdb_file}_new', keepIds=True)
+    io_class.writeFile(top, pos, file=f'{pdb_file}', keepIds=True)
     if file_type == "cif":
         # add a '#' on a new line at the end of the cif
         # the Biopython MMCIF parser is indifferent to this modification,
         # but it is helpful (in some but not all cases necessary?) for vmd to be able to read the output file,
         lines = []
-        with open(f'{pdb_file}_new','r') as f:
+        with open(f'{pdb_file}','r') as f:
             for line in f:
                 lines.append(line)
         lines.append('#')
-        with open(f'{pdb_file}_new','w') as f:
+        with open(f'{pdb_file}','w') as f:
             for line in lines:
                 f.write(line)
 
@@ -870,8 +870,11 @@ def ensure_atom_order(input_pdb_filename, quiet=1):
     del temp
     for residue in top.residues():
         atom_names = [atom.name for atom in residue.atoms()]
-        assert atom_names in ["N",'H','CA','C','O','CB'], atom_names
-    return
+        assert atom_names in [["N",'H','CA','C','O','CB'],['N','H','CA','C','O'],['N','CA','C','O','CB'],
+                               # normal non-GLY/non-PRO     normal GLY            normal PRO
+                                                  ['CA','C','O','CB'],['CA','C','O'],["N",'H','CA','O','CB'],["N",'H','CA','O'],["N",'CA','O','CB']], atom_names
+                                 #                   N-terminus non-GLY N-terminus GLY C-term non-GLY/non-PRO     C-term GLY          C-term pro
+    
 
 
 
@@ -953,22 +956,27 @@ def read_fasta(fastaFile):
     return data
 
 def formatResidue_ThreeLetterCodeToOne(residue):
-    residue_name = residue.get_resname()
+    if type(residue) == topology.Residue: # openmm.app.topology.Residue
+        residue_name = residue.name
+    else:
+        residue_name = residue.get_resname()
     try:
         oneLetter = three_to_one[residue_name]
     except:
+        print(residue.__dict__)
         print(f"Unknown residue: {residue.get_full_id()}, treat as ALA")
         residue_name = "ALA"
     return three_to_one[residue_name]
 
 def getSeqFromCleanPdb(input_pdb_filename, chains='A', writeFastaFile=False):
-    cleaned_pdb_filename = input_pdb_filename.replace("openmmawsem.pdb", "cleaned.pdb")
-    pdb = input_pdb_filename.replace("-openmmawsem.pdb", "")
+    cleaned_pdb_filename = input_pdb_filename.replace("openmmawsem", "cleaned")
+    pdb = ''.join(input_pdb_filename.split('-')[:-1])
     fastaFile = pdb + ".fasta"
-
-
-    s = PDBParser().get_structure("X", cleaned_pdb_filename)
-    m = s[0] # model 0
+    file_type = cleaned_pdb_filename[-3:]
+    io_class = get_openmm_io_class(file_type)
+    top = io_class(cleaned_pdb_filename).getTopology()
+    m = {chain.id:chain for chain in top.chains()} # matching variable name from older version of the function
+    assert list(m.keys()) == list(chains), f'list(m.keys): {list(m.keys())}, list(chains): {list(chains)}'
     seq = ""
     if writeFastaFile:
         with open(fastaFile, "w") as out:
@@ -976,7 +984,7 @@ def getSeqFromCleanPdb(input_pdb_filename, chains='A', writeFastaFile=False):
                 out.write(f">{pdb.upper()}:{chain}\n")
                 c = m[chain]
                 chain_seq = ""
-                for residue in c:
+                for residue in c.residues():
                     chain_seq += formatResidue_ThreeLetterCodeToOne(residue)
                 out.write("\n".join(textwrap.wrap(chain_seq, width=80))+"\n")
                 seq += chain_seq
@@ -984,7 +992,7 @@ def getSeqFromCleanPdb(input_pdb_filename, chains='A', writeFastaFile=False):
         for chain in chains:
             c = m[chain]
             chain_seq = ""
-            for residue in c:
+            for residue in c.residues():
                 chain_seq += formatResidue_ThreeLetterCodeToOne(residue)
             seq += chain_seq
     return seq

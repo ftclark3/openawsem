@@ -221,11 +221,10 @@ class AWSEMSimulationProject:
         # and a crystal_structure-openmmawsem.pdb/cif
         # i don't know why we call this function on the crystal_structure-cleaned.pdb file
         # and at this point in the program
-        self.chain = openawsem.helperFunctions.getAllChains("crystal_structure-cleaned.pdb") 
+        self.chain = openawsem.helperFunctions.getAllChains("crystal_structure-cleaned.pdb")  
         openawsem.getSeqFromCleanPdb(input_pdb_filename, chains=self.chain, writeFastaFile=True)
         shutil.copy('crystal_structure.fasta',f'{self.name}.fasta')
         ###############################################################################
-
         if self.args.extended:
             # print("Trying to create the extended structure extended.pdb using pymol, please ensure that pymol is installed and callable using 'pymol' in terminal.")
             # self.run_command(["python", f"{__location__}/helperFunctions/fasta2pdb.py", "extended", "-f", f"{self.name}.fasta"])
@@ -235,12 +234,12 @@ class AWSEMSimulationProject:
             if self.chain != "A":
                 logging.error("Multiple chains detected. Please use other methods to generate the extended structures or fix this function.")
                 exit()
-            openawsem.helperFunctions.create_extended_pdb_from_fasta(f"{self.name}.fasta", output_file_name="extended.pdb")
+            openawsem.helperFunctions.create_extended_pdb_from_fasta(f"{self.name}.fasta", output_file_name="extended.pdb") #should do f"extended.{extension}"
             input_pdb_filename, cleaned_pdb_filename = openawsem.prepare_pdb("extended.pdb", "A", use_cis_proline=False, keepIds=self.args.keepIds, removeHeterogens=removeHeterogens)
             openawsem.ensure_atom_order(input_pdb_filename)
         
-        logging.info(f"Copying crystal_structure-cleaned.pdb to {self.pdb}")
-        shutil.copy('crystal_structure-cleaned.pdb',f'{self.pdb}')
+        logging.info(f"Copying crystal_structure-cleaned.{extension} to {self.pdb}")
+        shutil.copy(f'crystal_structure-cleaned.{extension}',f'{self.pdb}')
         
         if self.args.keepLigands:
             # cleaned_pdb_filename = f"{name}-cleaned.pdb"
@@ -261,7 +260,7 @@ class AWSEMSimulationProject:
                             output_file.write(line)
             os.rename("tmp.pdb", f"{self.name}-openmmawsem.pdb")
         else:
-            logging.info("Creating openmmawsem.pdb file")
+            logging.info(f"Creating openmmawsem.{extension} file")
             input_pdb_filename, cleaned_pdb_filename = openawsem.prepare_pdb(self.pdb, self.chain, keepIds=self.args.keepIds, removeHeterogens=removeHeterogens)
             openawsem.ensure_atom_order(input_pdb_filename)
 
