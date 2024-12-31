@@ -12,6 +12,7 @@ from pdbfixer import * # this gets us PDBFile and PDBxFile
 import mdtraj as md
 from Bio.PDB.Polypeptide import *
 from Bio.PDB.PDBParser import PDBParser
+from Bio.PDB import MMCIFParser
 from Bio.PDB import PDBList
 from Bio.PDB import PDBIO
 from Bio.PDB.MMCIF2Dict import MMCIF2Dict
@@ -350,16 +351,37 @@ se_map_3_letter = {'ALA': 0,  'PRO': 1,  'LYS': 2,  'ASN': 3,  'ARG': 4,
                    'SER': 15, 'THR': 16, 'TYR': 17, 'VAL': 18, 'TRP': 19}
 
 
-def identify_terminal_residues(pdb_filename):
-    # identify terminal residues
-    parser = PDBParser()
+def identify_terminal_residues(pdb_filename,file_type='pdb'):
+    # identify terminal residues - THE OLD WAY
+    if file_type == "pdb":
+        parser = PDBParser()
+    elif file_type == "cif":
+        parser = MMCIFParser()
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}")
     structure = parser.get_structure('X', pdb_filename)
     terminal_residues = {}
     for model in structure:
         for chain in model:
             residues = list(chain.get_residues())
             terminal_residues[chain.id] = (residues[0].id[1], residues[-1].id[1])
-        return terminal_residues
+        break
+    terminal_residues_old_way = terminal_residues
+    # identify terminal residues - THE NEW WAY
+    if file_type == "pdb":
+        temp = PDBFile(pdb_filename)
+    elif file_type == "cif":
+        temp = PDBxFile(pdb_filename)
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}")
+    top = temp.getTopology()
+    terminal_residues_new_way = {}
+    for chain in top.chains():
+        residues = list(chain.residues())
+        residue_ids = [int(residue.id) for residue in residues]
+        terminal_residues_new_way.update({chain.id:(residue_ids[0],residue_ids[-1])})
+    assert terminal_residues_new_way == terminal_residues_old_way, f"terminal_residues_new_way: {terminal_residues_new_way}, terminal_residues_old_way: {terminal_residues_old_way}"
+    return terminal_residues
 
 def line_number():
     return sys._getframe(1).f_lineno
@@ -409,14 +431,8 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     #structure = PDBParser().get_structure('X', cleaned_pdb_filename)
 
     # identify terminal residues
-    terminal_residues = identify_terminal_residues(cleaned_pdb_filename)
-
-    # this part will need to be different because PDBx/mmCIF different from PDB
-    # why do we need to do it like this? why can't we just use biopython again?
-    # biopython can't write PDBx/mmCIF format, but pdbfixer can so we'll try that
-    #output = open(input_pdb_filename,'w')
-    #counter=0
-    #cif_info = MMCIF2Dict(cleaned_pdb_filename)
+    # returns something like {'A': (1, 63)}
+    terminal_residues = identify_terminal_residues(cleaned_pdb_filename,file_type=extension)
 
     '''
     # process pdb for input into OpenMM
@@ -467,19 +483,13 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     #print("The system contains %i atoms"%counter)
     output.close()
     '''
-    # get chains and residues from old topology
-    remove_bonds = []
+    # get chains and residues from old topology 
     remove_atoms = []
     chain_info = {}
     for chain in fixer.topology.chains():
-        chain_info.update({chain.name:{}})
+        chain_info.update({chain.id:{}}) # chain.id is "A", "B", etc.
         for residue in chain.residues():
-            chain_info[chain.name].update({residue.index:[residue.name,residue.chain,residue.id,residue.insertionCode]})
-            #chain_info[chain.name][residue.index].append(residue.name)
-            #chain_info[chain.name][residue.index].append(residue.index)
-            #chain_info[chain.name][residue.index].append(residue.chain)
-            #chain_info[chain.name][residue.index].append(residue.id)
-            #chain_info[chain.name][residue.index].append(residue.insertionCode)
+            chain_info[chain.id].update({residue.index:[residue.name,residue.chain,residue.id,residue.insertionCode]})
             if residue.name in ["ALA","CYS","ASP","GLU","PHE","HIS","ILE","LYS","LEU","MET","ASN","PRO","GLN","ARG","SER","THR","VAL","TRP","TYR"]:
                 awsem_atoms = ["CA","O","CB","C","H","N"]
             elif residue.name == "GLY":
@@ -489,58 +499,178 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
             for atom in residue.atoms():
                 if atom.name not in awsem_atoms:
                     remove_atoms.append(atom)
-            for bond in residue.bonds():
-                for atom in bond.atoms():
-                    if atom in remove_atoms:
-                        remove_bonds.append(bond)
-                        break
+                elif terminal_residues[residue.chain.id][0]-1 == residue.index: # the N terminus
+                    #note that terminal_residues residue indices are 1-indexed but residue.index is 0-indexed
+                    if atom.name in ["N","H"]: # the awsem force field doesn't include these atoms at the N terminal residue
+                        remove_atoms.append(atom)
+                elif terminal_residues[residue.chain.id][1]-1 == residue.index: # the C terminus
+                    #note that terminal_residues residue indices are 1-indexed but residue.index is 0-indexed
+                    if atom.name == "C": # the awsem force field doesn't include this atom at the C terminal residue
+                        remove_atoms.append(atom)
     # set up new topology with same chains and residues
     new_topology = topology.Topology() # openmm.app.topology.Topology
+    awsem_resnames = {"ALA":"NGP","CYS":'NGP','ASP':'NGP','GLU':'NGP','PHE':'NGP','GLY':'IGL','HIS':'NGP','ILE':'NGP','LYS':'NGP','LEU':'NGP','MET':'NGP','ASN':'NGP','PRO':'IPR','GLN':'NGP','ARG':'NGP','SER':'NGP','THR':'NGP','VAL':'NGP','TRP':'NGP','TYR':'NGP'}
     for chain_name in chain_info.keys():
         chain = new_topology.addChain(id=chain_name)
+        # we expect the residue.index to be an integer representing the position of the residue in the chain,
+        # starting at 0 and counting up
+        assert list(chain_info[chain_name].keys()) == list(range(len(chain_info[chain_name].keys()))), f"list(chain_info[chain_name].keys()): {list(chain_info[chain_name].keys())}"
         for residue_index in chain_info[chain_name].keys():
-            assert residue_index == list(range(len(chain_info[chain_name].keys()))), f"residue_index: {residue_index}"
-            chain.addResidue(chain_info[chain_name][residue_index][0],
-                             chain_info[chain_name][residue_index][1],
-                             chain_info[chain_name][residue_index][2],
-                             chain_info[chain_name][residue_index][3],
-                             )
+            new_topology.addResidue(awsem_resnames[chain_info[chain_name][residue_index][0]], # name
+                                    chain, # need to pass in our newly created chain, not the chain from the pdbfixer-loaded topology
+                                    chain_info[chain_name][residue_index][2], # id
+                                    chain_info[chain_name][residue_index][3], # inscode
+                                   )
     # add AWSEM atoms to the new topology
-    # will not add bonds becase they don't get written to the output file
     for atom in fixer.topology.atoms():
         if atom not in remove_atoms:
-            new_topology.addAtom(atom.name,atom.element,atom.residue.index) # avoid specifying id to allow it to reorder as appropriate
-    #for bond in fixer.topology.bonds():
-    #    if bond not in remove_bonds:
-    #        new_topology.addBond()
-
-    #for bond in fixer.topology.bonds():
-    #    for atom in bond:
-    #        if atom.name not in awsem_atoms[atom]:
-    #            remove_bonds.append(bond)
-    #            break
-    #        
-    #        if atom.name not in awsem_atoms:
-    #            dont_remove.append(bond)
-    #fixer.topology._bonds = dont_remove
-    
-    if extension == "pdb":
-        #PDBFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=False)
-        PDBFile.writeFile(new_topology,  fixer.getPositions(asNumpy=True)[[atom.index for atom in fixer.topology.atoms() if atom not in remove_atoms],:], 
-                          #open(cleaned_pdb_filename, 'w'), keepIds=False)
-                          open('foo.pdb','w'), keepIds=False)
-    elif extension == "cif":
-        PDBxFile.writeFile(new_topology, fixer.getPositions(asNumpy=True)[[atom.index for atom in fixer.topology.atoms() if atom not in remove_atoms],:], 
-                           open(cleaned_pdb_filename, 'w'), keepIds=False)  
-    exit()
-    #Fix Virtual Site Coordinates:
-    # prepare_virtual_sites(input_pdb_filename, use_cis_proline=use_cis_proline)
-    prepare_virtual_sites_v2(input_pdb_filename, use_cis_proline=use_cis_proline)
+            if atom.name == "CB":
+                atom_element = Element.getBySymbol("B") # i don't know why we do this. Maybe to make selecting things easier later? Hopefully nothing in the simulation workflow relies on it
+            else:
+                atom_element = atom.element
+            new_topology.addAtom(atom.name,atom_element,list(new_topology.residues())[atom.residue.index]) # avoid specifying id to allow it to reorder as appropriate
+    # get positions of retained atoms    
+    keep_atom_indices = [atom.index for atom in fixer.topology.atoms() if atom not in remove_atoms]
+    keep_atom_vectors = [vector/angstrom for counter,vector in enumerate(fixer.positions) if counter in keep_atom_indices] # pdb uses angstrom units
+    keep_atom_vectors = [[vector.x,vector.y,vector.z] for vector in keep_atom_vectors] 
+    # write -openmmawsem file
+    # this one only has AWSEM atoms 
+    # (meaning ["CA","O","CB","C","H","N"] for non-glycine and ["CA","O","C","H","N"] for glycine)
+    # and also excludes N-terminal residue N and H, C-terminal residue C
+    write_fh = open(input_pdb_filename,'w')
+    to_write = [new_topology, keep_atom_vectors, write_fh, True]
+    if extension == "pdb": 
+        PDBFile.writeFile(to_write[0],to_write[1],to_write[2],keepIds=to_write[3]) 
+        write_fh.close()
+    elif extension == "cif":  
+        PDBxFile.writeFile(to_write[0],to_write[1],to_write[2],keepIds=to_write[3])
+        write_fh.close()
+        # add a '#' on a new line at the end of the cif
+        # the Biopython MMCIF parser is indifferent to this modification,
+        # but it is necessary for vmd to be able to read the output file,
+        # which might not be absolutely necessary but is a nice feature
+        lines = []
+        with open(input_pdb_filename,'r') as f:
+            for line in f:
+                lines.append(line)
+        lines.append('#')
+        with open(input_pdb_filename,'w') as f:
+            for line in lines:
+                f.write(line)
+    #Fix Virtual Site Coordinates 
+    prepare_virtual_sites_v2_openmm(input_pdb_filename, use_cis_proline=use_cis_proline, file_type=extension)
+   
     return input_pdb_filename, cleaned_pdb_filename
 
-def prepare_virtual_sites_v2(pdb_file, use_cis_proline=False):
-    parser = PDBParser(QUIET=True)
-    structure=parser.get_structure('X',pdb_file,)
+def prepare_virtual_sites_v2_openmm(pdb_file, use_cis_proline=False, file_type='pdb'):
+    # read file into openmm data structures
+    if file_type == "pdb":
+        io_class = PDBFile
+    elif file_type == "cif":
+        io_class = PDBxFile
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}") 
+    temp = io_class(pdb_file)
+    top = temp.getTopology()
+    pos = temp.getPositions(asNumpy=True)
+    del temp
+    assert pos.shape == (len(list(top.atoms())),3), f'pos.shape: {pos.shape}, len(list(top.residues())): {len(list(top.residues()))}'
+    # get terminal residues
+    terminal_residues = identify_terminal_residues(pdb_file,file_type=file_type)
+    # get indices of all CA and O atoms
+    # every residues has exactly one CA and exactly one O
+    CA_indices = []
+    O_indices = []
+    for counter,atom in enumerate(top.atoms()):
+        assert atom.index == counter, f"atom.index: {atom.index}, counter: {counter}"
+        if atom.name == "CA":
+           CA_indices.append(atom.index)
+        elif atom.name == "O":
+           O_indices.append(atom.index)
+    # edit coordinates
+    atom_count = 0
+    atom_counter = 0
+    for residue_counter,residue in enumerate(top.residues()):  
+        residue_atoms = list(residue.atoms()) 
+        #N_terminus = (terminal_residues[residue.chain.id][0]-1 == residue.index)
+        #C_terminus = (terminal_residues[residue.chain.id][1]-1 == residue.index)
+        if use_cis_proline and residue.name=="IPR":
+            for atom_counter, atom in enumerate(residue_atoms):
+                # N terminal residues won't have N and H, while C terminal residues won't have C,
+                # which is fine
+                if atom.name == "H":  
+                    pos[atom_count+atom_counter,:] = -0.9871*pos[CA_indices[residue_counter-1]] + 0.9326*pos[CA_indices[residue_counter]] + 1.0604*pos[O_indices[residue_counter-1]]
+                elif atom.name == "C":
+                    pos[atom_count+atom_counter,:] = 0.2196*pos[CA_indices[residue_counter]] + 0.2300*pos[CA_indices[residue_counter+1]] + 0.5507*pos[O_indices[residue_counter]]
+                elif atom.name == "N":
+                    pos[atom_count+atom_counter,:] = -0.2094*pos[CA_indices[residue_counter-1]] + 0.6908*pos[CA_indices[residue_counter]] + 0.5190*pos[O_indices[residue_counter-1]]
+        else:
+            for atom_counter, atom in enumerate(residue_atoms): 
+                # N terminal residues won't have N and H, while C terminal residues won't have C,
+                # which is fine
+                if atom.name == "N":
+                    pos[atom_count+atom_counter,:] = 0.48318*pos[CA_indices[residue_counter-1]] + 0.70328*pos[CA_indices[residue_counter]] - 0.18643*pos[O_indices[residue_counter-1]]
+                elif atom.name == "C":
+                    pos[atom_count+atom_counter,:] = 0.44365*pos[CA_indices[residue_counter]] + 0.23520*pos[CA_indices[residue_counter+1]] + 0.32115*pos[O_indices[residue_counter]]
+                elif atom.name == "H":
+                    pos[atom_count+atom_counter,:] = 0.84100*pos[CA_indices[residue_counter-1]] + 0.89296*pos[CA_indices[residue_counter]] - 0.73389*pos[O_indices[residue_counter-1]]
+        # keep track of number of atoms iterated over so we can properly index coordinate array
+        atom_count += len(residue_atoms)
+       # if N_terminus:
+       #     if residue.name == "IGL":
+       #        atom_count += 3 #CA, C, O
+       #     elif residue.name == "IPR":
+       #        atom_count += 4 #CA, C, O, CB
+       #     else:
+       #        atom_count += 4 #CA, C, O, CB
+       # elif C_terminus:
+       #     if residue.name == "IGL":
+       #        atom_count += 4 #CA, O, N, H
+       #     elif residue.name == "IPR":
+       #        atom_count += 4 #CA, O, CB, N
+       #     else:
+       #        atom_count += 5 #CA, O, CB, N, H
+       # else: # no missing atoms
+       #     if residue.name == "IGL":
+       #        atom_count += 5 #CA, C, O, N, H
+       #     elif residue.name == "IPR":
+       #        atom_count += 5 #CA, C, O, CB, N
+       #     else:
+       #        atom_count += 6 #CA, C, O, CB, N, H
+    # overwrite the file that we read in
+    #io_class.writeFile(pdb_file)
+    io_class.writeFile(top, pos, file=f'{pdb_file}_new', keepIds=True)
+    if file_type == "cif":
+        # add a '#' on a new line at the end of the cif
+        # the Biopython MMCIF parser is indifferent to this modification,
+        # but it is helpful (in some but not all cases necessary?) for vmd to be able to read the output file,
+        lines = []
+        with open(f'{pdb_file}_new','r') as f:
+            for line in f:
+                lines.append(line)
+        lines.append('#')
+        with open(f'{pdb_file}_new','w') as f:
+            for line in lines:
+                f.write(line)
+
+def prepare_virtual_sites_v2(pdb_file, use_cis_proline=False, file_type='pdb'): 
+    lines = []
+    with open(pdb_file,'r') as f:
+        for line in f:
+            if line[:6] == "HETATM":
+                lines.append(f'ATOM  {line[6:]}')
+            else:
+                lines.append(line)
+    with open(pdb_file,'w') as f:
+        for line in lines:
+            f.write(line)
+    if file_type == "pdb":
+        parser = PDBParser(QUIET=True)
+    elif file_type == "cif":
+        parser = MMCIFParser(QUIET=True)
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}")
+    structure = parser.get_structure('X',pdb_file)
     res = list(structure.get_residues())
     model = structure[0]
     output_file = pdb_file
@@ -613,6 +743,7 @@ def prepare_virtual_sites_v2(pdb_file, use_cis_proline=False):
     output.write(new_line)
     output.write("END\n")
     output.close()
+    
 
 def prepare_virtual_sites(pdb_file, use_cis_proline=False):
     parser = PDBParser(QUIET=True)

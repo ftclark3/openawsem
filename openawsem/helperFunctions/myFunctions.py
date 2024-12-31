@@ -494,14 +494,14 @@ def downloadPdb(pdb_list, membrane_protein=False, location="original_pdbs/"):
                 os.system(f"wget https://opm-assets.storage.googleapis.com/pdb/{pdbFile}")
                 os.system(f"mv {pdbFile} {fileLocation}")
             else:
-                pdbl = PDBList()
+                pdbl = PDBList(server='http://files.wwpdb.org')
                 name = pdbl.retrieve_pdb_file(pdb, pdir='.', file_format='pdb')
                 os.system(f"mv {name} {fileLocation}")
             os.system("rm -r obsolete")
 
 
 
-def cleanPdb(pdb_list, chain=None, source=None, toFolder="cleaned_pdbs", formatName=False,extension="pdb" 
+def cleanPdb(pdb_list, chain=None, source=None, toFolder="cleaned_pdbs", formatName=False,extension="pdb", 
                 removeDNAchains=True, verbose=False, removeTwoEndsMissingResidues=True, addMissingResidues=True, removeHeterogens=True, keepIds=False):
     os.system(f"mkdir -p {toFolder}")
     for pdb_id in pdb_list:
@@ -652,19 +652,34 @@ def get_seq_dic(fasta="../crystal_structure.fasta"):
 
 
 def seq_length_from_pdb(fileLocation, chains):
+    # the is the up-to-date, correct way to do it with the biopython pdbparser
+    # in the future, I could update this to use the openmm Topology class if we want 
     data = []
     parser = PDBParser()
     structure = parser.get_structure('X', fileLocation)
-    chain_start_residue_index = 1
     for c in structure.get_chains():
         chain_name = c.get_id()
         if chain_name in chains:
-            seq_len = len(list(c.get_residues()))
-            logging.info(f"Chain {chain_name}: Sequence length {seq_len}")
-            data.append((chain_name, chain_start_residue_index, seq_len))
-            chain_start_residue_index += seq_len
+            residues = list(c.get_residues())
+            
+            #Get the regions of the pdb that are not missing residues           
+            contiguous_regions = []
+            current_region = [residues[0]]
+            for i in range(1, len(residues)):
+                if residues[i].get_id()[1] == residues[i-1].get_id()[1] + 1:
+                    current_region.append(residues[i])
+                else:
+                    contiguous_regions.append(current_region)
+                    current_region = [residues[i]]
+            contiguous_regions.append(current_region)
+            
+            #Add a fragment for every contiguous sequence
+            for sequence in contiguous_regions:
+                seq_len = len(sequence)
+                chain_start_residue_index = sequence[0].get_id()[1]  # Set to first residue's number
+                logging.info(f"Chain {chain_name}: Sequence length {seq_len}")
+                data.append((chain_name, chain_start_residue_index, seq_len))
     return data
-
 
 def get_frame(file="movie.pdb", to="last_frame.pdb", frame=-1):
     # default is last frame.
