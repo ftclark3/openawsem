@@ -46,6 +46,14 @@ three_to_one = {'ALA':'A', 'ARG':'R', 'ASN':'N', 'ASP':'D', 'CYS':'C',
                 'LEU':'L', 'LYS':'K', 'MET':'M', 'PHE':'F', 'PRO':'P',
                 'SER':'S', 'THR':'T', 'TRP':'W', 'TYR':'Y', 'VAL':'V'}
 
+def get_openmm_io_class(file_type):
+    if file_type == "pdb":
+        io_class = PDBFile
+    elif file_type == "cif":
+        io_class = PDBxFile
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}") 
+    return io_class
 
 def parsePDB(pdb_file):
     '''Reads a pdb file and outputs a pandas DataFrame'''
@@ -390,11 +398,10 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     # for more information about PDB Fixer, see:
     # http://htmlpreview.github.io/?https://raw.github.com/pandegroup/pdbfixer/master/Manual.html
     # fix up input pdb or cif
-    extension = pdb_filename[-3:]
-    if extension != "pdb" and extension != "cif":
-        raise ValueError(f"Filename must end in 'pdb' or 'cif' but was {extension}")
-    cleaned_pdb_filename = f"{pdb_filename[:-4]}-cleaned.{extension}" 
-    input_pdb_filename = f"{pdb_filename[:-4]}-openmmawsem.{extension}"
+    file_type = pdb_filename[-3:]
+    io_class = get_openmm_io_class(file_type)
+    cleaned_pdb_filename = f"{pdb_filename[:-4]}-cleaned.{file_type}" 
+    input_pdb_filename = f"{pdb_filename[:-4]}-openmmawsem.{file_type}"
 
     fixer = PDBFixer(filename=pdb_filename)
 
@@ -421,18 +428,16 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     
     #Add Missing Hydrogens
     fixer.addMissingHydrogens(7.0)
-    if extension == "pdb":
-        PDBFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=keepIds)
-    elif extension == "cif":
-        PDBxFile.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=keepIds)    
-    
+
+    io_class.writeFile(fixer.topology, fixer.positions, open(cleaned_pdb_filename, 'w'), keepIds=keepIds)
+  
     #Read sequence
     # looks like this structure variable is never used, so commenting out
     #structure = PDBParser().get_structure('X', cleaned_pdb_filename)
 
     # identify terminal residues
     # returns something like {'A': (1, 63)}
-    terminal_residues = identify_terminal_residues(cleaned_pdb_filename,file_type=extension)
+    terminal_residues = identify_terminal_residues(cleaned_pdb_filename,file_type=file_type)
 
     '''
     # process pdb for input into OpenMM
@@ -538,13 +543,10 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
     # (meaning ["CA","O","CB","C","H","N"] for non-glycine and ["CA","O","C","H","N"] for glycine)
     # and also excludes N-terminal residue N and H, C-terminal residue C
     write_fh = open(input_pdb_filename,'w')
-    to_write = [new_topology, keep_atom_vectors, write_fh, True]
-    if extension == "pdb": 
-        PDBFile.writeFile(to_write[0],to_write[1],to_write[2],keepIds=to_write[3]) 
-        write_fh.close()
-    elif extension == "cif":  
-        PDBxFile.writeFile(to_write[0],to_write[1],to_write[2],keepIds=to_write[3])
-        write_fh.close()
+    to_write = [new_topology, keep_atom_vectors, write_fh, True] 
+    io_class.writeFile(to_write[0],to_write[1],to_write[2],keepIds=to_write[3]) 
+    write_fh.close()
+    if file_type == "cif":  
         # add a '#' on a new line at the end of the cif
         # the Biopython MMCIF parser is indifferent to this modification,
         # but it is necessary for vmd to be able to read the output file,
@@ -558,18 +560,13 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
             for line in lines:
                 f.write(line)
     #Fix Virtual Site Coordinates 
-    prepare_virtual_sites_v2_openmm(input_pdb_filename, use_cis_proline=use_cis_proline, file_type=extension)
+    prepare_virtual_sites_v2_openmm(input_pdb_filename, use_cis_proline=use_cis_proline, file_type=file_type)
    
     return input_pdb_filename, cleaned_pdb_filename
 
 def prepare_virtual_sites_v2_openmm(pdb_file, use_cis_proline=False, file_type='pdb'):
     # read file into openmm data structures
-    if file_type == "pdb":
-        io_class = PDBFile
-    elif file_type == "cif":
-        io_class = PDBxFile
-    else:
-        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}") 
+    io_class = get_openmm_io_class(file_type)
     temp = io_class(pdb_file)
     top = temp.getTopology()
     pos = temp.getPositions(asNumpy=True)
@@ -825,6 +822,7 @@ def build_lists_of_atoms_2(nres, residues, atoms):
 def ensure_atom_order(input_pdb_filename, quiet=1):
     # ensure order of ['n', 'h', 'ca', 'c', 'o', 'cb']
     # to be more specific, this ensure 'ca' always show up before 'c'.
+    '''
     def first(t):
         return t[0]
     order_table = {'N':0, 'H':1, 'CA':2, 'C':3, 'O':4, 'CB':5}
@@ -863,6 +861,17 @@ def ensure_atom_order(input_pdb_filename, quiet=1):
             for a in sorted_residue:
                 out.write(a[1])
     os.system(f"mv tmp.pdb {input_pdb_filename}")
+    '''
+    file_type = input_pdb_filename[-3:]
+    io_class = get_openmm_io_class(file_type)
+    temp = io_class(input_pdb_filename)
+    top = temp.getTopology()
+    pos = temp.getPositions(asNumpy=True)
+    del temp
+    for residue in top.residues():
+        atom_names = [atom.name for atom in residue.atoms()]
+        assert atom_names in ["N",'H','CA','C','O','CB'], atom_names
+    return
 
 
 

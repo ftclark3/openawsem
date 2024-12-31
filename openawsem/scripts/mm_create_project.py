@@ -216,10 +216,16 @@ class AWSEMSimulationProject:
         self.input_pdb_filename = input_pdb_filename
         self.cleaned_pdb_filename = cleaned_pdb_filename
         
-        self.chain = openawsem.helperFunctions.getAllChains("crystal_structure-cleaned.pdb")
+        ###############################################################################
+        # after the prepare_pdb call, we have both a crystal_structure-cleaned.pdb/cif
+        # and a crystal_structure-openmmawsem.pdb/cif
+        # i don't know why we call this function on the crystal_structure-cleaned.pdb file
+        # and at this point in the program
+        self.chain = openawsem.helperFunctions.getAllChains("crystal_structure-cleaned.pdb") 
         openawsem.getSeqFromCleanPdb(input_pdb_filename, chains=self.chain, writeFastaFile=True)
         shutil.copy('crystal_structure.fasta',f'{self.name}.fasta')
-        
+        ###############################################################################
+
         if self.args.extended:
             # print("Trying to create the extended structure extended.pdb using pymol, please ensure that pymol is installed and callable using 'pymol' in terminal.")
             # self.run_command(["python", f"{__location__}/helperFunctions/fasta2pdb.py", "extended", "-f", f"{self.name}.fasta"])
