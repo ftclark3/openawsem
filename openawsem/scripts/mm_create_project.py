@@ -19,7 +19,6 @@ class AWSEMSimulationProject:
         self.data_path=__location__
         self.base_folder=Path.cwd() #Project folder
         self.args=args
-        self.cif = False
                 
     def run_command(self, command, stdout=None):
         logging.debug('Command: '+ str(command))
@@ -81,10 +80,6 @@ class AWSEMSimulationProject:
             name (str): Protein name without the file extension.
             cif (str): filename.
         """
-        ###########################################################
-        # only substantial difference from prepare_input_files_from_pdb
-        self.cif = True
-        ###########################################################
         logging.info("Creating simulation folder from mmCIF/PDBx file.")
         protein_path = Path(self.args.protein)
         parent_folder = Path(parent_folder)
@@ -161,7 +156,7 @@ class AWSEMSimulationProject:
 
         return name, pdb
 
-    def process_pdb_files(self):
+    def process_pdb_files(self,is_cif=False):
         """
         Process the PDB or mmCIF/PDBx files by cleaning, preparing, and generating additional required files.
         """
@@ -169,7 +164,7 @@ class AWSEMSimulationProject:
         removeHeterogens = False if self.args.keepLigands is True else True
         chain = self.args.chain
 
-        if self.cif:
+        if is_cif:
             extension  = "cif"
         else:
             extension = "pdb"
@@ -347,7 +342,7 @@ class AWSEMSimulationProject:
         logging.info("Generating single memory file")
         for c in self.chain:
             # print(f"convert chain {c} of crystal structure to Gro file")
-            self.run_command(["python", f"{__location__}/helperFunctions/Pdb2Gro.py", "crystal_structure-cleaned.pdb", f"{self.name}_{c}.gro", f"{c}"])
+            self.run_command(["python", f"{__location__}/helperFunctions/Pdb2Gro.py", f"crystal_structure-cleaned.{self.extension}", f"{self.name}_{c}.gro", f"{c}"])
         
         seq_data = openawsem.helperFunctions.seq_length_from_pdb("crystal_structure-cleaned.pdb", self.chain)
         with open("single_frags.mem", "w") as out:
@@ -407,12 +402,16 @@ class AWSEMSimulationProject:
             # Prepare the input files
             if self.args.protein[-4:] == '.pdb':
                 self.name, self.pdb = self.prepare_input_files_from_pdb(project_folder)
+                is_cif = False
             elif self.args.protein[-4:] == ".cif":
                 self.name, self.pdb = self.prepare_input_files_from_cif(project_folder)
+                is_cif = True
             elif self.args.protein[-6:] == ".fasta":
                 self.name, self.pdb = self.prepare_input_files_from_fasta(project_folder)
+                is_cif = False # should eventually update this to download cif file
             else:
                 self.name, self.pdb = self.prepare_input_files_from_name(project_folder)
+                is_cif = False # should eventually update this to download cif file
                 
             logging.info(f"Protein name: {self.name}, PDB or mmCIF/PDBx file: {self.pdb}")
             
@@ -420,7 +419,7 @@ class AWSEMSimulationProject:
             with self.change_directory(project_folder):
             
                 # Process the PDB files (clean, extract chains, generate extended structure)
-                self.process_pdb_files()
+                self.process_pdb_files(is_cif=is_cif)
                 
                 # Generate the secondary structure weight file (ssweight)
                 if self.args.predict_ssweight_from_fasta:

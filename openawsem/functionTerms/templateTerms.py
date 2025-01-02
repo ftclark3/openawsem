@@ -66,7 +66,17 @@ def tbm_q_term(oa, k_tbm_q, rnative_dat="rnative.dat", tbm_q_min_seq_sep=3, tbm_
     tbm_q.setForceGroup(forceGroup)
     return tbm_q
 
-
+###################################
+#### COPIED FROM openAWSEM.py
+def get_openmm_io_class(file_type):
+    if file_type == "pdb":
+        io_class = PDBFile
+    elif file_type == "cif":
+        io_class = PDBxFile
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}") 
+    return io_class
+###################################
 
 def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy_frag_table="./frag_table.npy",
                     min_seq_sep=3, max_seq_sep=9, fm_well_width=0.1, UseSavedFragTable=True, caOnly=False, forceGroup=23):
@@ -113,45 +123,77 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         weight = frag_file_list["weight"].iloc[frag_index]
         target_start = frag_file_list["target_start"].iloc[frag_index]  # residue id
         fragment_start = frag_file_list["fragment_start"].iloc[frag_index]  # residue id
-        frag = pd.read_csv(frag_name, skiprows=2, sep="\s+", header=None, names=["Res_id", "Res", "Type", "i", "x", "y", "z"])
-        frag = frag.query(f"Res_id >= {fragment_start} and Res_id < {fragment_start+frag_len} and (Type == 'CA' or Type == 'CB')")
+
+
+        io_class = get_openmm_io_class(frag_name[-3:])
+        temp = io_class(frag_name)
+        frag_top = temp.getTopology()
+        frag_pos = temp.getPositions(asNumpy=True)
+        frag_ca_cb_indices = []
+        frag_ca_cb_residue_ids = []
+        frag_ca_cb_atom_types = []
+        for residue in frag_top.residues():
+            if fragment_start <= residue.id < fragment_start+frag_len:
+                for atom in residue.atoms():
+                    if atom.name in ["CA","CB"]:
+                        frag_ca_cb_indices.append(atom.index)
+                        frag_ca_cb_residue_ids.append(residue.id)
+                        frag_ca_cb_atom_types.append(atom.name)
+        f = frag_pos[frag_ca_cb_indices,:]
+
+
+        #                                                                               20  LYS     N       1   2.218   4.069   -0.52
+        #frag = pd.read_csv(frag_name, skiprows=2, sep="\s+", header=None, names=["Res_id", "Res", "Type", "i",  "x",    "y",    "z"])
+        #frag = frag.query(f"Res_id >= {fragment_start} and Res_id < {fragment_start+frag_len} and (Type == 'CA' or Type == 'CB')")
         w_m = weight
         gamma_ij = 1
-        f = frag.values
-        for i in range(len(frag)):
-            for j in range(i, len(frag)):
-                res_id_i = frag["Res_id"].iloc[i]
-                res_id_j = frag["Res_id"].iloc[j]
-                target_res_id_i = frag["Res_id"].iloc[i] - fragment_start + target_start
-                target_res_id_j = frag["Res_id"].iloc[j] - fragment_start + target_start
+        #f = frag.values
+        for i in range(f.shape[0]):
+            for j in range(i, f.shape[0]):
+                res_id_i = frag_ca_cb_residue_ids[i] #frag["Res_id"].iloc[i]
+                res_id_j = frag_ca_cb_residue_ids[j] #frag["Res_id"].iloc[j]
+                target_res_id_i = res_id_i - fragment_start + target_start
+                target_res_id_j = res_id_j - fragment_start + target_start
                 seq_sep = res_id_j - res_id_i
                 if seq_sep > max_seq_sep:
                     continue
                 if seq_sep < min_seq_sep:
                     continue
-                try:
-                    i_type = frag["Type"].iloc[i]
-                    j_type = frag["Type"].iloc[j]
+                try: # data_dic holds the information from the system that we are going to simulate
+                     # we need to figure out the separation of the residues in our target system 
+                     # that correspond to the residues in our memory so that we can compute the fm potential.
+                     #  
+                     # For the short fragments that we typically use in openawsem, the sequence separation
+                     # in our target is the same as the sequence separation in our memory (either the alignment
+                     # algorithm doesn't consider gaps or the gap penalty is large enough to prevent gaps).
+                     # But I guess we are enabling future flexibility by checking the sequence separation of 
+                     # target residues instead of fragment residues
+                    i_type = frag_ca_cb_atom_types[i] #frag["Type"].iloc[i]
+                    j_type = frag_ca_cb_atom_types[j] #frag["Type"].iloc[j]
                     correspond_target_i = data_dic[(i_type, int(target_res_id_i))]
                     correspond_target_j = data_dic[(j_type, int(target_res_id_j))]
                     correspond_target_i = int(correspond_target_i)
                     correspond_target_j = int(correspond_target_j)
+                    i_j_sep = int(correspond_target_j - correspond_target_i)
                 except Exception as e:
+                    # i don't know what would trigger this so commonly and harmlessly that we would want to do this
                     continue
 
-                fi_x = f[i][4]
-                fi_y = f[i][5]
-                fi_z = f[i][6]
+                fi_x = f[i,0]#f[i][4]
+                fi_y = f[i,1]#f[i][5]
+                fi_z = f[i,2]#f[i][6]
 
-                fj_x = f[j][4]
-                fj_y = f[j][5]
-                fj_z = f[j][6]
+                fj_x = f[j,0]#f[j][4]
+                fj_y = f[j,1]#f[j][5]
+                fj_z = f[j,2]#f[j][6]
                 # print("----", fi_x, fi_y, fi_z, fj_x, fj_y, fj_z)
                 sigma_ij = fm_well_width*seq_sep**0.15
                 rm = ((fi_x-fj_x)**2 + (fi_y-fj_y)**2 + (fi_z-fj_z)**2)**0.5
 
-                i_j_sep = int(correspond_target_j - correspond_target_i)
+                
 
+                # w_m is the weight of the memory, gamma_ij is weight of the pairwise interaction, sigma_ij is basically the width of the well
+                # typically, we set all w_m=1 for all m and gamma_ij=1 for all m, i, and j
                 raw_frag_table[correspond_target_i][i_j_sep] += w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))
                 interaction_list.add((correspond_target_i, correspond_target_j))
     if (not os.path.isfile(frag_table_file)) or (not UseSavedFragTable):
@@ -190,8 +232,27 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
     # # add per-particle parameters
     # fm.addPerParticleParameter("index")
 
-    # for edge case, that r > frag_table_rmax
+
+
+    # Even though the physical energies represented by the fragment memory term arise from many-body interactions,
+    # the fragment term is mathematically expressed as a sum of pairwise interactions,
+    # parameterized by a set of memories.
+    # 
+    # To start, we define the form of the force governing the interaction between a pair of atoms.
+    # The force depends on the distance (r) between the two atoms, p1 and p2,
+    # and the parameter "index" that depends on the atom indices but not their configuration.
+    # the differences between frag_table at different "index" values account for 
+    # the different memory distance(s) and weights for that atom pair, which will determine
+    # the center and deepness of each gaussian well in the total fm potential for that atom pair,
+    # which is a sum of all these gaussian wells. 
+    #
+    # currently, the gaussians are stored in frag_table and we discretize the distances for some reason,
+    # causing frag_table to be two-dimensional and resulting in this interpolation formula
+    # -{k_fm}*((v2-v1)*r+v1*r_2-v2*r_1)/(r_2-r_1) in the CustomCompoundBondForce definition
+    #
+    # for edge case, that r > frag_table_rmax # NOT SURE WHAT THIS MEANS
     max_r_index_1 = r_table_size - 2
+    # at the time of writing these comments, frag_table_rmin==0 and frag_table_dr==0.01 and 
     fm = CustomCompoundBondForce(2, f"-{k_fm}*((v2-v1)*r+v1*r_2-v2*r_1)/(r_2-r_1); \
                                 v1=frag_table(index, r_index_1);\
                                 v2=frag_table(index, r_index_2);\
@@ -200,15 +261,18 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                                 r_index_2=r_index_1+1;\
                                 r_index_1=min({max_r_index_1}, floor(r/{frag_table_dr}));\
                                 r=distance(p1, p2);")
+    # openmm will only apply the force to pairs of atoms that we pass to the addBond method
     for (i, j) in interaction_list:
         if caOnly and ((i not in oa.ca) or (j not in oa.ca)):
             continue
+        # [i,j] is a pair of interacting atoms
+        # [interaction_pair_to_bond_index[(i,j)]] is what openmm calls a "per-bond parameter"
         fm.addBond([i, j], [interaction_pair_to_bond_index[(i,j)]])
-
+    # give a name to the parameter [interaction_pair_to_bond_index[(i,j)]] that was passed to each bond 
     fm.addPerBondParameter("index")
-
-    fm.addTabulatedFunction("frag_table",
-            Discrete2DFunction(len(interaction_list), r_table_size, frag_table.T.flatten()))
+    # this parameter, "index", is used to look up the appropriate configuration-independent parameter
+    # in a table called frag_table, which is passed to the fm force object on the following line
+    fm.addTabulatedFunction("frag_table",Discrete2DFunction(len(interaction_list), r_table_size, frag_table.T.flatten()))
     
     if oa.periodic:
         fm.setUsesPeriodicBoundaryConditions(True)
