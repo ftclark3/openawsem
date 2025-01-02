@@ -338,18 +338,36 @@ class AWSEMSimulationProject:
         openawsem.helperFunctions.replace(f"frags.mem", f"{__location__}/data/Gros/", "./fraglib/") #Rebekah edited 03072024
         self.run_command(["cp", "frags.mem", "frag_memory.mem"])
 
-    def generate_single_memory(self):
+    def generate_single_memory(self,is_cif=False):
         logging.info("Generating single memory file")
+        if is_cif:
+            extension = "cif"
+        else:
+            extension = "pdb"
         for c in self.chain:
             # print(f"convert chain {c} of crystal structure to Gro file")
-            self.run_command(["python", f"{__location__}/helperFunctions/Pdb2Gro.py", f"crystal_structure-cleaned.{self.extension}", f"{self.name}_{c}.gro", f"{c}"])
+            #self.run_command(["python", f"{__location__}/helperFunctions/Pdb2Gro.py", f"crystal_structure-cleaned.{extension}", f"{self.name}_{c}.gro", f"{c}"])
+            io_class = openawsem.get_openmm_io_class(extension) 
+            temp = io_class(f"crystal_structure-cleaned.{extension}")
+            for file_chain in temp.getTopology():
+                if c.id == file_chain.id:
+                    new_top = openawsem.Topology() # really an openmm.app.Topology
+                    new_chain = new_top.addChain(id=file_chain.id)
+                    pos_indices = []
+                    for residue in file_chain.residues():
+                        new_residue = new_top.addResidue(residue.name, new_chain, id=residue.id, insertionCode=residue.insertionCode)
+                        for atom in residue.atoms():
+                            new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
+                            pos_indices.append(atom.index)
+                    pos = temp.getPositions(asNumpy=True)[pos_indices,:]
+                    io_class.writeFile(new_top, pos, f'{self.name}_{c}.{extension}', keepIds=True)
         
         seq_data = openawsem.helperFunctions.seq_length_from_pdb("crystal_structure-cleaned.pdb", self.chain)
         with open("single_frags.mem", "w") as out:
             out.write("[Target]\nquery\n\n[Memories]\n")
             for (chain_name, chain_start_residue_index, seq_length) in seq_data:
                 # print(f"write chain {chain_name}")
-                out.write(f"{self.name}_{chain_name}.gro {chain_start_residue_index} 1 {seq_length} 20\n")   # residue index in Gro always start at 1.
+                out.write(f"{self.name}_{chain_name}.{extension} {chain_start_residue_index} 1 {seq_length} 20\n")   # residue index in Gro always start at 1.
 
     def generate_charges(self):
         logging.info("Generating charges")
@@ -432,7 +450,7 @@ class AWSEMSimulationProject:
                     self.prepare_membrane_files()
                 
                 # Generate single memory file
-                self.generate_single_memory()
+                self.generate_single_memory(is_cif=is_cif)
 
                 # Generate fragment memory files if the frag option is enabled
                 if self.args.frag:

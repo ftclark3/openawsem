@@ -113,7 +113,7 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         print(f"Fragment table loaded, number of bonds: {len(interaction_list)}")
         frag_file_list = []
     else:
-        print(f"Loading Fragment files(Gro files)")
+        print(f"Loading Fragment files")
         frag_file_list = pd.read_csv(frag_file_list_file, skiprows=4, sep="\s+", names=["location", "target_start", "fragment_start", "frag_len", "weight"])
         interaction_list = set()
     for frag_index in range(len(frag_file_list)):
