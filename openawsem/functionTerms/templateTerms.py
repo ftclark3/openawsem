@@ -123,7 +123,9 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         weight = frag_file_list["weight"].iloc[frag_index]
         target_start = frag_file_list["target_start"].iloc[frag_index]  # residue id
         fragment_start = frag_file_list["fragment_start"].iloc[frag_index]  # residue id
-
+        #print(target_start)
+        #print(fragment_start)
+        #print(frag_len)
 
         io_class = get_openmm_io_class(frag_name[-3:])
         temp = io_class(frag_name)
@@ -133,15 +135,17 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         frag_ca_cb_residue_ids = []
         frag_ca_cb_atom_types = []
         for residue in frag_top.residues():
-            if fragment_start <= residue.id < fragment_start+frag_len:
+            if fragment_start <= int(residue.index)+1 < fragment_start+frag_len: 
+                # assuming target starts at residue 1, then correcting 0-indexed memory residue.index to compare
+                # instead of int(residue.index)+1, we could have said residue.id because we're assuming 1-indexed id
                 for atom in residue.atoms():
                     if atom.name in ["CA","CB"]:
                         frag_ca_cb_indices.append(atom.index)
-                        frag_ca_cb_residue_ids.append(residue.id)
+                        frag_ca_cb_residue_ids.append(residue.index+1)
                         frag_ca_cb_atom_types.append(atom.name)
         f = frag_pos[frag_ca_cb_indices,:]
-
-
+        #print(f[0,0].value_in_unit(angstrom))
+        #exit()
         #                                                                               20  LYS     N       1   2.218   4.069   -0.52
         #frag = pd.read_csv(frag_name, skiprows=2, sep="\s+", header=None, names=["Res_id", "Res", "Type", "i",  "x",    "y",    "z"])
         #frag = frag.query(f"Res_id >= {fragment_start} and Res_id < {fragment_start+frag_len} and (Type == 'CA' or Type == 'CB')")
@@ -152,9 +156,9 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
             for j in range(i, f.shape[0]):
                 res_id_i = frag_ca_cb_residue_ids[i] #frag["Res_id"].iloc[i]
                 res_id_j = frag_ca_cb_residue_ids[j] #frag["Res_id"].iloc[j]
-                target_res_id_i = res_id_i - fragment_start + target_start
-                target_res_id_j = res_id_j - fragment_start + target_start
-                seq_sep = res_id_j - res_id_i
+                target_res_id_i = int(res_id_i) - fragment_start + target_start
+                target_res_id_j = int(res_id_j) - fragment_start + target_start
+                seq_sep = int(res_id_j) - int(res_id_i)
                 if seq_sep > max_seq_sep:
                     continue
                 if seq_sep < min_seq_sep:
@@ -174,28 +178,30 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                     correspond_target_j = data_dic[(j_type, int(target_res_id_j))]
                     correspond_target_i = int(correspond_target_i)
                     correspond_target_j = int(correspond_target_j)
-                    i_j_sep = int(correspond_target_j - correspond_target_i)
+                    i_j_sep = int(correspond_target_j - correspond_target_i) #why do we take int(a-b) if a and b are already ints?
                 except Exception as e:
                     # i don't know what would trigger this so commonly and harmlessly that we would want to do this
                     continue
+                #print(frag_ca_cb_residue_ids[i],frag_ca_cb_residue_ids[j])
+                
+                fi_x = f[i,0].value_in_unit(angstrom) #f[i][4] 
+                fi_y = f[i,1].value_in_unit(angstrom)#f[i][5]
+                fi_z = f[i,2].value_in_unit(angstrom)#f[i][6]
 
-                fi_x = f[i,0]#f[i][4]
-                fi_y = f[i,1]#f[i][5]
-                fi_z = f[i,2]#f[i][6]
-
-                fj_x = f[j,0]#f[j][4]
-                fj_y = f[j,1]#f[j][5]
-                fj_z = f[j,2]#f[j][6]
+                fj_x = f[j,0].value_in_unit(angstrom)#f[j][4]
+                fj_y = f[j,1].value_in_unit(angstrom)#f[j][5]
+                fj_z = f[j,2].value_in_unit(angstrom)#f[j][6]
                 # print("----", fi_x, fi_y, fi_z, fj_x, fj_y, fj_z)
                 sigma_ij = fm_well_width*seq_sep**0.15
                 rm = ((fi_x-fj_x)**2 + (fi_y-fj_y)**2 + (fi_z-fj_z)**2)**0.5
-
-                
+                with open('new_foo.txt','a') as f_handle:
+                    f_handle.write(f'{str(rm)}\n') 
 
                 # w_m is the weight of the memory, gamma_ij is weight of the pairwise interaction, sigma_ij is basically the width of the well
                 # typically, we set all w_m=1 for all m and gamma_ij=1 for all m, i, and j
                 raw_frag_table[correspond_target_i][i_j_sep] += w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))
                 interaction_list.add((correspond_target_i, correspond_target_j))
+        exit()
     if (not os.path.isfile(frag_table_file)) or (not UseSavedFragTable):
         # Reduce memory usage.
         print("Saving fragment table as npy file to speed up future calculation.")

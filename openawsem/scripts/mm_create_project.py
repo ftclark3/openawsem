@@ -347,10 +347,11 @@ class AWSEMSimulationProject:
         for c in self.chain:
             # print(f"convert chain {c} of crystal structure to Gro file")
             #self.run_command(["python", f"{__location__}/helperFunctions/Pdb2Gro.py", f"crystal_structure-cleaned.{extension}", f"{self.name}_{c}.gro", f"{c}"])
+            
             io_class = openawsem.get_openmm_io_class(extension) 
             temp = io_class(f"crystal_structure-cleaned.{extension}")
-            for file_chain in temp.getTopology():
-                if c.id == file_chain.id:
+            for file_chain in temp.getTopology().chains():
+                if c == file_chain.id:
                     new_top = openawsem.Topology() # really an openmm.app.Topology
                     new_chain = new_top.addChain(id=file_chain.id)
                     pos_indices = []
@@ -361,7 +362,7 @@ class AWSEMSimulationProject:
                             pos_indices.append(atom.index)
                     pos = temp.getPositions(asNumpy=True)[pos_indices,:]
                     io_class.writeFile(new_top, pos, f'{self.name}_{c}.{extension}', keepIds=True)
-        
+            
         seq_data = openawsem.helperFunctions.seq_length_from_pdb("crystal_structure-cleaned.pdb", self.chain)
         with open("single_frags.mem", "w") as out:
             out.write("[Target]\nquery\n\n[Memories]\n")
