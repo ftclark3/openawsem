@@ -184,24 +184,22 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                     continue
                 #print(frag_ca_cb_residue_ids[i],frag_ca_cb_residue_ids[j])
                 
-                fi_x = f[i,0].value_in_unit(angstrom) #f[i][4] 
-                fi_y = f[i,1].value_in_unit(angstrom)#f[i][5]
-                fi_z = f[i,2].value_in_unit(angstrom)#f[i][6]
+                fi_x = f[i,0].value_in_unit(nanometer) #f[i][4] 
+                fi_y = f[i,1].value_in_unit(nanometer)#f[i][5]
+                fi_z = f[i,2].value_in_unit(nanometer)#f[i][6]
 
-                fj_x = f[j,0].value_in_unit(angstrom)#f[j][4]
-                fj_y = f[j,1].value_in_unit(angstrom)#f[j][5]
-                fj_z = f[j,2].value_in_unit(angstrom)#f[j][6]
+                fj_x = f[j,0].value_in_unit(nanometer)#f[j][4]
+                fj_y = f[j,1].value_in_unit(nanometer)#f[j][5]
+                fj_z = f[j,2].value_in_unit(nanometer)#f[j][6]
                 # print("----", fi_x, fi_y, fi_z, fj_x, fj_y, fj_z)
                 sigma_ij = fm_well_width*seq_sep**0.15
                 rm = ((fi_x-fj_x)**2 + (fi_y-fj_y)**2 + (fi_z-fj_z)**2)**0.5
-                with open('new_foo.txt','a') as f_handle:
-                    f_handle.write(f'{str(rm)}\n') 
 
                 # w_m is the weight of the memory, gamma_ij is weight of the pairwise interaction, sigma_ij is basically the width of the well
                 # typically, we set all w_m=1 for all m and gamma_ij=1 for all m, i, and j
                 raw_frag_table[correspond_target_i][i_j_sep] += w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))
                 interaction_list.add((correspond_target_i, correspond_target_j))
-        exit()
+        
     if (not os.path.isfile(frag_table_file)) or (not UseSavedFragTable):
         # Reduce memory usage.
         print("Saving fragment table as npy file to speed up future calculation.")
