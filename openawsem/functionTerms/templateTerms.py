@@ -117,6 +117,8 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         frag_file_list = pd.read_csv(frag_file_list_file, skiprows=4, sep="\s+", names=["location", "target_start", "fragment_start", "frag_len", "weight"])
         interaction_list = set()
     for frag_index in range(len(frag_file_list)):
+        if frag_index % 100 == 0:
+            print(f"frag_index: {frag_index}")
         location = frag_file_list["location"].iloc[frag_index]
         frag_name = os.path.join(frag_location_pre, location)
         frag_len = frag_file_list["frag_len"].iloc[frag_index]

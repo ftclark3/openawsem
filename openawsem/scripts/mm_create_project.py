@@ -327,8 +327,8 @@ class AWSEMSimulationProject:
         # ], stdout="logfile")
 
         # Check and correct the fragment memory file
-        openawsem.helperFunctions.check_and_correct_fragment_memory("frags.mem",
-                        fragmem_structure=fragmem_structure,openawsem_location=__location__)
+        #openawsem.helperFunctions.check_and_correct_fragment_memory("frags.mem",
+        #                fragmem_structure=fragmem_structure,openawsem_location=__location__)
 
         # Relocate the file to the fraglib folder
         openawsem.helperFunctions.relocate(fileLocation="frags.mem", toLocation="fraglib")

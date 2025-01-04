@@ -12,7 +12,7 @@ import requests
 import gzip
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import tempfile
-
+from openmm.app import *
 
 def update_failed_pdb_list(failed_pdb, failed_pdb_list_file):
     try:
@@ -228,7 +228,19 @@ def download_pdb_seqres(pdb_seqres):
             logging.error(f"An error occurred: {e}")
         raise FileNotFoundError(f"Failed to download {pdb_seqres}. Make sure it exists in {pdb_seqres} or provide a valid path.")
 
+def get_openmm_io_class(file_type):
+    if file_type == "pdb":
+        io_class = PDBFile
+    elif file_type == "cif":
+        io_class = PDBxFile
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}")
+    return io_class
+
 def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, homo_count, weight, frag_lib_dir, pdb_dir, index_dir, pdb_seqres):
+    canonical_resnames = ["ALA",'CYS','ASP','GLU','PHE','GLY','HIS','ILE','LYS',
+                 'LEU','MET','ASN','PRO','GLN','ARG','SER','THR','VAL','TRP','TYR']
+    #print("function")
     Missing_count=0
     Missing_pdb={}
     out=''
@@ -274,6 +286,7 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
         res_Start = int(entries[3])
         res_End = int(entries[4])
         print(pdbFile, "start: ", res_Start, "end: ", res_End)
+        length = res_End - res_Start + 1
         # Do I have the index file?  If No, write it
 
         if not os.path.isfile(indexFile):
@@ -363,24 +376,101 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
             return out, out1, Missing_pdb, Missing_count
 
         if os.path.isfile(pdbFile):
+            #print("if")
+            '''
             if not os.path.isfile(groFile):
                 print("converting...... " + pdbFile + " --> " + groFile + " chainID: " + chainID)
                 Pdb2Gro(pdbFile, groFile, chainID)
             else:
                 print("Exist " + groFile)
-            count[windows_index_str] += 1
-
-            length = res_End - res_Start + 1
-            out = groFile + ' ' + entries[1] + ' '  # queue start
-            out += str(new_index) + ' ' + str(length) + ' ' + \
-                str(weight) + "\n"  # frag_seq start
-            out1 = windows_index_str + ' ' + str(count[windows_index_str])
-            out1 += ' ' + entries[9] + ' ' + entries[10] + ' ' + groName
-            out1 += ' ' + entries[1] + ' ' + str(new_index) + ' ' + str(
-                length) + ' ' + str(weight) + ' 0' + entries[5] + ' 0' + entries[6] + "\n"
+            '''
+            # groFile used to represent a .gro file
+            # now, it just represents the path and name we want to use for our file
+            # and we will replace '.gro' with the appropriate extension 
+            extension = pdbFile[-3:]
+            if not os.path.isfile(f'{groFile[:-4]}.{extension}'):
+                print("converting...... " + pdbFile + " --> " + groFile[:-4] + "." + extension + " chainID: " + chainID)
+            else:
+                print("Exist " + groFile[:-4] + "." + extension)
+            io_class = get_openmm_io_class(extension)
+            temp = io_class(pdbFile)  
+            # sometimes, molecules with the same chain ID can be read in as separate chains
+            # if one of these chains is water/ions, we can just ignore it. 
+            # Otherwise, we should raise an error
+            file_chain = None
+            chains_with_correct_id = [chain for chain in temp.getTopology().chains() if chain.id == chainID]
+            if len(chains_with_correct_id) > 1:
+                for chain in chains_with_correct_id:
+                    residue_info = [1 if residue.name in canonical_resnames else 0 for residue in chain.residues()]
+                    if sum(residue_info) > 0: # if True, then we have canonical residues in our segment
+                        if file_chain: # if we have previously assigned file_chain, then we have two chains with canonical residues in them and the same id
+                                       # this is getting weird, so we're going to return our empty tuple and just not get fragmems from this file
+                            return out, out1, Missing_pdb, Missing_count
+                        else: # we can assign this chain to file_chain (the chain from the file that we want) if we havent done that already
+                            file_chain = chain
+            else:
+                file_chain = chains_with_correct_id[0]
+            # make sure this chain has canonical amino acids
+            assert sum([1 if residue.name in canonical_resnames else 0 for residue in file_chain.residues()]) > 0    
+            #for file_chain in temp.getTopology().chains():
+            #    print(file_chain.id)
+            #    print(pdbFile)
+            #    exit()
+                # we only want to work with one chain, but we have to get it by iterating over all of them and checking the ID
+                #if chainID == file_chain.id:
+            #print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nfound\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+            new_top = Topology() # really an openmm.app.Topology
+            new_chain = new_top.addChain(id=file_chain.id)
+            pos_indices = []
+            visited_residue_ids = [] # see below
+            added_residues = 0 # see below
+            
+            for residue in file_chain.residues():
+                #print(residue.id)
+                #print(residue.name)
+                # we use this to eliminate pdb/cif files with residue-level altloc info (rare; for example, see 3vpg residue 220)
+                if residue.id in visited_residue_ids:
+                    break
+                else:
+                    visited_residue_ids.append(residue.id)
+                # make sure we don't add water, cofactor, or nonstandard residues to new topology
+                if residue.name not in canonical_resnames:
+                    print(residue.name)
+                    continue
+                # add residue
+                new_residue = new_top.addResidue(residue.name, new_chain, id=residue.id, insertionCode=residue.insertionCode)
+                for atom in residue.atoms():
+                    new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
+                    pos_indices.append(atom.index)
+                # if residue is a part of the fragment hit, increment our counter
+                if res_Start <= int(residue.id) <= res_End:
+                    added_residues += 1
+                    #print(f'added_residues: {added_residues}')
+                else:
+                    pass
+                    #print((res_Start,res_End,int(residue.id)))
+                    #print(f'added_residues: {added_residues}')
+                
+            else: # executes if the for loop exits without encountering break
+                if added_residues == length:
+                    pos = temp.getPositions(asNumpy=True)[pos_indices,:]
+                    #print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nwrit4\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
+                    io_class.writeFile(new_top, pos, f'{groFile[:-4]}.{extension}', keepIds=True)    
+                    #print('changing return')
+                    out = f'{groFile[:-4]}.{extension} {entries[1]} ' # queue start
+                    out += str(new_index) + ' ' + str(length) + ' ' + \
+                        str(weight) + "\n"  # frag_seq start
+                    out1 = windows_index_str + ' ' + str(count[windows_index_str])
+                    out1 += f' {entries[9]} {entries[10]} {groName[:-4]}.{extension}' # groName has pdbid and chain info
+                    out1 += ' ' + entries[1] + ' ' + str(new_index) + ' ' + str(
+                        length) + ' ' + str(weight) + ' 0' + entries[5] + ' 0' + entries[6] + "\n"
+                else: # unexpected, but could happen due to skipped noncanonical amino acid in backbone fragment
+                    pass # the fragment is unusable so we will not use it to create a memory    
+                         # so we allow the function to return the information-lacking tuple (out, out1, Missing_pdb, Missing_counter)
+             
         else:
             print(pdbFile, "does not exist! Go figure...")
-
+    
     return out, out1, Missing_pdb, Missing_count
 
 
@@ -521,14 +611,18 @@ def create_fragment_memories(database, fasta_file, memories_per_position, brain_
 
         with ThreadPoolExecutor(max_workers=12) as executor:
             futures={}
-            for iter,line in enumerate(matchlines):
-                future = executor.submit(create_index_files,iter, line, N_mem, brain_damage,count, failed_pdb,homo, homo_count, weight, frag_lib_dir, pdb_dir, index_dir, pdb_seqres)
-                futures[future] = iter
+            for iteration_number,line in enumerate(matchlines):
+                future = executor.submit(create_index_files,iteration_number, line, N_mem, brain_damage,count, failed_pdb,homo, homo_count, weight, frag_lib_dir, pdb_dir, index_dir, pdb_seqres)
+                futures[future] = iteration_number
+                #if iteration_number==1:
+                #    break
             results = [None] * len(futures)
             for future in as_completed(futures):
                 i = futures[future]
                 results[i] = future.result()
-            
+        #print('results:')
+        #print(results)
+        #print(bool(results[0]))
         # Writing the results to the match file in the order of execution
         with open('frags.mem', 'w') as LAMWmatch, open('log.mem', 'w') as log_match:
             LAMWmatch.write('[Target]' + "\n")
