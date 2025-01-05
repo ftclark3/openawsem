@@ -326,12 +326,22 @@ def check_and_correct_fragment_memory(fragFile="fragsLAMW.mem",fragmem_structure
                 chain = gro.split('.')[-2][-1].upper()
                 # it is okay to access the installation-wide data base here because we are still in the awsem_create stage before
                 # anything has been copied over to the project fraglib directory
-                pdb = f"{openawsem_location}/data/PDBs/{gro.split('/')[-1][:4].upper()}.pdb" # assuming CODECHAIN.gro filename format for gros
+                ###########################################################################################################################
+                #pdb = f"{openawsem_location}/data/PDBs/{gro.split('/')[-1][:4].upper()}.pdb" # assuming CODECHAIN.gro filename format for gros
+                # now, our "gro" is not actually a gro, but a pdb or cif
+                pdb = f"{openawsem_location}/data/PDBs/{gro.split('/')[-1].upper()}" # assuming CODECHAIN.pdb or CODECHAIN.cif filename format
+                ###########################################################################################################################
                 assert os.path.isfile(pdb), f"PDB NOT FOUND: {pdb}"
-                # are there any differences between PDB and gro files? pdb2gro.py can potentially modify residue numbers and atom numbers
+                # are there any differences between PDB and gro files? 
+                #
+                # pdb2gro.py can potentially modify residue numbers and atom numbers
                 # by skipping over some residues that do not satisfy is_regular_res, for example.
+                #     but is_regular_res just requires N, CA, and C, so even nonstandard amino acid residues should satisfy this
+                #     so the only danger is sticking in a cofactor with a residue number in the middle of the chain or something
+                #
                 # also, pdb2gro.py will just take the first altLoc listed in the file for atoms with multiple positions,
-                # except the case which Wei has documented below 
+                # except the case that Wei has documented and addressed below 
+                #
                 delete = False
                 # logging.info(f"{gro}, {i}, {n}")
                 # name = gro.split("/")[-1]
