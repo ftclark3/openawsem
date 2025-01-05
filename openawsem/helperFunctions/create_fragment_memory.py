@@ -457,6 +457,8 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
                     #print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\nwrit4\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
                     io_class.writeFile(new_top, pos, f'{groFile[:-4]}.{extension}', keepIds=True)    
                     #print('changing return')
+                    # increment our counter so that we don't take too many memories
+                    count[windows_index_str] += 1
                     out = f'{groFile[:-4]}.{extension} {entries[1]} ' # queue start
                     out += str(new_index) + ' ' + str(length) + ' ' + \
                         str(weight) + "\n"  # frag_seq start
