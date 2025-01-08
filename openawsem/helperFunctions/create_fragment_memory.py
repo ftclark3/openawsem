@@ -451,12 +451,6 @@ def create_fragment_memories(database, fasta_file, memories_per_position, brain_
                     for line in result:
                         match.write(line + '\n')
 
-            with open(f'prepFrags_{chain}.log', 'a') as match:
-                match.write(query + "\n")
-                for result in results:
-                    for line in result:
-                        match.write(line + '\n')
-
             # loop2 close
             with open('prepFrags.match', 'r') as match:
                 # list unique PDB IDs for downloading later
