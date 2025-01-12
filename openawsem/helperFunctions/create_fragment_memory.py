@@ -237,10 +237,32 @@ def get_openmm_io_class(file_type):
         raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}")
     return io_class
 
+def is_regular_res(residue):
+    names = [atom.name for atom in residue.atoms()]
+    has_N = "N" in names
+    has_CA = "CA" in names
+    has_C = "C" in names
+    has_CB = "CB" in names
+    if residue.name == "GLY":
+        condition = (has_N and has_CA and has_C)
+    else:
+        condition = (has_N and has_CA and has_C and has_CB)
+    return condition
+
 def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, homo_count, weight, frag_lib_dir, pdb_dir, index_dir, pdb_seqres):
     canonical_resnames = ["ALA",'CYS','ASP','GLU','PHE','GLY','HIS','ILE','LYS',
                  'LEU','MET','ASN','PRO','GLN','ARG','SER','THR','VAL','TRP','TYR']
-    #print("function")
+    # add a few noncanonical residues that are very easy to work with from the perspective of fragmem construction
+    # these are all included in the pdb2gro script
+    canonical_resnames.append("MSE") # selenomethionine
+    canonical_resnames.append("3ML") # N-trimethyl lysine
+    canonical_resnames.append("CAS") # a weird arsenic-modified cysteine, https://www.rcsb.org/ligand/CAS
+    # there are lots of others, such as selenocysteine (rcsb.org/ligand/SE7, possibly others) and pyrrollysine,
+    # but we'll stick with the convention currently found in pdb2gro.py
+
+    # define function to check if we're dealing with a "regular" residue containing at least an N, CA, and C
+
+
     Missing_count=0
     Missing_pdb={}
     out=''
@@ -257,8 +279,8 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
             pdbfull = str(entry[4:8]) + str(entry[9:])
         else:
             pdbfull = str(entry)
-        pdbID = pdbfull[0:4].lower()
-        chainID = pdbfull[4:5]
+        pdbID = pdbfull[0:4].lower() # turns something like "1R69A" into "1r69"
+        chainID = pdbfull[4:5] # grabs chain "A"
         groFile = frag_lib_dir + pdbID + chainID + ".gro"
         groName = pdbID + chainID + ".gro"
         pdbFile = pdb_dir + pdbID.upper() + ".pdb"
@@ -281,7 +303,7 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
             if brain_damage == 1:
                 print(pdbID, " is a homolog, discard")
                 return out, out1, Missing_pdb, Missing_count
-        residue_list = entries[6]  # sseq
+        residue_list = entries[6]  # sseq (the sequence of the blast hit)
 
         res_Start = int(entries[3])
         res_End = int(entries[4])
@@ -365,7 +387,7 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
                         count_flag += 1
                     res_nm = index_entries[2]
                     r_list += res_nm
-        else:
+        else: # the index file does not follow expected syntax
             print("Skip wrongly written index file ", indexFile)
             return out, out1, Missing_pdb, Missing_count
 
@@ -401,7 +423,8 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
             chains_with_correct_id = [chain for chain in temp.getTopology().chains() if chain.id == chainID]
             if len(chains_with_correct_id) > 1:
                 for chain in chains_with_correct_id:
-                    residue_info = [1 if residue.name in canonical_resnames else 0 for residue in chain.residues()]
+                    residue_info = [1 if (residue.name in canonical_resnames and is_regular_res(residue))
+                                         else 0 for residue in chain.residues()]
                     if sum(residue_info) > 0: # if True, then we have canonical residues in our segment
                         if file_chain: # if we have previously assigned file_chain, then we have two chains with canonical residues in them and the same id
                                        # this is getting weird, so we're going to return our empty tuple and just not get fragmems from this file
@@ -411,7 +434,8 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
             else:
                 file_chain = chains_with_correct_id[0]
             # make sure this chain has canonical amino acids
-            assert sum([1 if residue.name in canonical_resnames else 0 for residue in file_chain.residues()]) > 0    
+            assert sum([1 if (residue.name in canonical_resnames and is_regular_res(residue)) 
+                             else 0 for residue in file_chain.residues()]) > 0    
             #for file_chain in temp.getTopology().chains():
             #    print(file_chain.id)
             #    print(pdbFile)
@@ -428,20 +452,43 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
             for residue in file_chain.residues():
                 #print(residue.id)
                 #print(residue.name)
-                # we use this to eliminate pdb/cif files with residue-level altloc info (rare; for example, see 3vpg residue 220)
+                # We use this to eliminate pdb/cif files with multiple insertion codes at a single residue id
+                # (rare; for example, see 3vpg resid 220).
+                # Eliminating these files maintains the old convention (from pdb2gro) and also makes a lot of sense,
+                # although you could argue that the best possible thing to do would be to create two seprate memories,
+                # one for each mutant/coordinate set.
                 if residue.id in visited_residue_ids:
                     break
                 else:
                     visited_residue_ids.append(residue.id)
                 # make sure we don't add water, cofactor, or nonstandard residues to new topology
-                if residue.name not in canonical_resnames:
-                    print(residue.name)
+                if residue.name not in canonical_resnames or (not is_regular_res(residue)):
+                    #print(residue.name)
                     continue
                 # add residue
                 new_residue = new_top.addResidue(residue.name, new_chain, id=residue.id, insertionCode=residue.insertionCode)
+                atom_names = []
                 for atom in residue.atoms():
-                    new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
-                    pos_indices.append(atom.index)
+                    if atom.name in atom_names:
+                        raise ValueError(f"Duplicate atom name in residue {residue}, id {residue.id}, chain {residue.chain}")
+                        '''
+                        WE ACTUALLY DON'T EXPECT THIS BLOCK TO EVER RUN BECAUSE ALTLOCS ARE BASICALLY REMOVED BY 
+                        OPENMM WHEN LOADING THE Topology (IT JUST TAKES THE FIRST OCCURENCE OF EACH ATOM)
+                        THIS IS DIFFERENT FROM pdb2gro, WHICH WILL WRITE THE LAST OCCURENCE OF EACH ATOM
+                        print('found')
+                        print([atom for atom in residue.atoms()])
+                        # if we want to keep the last one in the event of an atom-level altloc
+                        # we don't want to add another Atom to the topology,
+                        # but we need to change the coordinates of the old one
+                        where = -(len(atom_names) - atom_names.index(atom.name))
+                        pos_indices[where] = atom.index
+                        # if we want to keep the first one in the event of an atom-level altloc
+                        #continue 
+                        '''
+                    else:
+                        new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
+                        pos_indices.append(atom.index)
+                        atom_names.append(atom.name)
                 # if residue is a part of the fragment hit, increment our counter
                 if res_Start <= int(residue.id) <= res_End:
                     added_residues += 1
@@ -466,8 +513,15 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
                     out1 += f' {entries[9]} {entries[10]} {groName[:-4]}.{extension}' # groName has pdbid and chain info
                     out1 += ' ' + entries[1] + ' ' + str(new_index) + ' ' + str(
                         length) + ' ' + str(weight) + ' 0' + entries[5] + ' 0' + entries[6] + "\n"
-                else: # unexpected, but could happen due to skipped noncanonical amino acid in backbone fragment
-                    pass # the fragment is unusable so we will not use it to create a memory    
+                else: # unexpected, but could happen due to skipped noncanonical amino acid in backbone fragment,
+                      #
+                      # or a gap in the residue numbering in the pdb (which someone who probably never had to run an MD simulation
+                      # https://bioinformatics.stackexchange.com/questions/11587/what-is-the-aim-of-insertion-codes-in-the-pdb-file-format
+                      # thinks is a very reasonable thing that all code should handle)
+                      #
+                      # another source of a gap would be an incomplete residue (one that failed to pass is_regular_res)
+                      #
+                    pass # we will not try to create memories out of fragments with gaps  
                          # so we allow the function to return the information-lacking tuple (out, out1, Missing_pdb, Missing_counter)
              
         else:

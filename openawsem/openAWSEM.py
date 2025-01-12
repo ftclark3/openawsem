@@ -1063,6 +1063,8 @@ class OpenMMAWSEMSystem:
             self.natoms = self.pdb.topology.getNumAtoms()
             self.residues = list(self.pdb.topology.residues())
             self.resi = [x.residue.index for x in list(self.pdb.topology.atoms())]
+            self.resids = [x.residue.id for x in list(self.pdb.topology.atoms())]
+            self.resnames = {residue.id:residue.name for residue in self.residues}
             # build lists of atoms and residue types
             # self.atom_lists,self.res_type=build_lists_of_atoms(self.nres, self.residues)
             self.atom_lists,self.res_type=build_lists_of_atoms_2(self.nres, self.residues, self.pdb.topology.atoms())
