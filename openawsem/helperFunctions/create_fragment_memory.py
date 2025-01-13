@@ -246,7 +246,8 @@ def is_regular_res(residue):
     if residue.name == "GLY":
         condition = (has_N and has_CA and has_C)
     else:
-        condition = (has_N and has_CA and has_C and has_CB)
+        #condition = (has_N and has_CA and has_C and has_CB)
+        condition = (has_N and has_CA and has_C)
     return condition
 
 def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, homo_count, weight, frag_lib_dir, pdb_dir, index_dir, pdb_seqres):
