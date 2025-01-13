@@ -97,10 +97,12 @@ def definitely_correct(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy_f
 
                 raw_frag_table[correspond_target_i][i_j_sep] += w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))
                 raw_frag_table_count[correspond_target_i][i_j_sep] += 1
-                print(correspond_target_i)
+                #print(correspond_target_i)
                 #if correspond_target_i in [95,98,113,116,131,134,148,151,154,157,324,327]:
-                with open(f'{correspond_target_i}_frags.txt','a') as number_write_file:
-                    number_write_file.write(f'{frag_name[:-4]}, i: {i}, j: {j}\n')
+                #with open(f'{correspond_target_i}_frags.txt','a') as number_write_file:
+                #    number_write_file.write(f'{frag_name[:-4]}, i: {i}, j: {j}\n')
+                with open(f'{correspond_target_i}_rm.txt','a') as number_write_file:
+                    number_write_file.write(f'{rm}\n')
                 interaction_list.add((correspond_target_i, correspond_target_j))
     if (not os.path.isfile(frag_table_file)) or (not UseSavedFragTable):
         # Reduce memory usage.
@@ -116,10 +118,10 @@ def definitely_correct(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy_f
         # np.save(frag_table_file, (frag_table, interaction_list, interaction_pair_to_bond_index))
         with open(frag_table_file, 'wb') as f:
             pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)
-        with open(f'{data_path}/old_raw_frag_table.npy', 'wb') as f:
-            pickle.dump(raw_frag_table, f)
-        with open(f'{data_path}/old_raw_frag_table_count.npy','wb') as f:
-            pickle.dump(raw_frag_table_count, f)
+        #with open(f'{data_path}/old_raw_frag_table.npy', 'wb') as f:
+        #    pickle.dump(raw_frag_table, f)
+        #with open(f'{data_path}/old_raw_frag_table_count.npy','wb') as f:
+        #    pickle.dump(raw_frag_table_count, f)
         print(f"All gro files information have been stored in the {frag_table_file}. \
             \nYou might want to set the 'UseSavedFragTable'=True to speed up the loading next time. \
             \nBut be sure to remove the .npy file if you modify the .mem file. otherwise it will keep using the old frag memeory.")
@@ -270,11 +272,11 @@ def test_fragment_generation_from_fraglib():
                     for line in f:
                         lines += line
                 assert full_interaction_info[key] == lines
-
-             
-
-            #frag_table_old = fm_old[0]
-            #frag_table_new = fm_new[0]
+            # finally, we assert that the fragment tables are exactly the same
+            frag_table_old = fm_old[0]
+            frag_table_new = fm_new[0]
+            difference = frag_table_new - frag_table_old
+            assert (frag_table_old == frag_table_new).all()
             '''
             raw_frag_table_old = np.load(f'{data_path}/old_raw_frag_table.npy',allow_pickle=True)
             raw_frag_table_new = np.load(f'{data_path}/new_raw_frag_table.npy',allow_pickle=True)

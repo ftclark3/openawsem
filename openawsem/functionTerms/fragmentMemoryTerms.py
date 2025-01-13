@@ -150,7 +150,6 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                 i_corresponds_to_GLY_CB = (i_type == "CB" and oa.resnames[str(target_res_id_i)] == "IGL")
                 j_corresponds_to_GLY_CB = (j_type == "CB" and oa.resnames[str(target_res_id_j)] == "IGL")
                 if i_corresponds_to_GLY_CB or j_corresponds_to_GLY_CB:
-                    #print("continue")
                     continue # no CB in glycine residues
                 try:   
                     correspond_target_i = data_dic[(i_type, int(target_res_id_i))]
@@ -177,18 +176,6 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                     #    print(i,j)
                     #    print(frag_ca_cb_atom_types[i:i+4])
                 except Exception as e:
-                    #if (correspond_target_i,correspond_target_j) in [(63, 113),(63, 116),(131, 187),(134, 184),(134, 187),(166, 219),(166, 222),(169, 219),(169, 222)]:
-                    #    print(correspond_target_i,correspond_target_j)
-                    if int(target_res_id_i) == 11 and int(target_res_id_j) == 20:
-                        print('EXCEPTION 11 and 20')
-                        print(i_type,j_type)
-                    if int(target_res_id_i) == 23 and int(target_res_id_j) == 32:
-                        print('EXCEPTION 23 and 32')
-                        print(i_type,j_type)
-                    if int(target_res_id_i) == 29 and int(target_res_id_j) == 38:
-                        print('EXCEPTION 29 to 38')
-                        print(i_type,j_type)
-              
                     print("\n\n\n\n\n\n\n\n\n\n\n\n\nTHAT EXCEPTION")
                     print(frag_index)
                     print(frag_name)
@@ -202,9 +189,6 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                     print("\n\n\n\n\n\n\n\n\n\n\n\n\n")
                     print(oa.resnames)
                     raise
-                    ## i don't know what would trigger this so commonly and harmlessly that we would want to continue--glycines?
-                    #continue
-                #print(frag_ca_cb_residue_ids[i],frag_ca_cb_residue_ids[j])
                 
                 fi_x = round(f[i,0].value_in_unit(nanometer),3) #f[i][4] 
                 fi_y = round(f[i,1].value_in_unit(nanometer),3)#f[i][5]
@@ -220,6 +204,10 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                 #if correspond_target_i in [95,98,113,116,131,134,148,151,154,157,324,327]:
                 #with open(f'{correspond_target_i}_frags_new.txt','a') as number_write_file:
                 #    number_write_file.write(f'{frag_name[:-4]}, i: {i}, j: {j}\n')
+                #with open(f'{correspond_target_i}_energy_new.txt','a') as write_file:
+                #    write_file.write(str(w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))))
+                #with open(f'{correspond_target_i}_rm_new.txt','a') as write_file:
+                #    write_file.write(f'{rm}\n')
                 if testing:
                     full_interaction_info[correspond_target_i] += f'{frag_name[:-4]}, i: {i}, j: {j}\n'
                 # w_m is the weight of the memory, gamma_ij is weight of the pairwise interaction, sigma_ij is basically the width of the well
@@ -244,8 +232,8 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
             frag_table[index] = raw_frag_table[i][ij_sep]
             interaction_pair_to_bond_index[(i,j)] = index
         # np.save(frag_table_file, (frag_table, interaction_list, interaction_pair_to_bond_index))
-        with open(frag_table_file, 'wb') as f:
-            pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)
+        #with open(frag_table_file, 'wb') as f:
+        #    pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)
         #with open(f'tests/data/new_raw_frag_table.npy','wb') as f:
         #    pickle.dump(raw_frag_table,f)
         #with open(f'tests/data/new_raw_frag_table_count.npy','wb') as f:
