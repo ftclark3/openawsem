@@ -504,17 +504,17 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
             for atom in residue.atoms():
                 if atom.name not in awsem_atoms:
                     remove_atoms.append(atom)
-                elif terminal_residues[residue.chain.id][0]-1 == residue.index: # the N terminus
-                    #note that terminal_residues residue indices are 1-indexed but residue.index is 0-indexed
+                elif terminal_residues[residue.chain.id][0] == int(residue.id): # the N terminus
                     if atom.name in ["N","H"]: # the awsem force field doesn't include these atoms at the N terminal residue
                         remove_atoms.append(atom)
-                elif terminal_residues[residue.chain.id][1]-1 == residue.index: # the C terminus
-                    #note that terminal_residues residue indices are 1-indexed but residue.index is 0-indexed
+                elif terminal_residues[residue.chain.id][1] == int(residue.id): # the C terminus
                     if atom.name == "C": # the awsem force field doesn't include this atom at the C terminal residue
                         remove_atoms.append(atom)
     # set up new topology with same chains and residues
     new_topology = topology.Topology() # openmm.app.topology.Topology
-    awsem_resnames = {"ALA":"NGP","CYS":'NGP','ASP':'NGP','GLU':'NGP','PHE':'NGP','GLY':'IGL','HIS':'NGP','ILE':'NGP','LYS':'NGP','LEU':'NGP','MET':'NGP','ASN':'NGP','PRO':'IPR','GLN':'NGP','ARG':'NGP','SER':'NGP','THR':'NGP','VAL':'NGP','TRP':'NGP','TYR':'NGP'}
+    awsem_resnames = {"ALA":"NGP","CYS":'NGP','ASP':'NGP','GLU':'NGP','PHE':'NGP','GLY':'IGL','HIS':'NGP',
+        'ILE':'NGP','LYS':'NGP','LEU':'NGP','MET':'NGP','ASN':'NGP','PRO':'IPR','GLN':'NGP','ARG':'NGP',
+        'SER':'NGP','THR':'NGP','VAL':'NGP','TRP':'NGP','TYR':'NGP'}
     for chain_name in chain_info.keys():
         chain = new_topology.addChain(id=chain_name)
         # we expect the residue.index to be an integer representing the position of the residue in the chain,
