@@ -517,9 +517,12 @@ def prepare_pdb(pdb_filename, chains_to_simulate, use_cis_proline=False, keepIds
         'SER':'NGP','THR':'NGP','VAL':'NGP','TRP':'NGP','TYR':'NGP'}
     for chain_name in chain_info.keys():
         chain = new_topology.addChain(id=chain_name)
-        # we expect the residue.index to be an integer representing the position of the residue in the chain,
-        # starting at 0 and counting up
-        assert list(chain_info[chain_name].keys()) == list(range(len(chain_info[chain_name].keys()))), f"list(chain_info[chain_name].keys()): {list(chain_info[chain_name].keys())}"
+        # We expect the residue.index to be an integer representing the position of the residue in the chain,
+        # starting at 0 and counting up.
+        # But wait, this won't be true for a multichain file
+        # So we'll only run this assert statement if there's only one chain
+        if len(chain_info.keys()) == 1:
+            assert list(chain_info[chain_name].keys()) == list(range(len(chain_info[chain_name].keys()))), f"list(chain_info[chain_name].keys()): {list(chain_info[chain_name].keys())}"
         for residue_index in chain_info[chain_name].keys():
             new_topology.addResidue(awsem_resnames[chain_info[chain_name][residue_index][0]], # name
                                     chain, # need to pass in our newly created chain, not the chain from the pdbfixer-loaded topology
@@ -869,51 +872,51 @@ def ensure_atom_order(input_pdb_filename, quiet=1):
     pos = temp.getPositions(asNumpy=True)
     del temp
     # create new topology to fix atom order
-    assert len([chain for chain in top.chains()]) == 1, [chain for chain in top.chains()]
     new_top = Topology()
-    # add chain to new topology
-    new_chain = new_top.addChain(id=next(top.chains()).id)
-    for old_residue in top.residues():
-        # add new residue to new topology
-        new_residue = new_top.addResidue(old_residue.name,new_chain,id=old_residue.id)
-        # get atom info
-        atoms = [atom for atom in old_residue.atoms()]
-        names = [atom.name for atom in atoms]
-        indices = [atom.index for atom in atoms]
-        # get atom positions
-        temp_pos = pos[indices,:]
-        # check that old_residue.atoms() iterator returns atoms ordered by index
-        strictly_increasing = [indices[i+1]>indices[i] for i in range(len(indices)-1)]
-        if False in strictly_increasing:
-            raise AssertionError(f"list(old_residue.atoms()) ({atoms}) not returned in order of increasing index")
-        # reorder atoms, if necessary
-        atom_count = 0
-        if "N" in names:
-            new_top.addAtom("N",atoms[names.index("N")].element,new_residue,id=indices[atom_count])
-            temp_pos[atom_count,:] = pos[indices[names.index("N")]]
-            atom_count += 1
-        if "H" in names:
-            new_top.addAtom("H",atoms[names.index("H")].element,new_residue,id=indices[atom_count])
-            temp_pos[atom_count,:] = pos[indices[names.index("H")]]
-            atom_count += 1   
-        if "CA" in names:
-            new_top.addAtom("CA",atoms[names.index("CA")].element,new_residue,id=indices[atom_count])
-            temp_pos[atom_count,:] = pos[indices[names.index("CA")]]
-            atom_count += 1   
-        if "C" in names:
-            new_top.addAtom("C",atoms[names.index("C")].element,new_residue,id=indices[atom_count])
-            temp_pos[atom_count,:] = pos[indices[names.index("C")]]
-            atom_count += 1         
-        if "O" in names:
-            new_top.addAtom("O",atoms[names.index("O")].element,new_residue,id=indices[atom_count])
-            temp_pos[atom_count,:] = pos[indices[names.index("O")]]
-            atom_count += 1
-        if "CB" in names:
-            new_top.addAtom("CB",atoms[names.index("CB")].element,new_residue,id=indices[atom_count])
-            temp_pos[atom_count,:] = pos[indices[names.index("CB")]]
-            atom_count += 1   
-        # update atom positions
-        pos[indices,:] = temp_pos
+    for old_chain in top.chains():
+        # add chain to new topology
+        new_chain = new_top.addChain(id=old_chain.id)
+        for old_residue in old_chain.residues():
+            # add new residue to new topology
+            new_residue = new_top.addResidue(old_residue.name,new_chain,id=old_residue.id)
+            # get atom info
+            atoms = [atom for atom in old_residue.atoms()]
+            names = [atom.name for atom in atoms]
+            indices = [atom.index for atom in atoms]
+            # get atom positions
+            temp_pos = pos[indices,:]
+            # check that old_residue.atoms() iterator returns atoms ordered by index
+            strictly_increasing = [indices[i+1]>indices[i] for i in range(len(indices)-1)]
+            if False in strictly_increasing:
+                raise AssertionError(f"list(old_residue.atoms()) ({atoms}) not returned in order of increasing index")
+            # reorder atoms, if necessary
+            atom_count = 0
+            if "N" in names:
+                new_top.addAtom("N",atoms[names.index("N")].element,new_residue,id=indices[atom_count])
+                temp_pos[atom_count,:] = pos[indices[names.index("N")]]
+                atom_count += 1
+            if "H" in names:
+                new_top.addAtom("H",atoms[names.index("H")].element,new_residue,id=indices[atom_count])
+                temp_pos[atom_count,:] = pos[indices[names.index("H")]]
+                atom_count += 1   
+            if "CA" in names:
+                new_top.addAtom("CA",atoms[names.index("CA")].element,new_residue,id=indices[atom_count])
+                temp_pos[atom_count,:] = pos[indices[names.index("CA")]]
+                atom_count += 1   
+            if "C" in names:
+                new_top.addAtom("C",atoms[names.index("C")].element,new_residue,id=indices[atom_count])
+                temp_pos[atom_count,:] = pos[indices[names.index("C")]]
+                atom_count += 1         
+            if "O" in names:
+                new_top.addAtom("O",atoms[names.index("O")].element,new_residue,id=indices[atom_count])
+                temp_pos[atom_count,:] = pos[indices[names.index("O")]]
+                atom_count += 1
+            if "CB" in names:
+                new_top.addAtom("CB",atoms[names.index("CB")].element,new_residue,id=indices[atom_count])
+                temp_pos[atom_count,:] = pos[indices[names.index("CB")]]
+                atom_count += 1   
+            # update atom positions
+            pos[indices,:] = temp_pos
     io_class.writeFile(new_top,pos,open(input_pdb_filename,'w'),keepIds=True)        
     # check that we have the correct atom order (really just a test of the above code)
     for residue in new_top.residues():
