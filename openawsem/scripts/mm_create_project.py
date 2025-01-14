@@ -356,7 +356,14 @@ class AWSEMSimulationProject:
                     new_chain = new_top.addChain(id=file_chain.id)
                     pos_indices = []
                     for residue in file_chain.residues():
-                        new_residue = new_top.addResidue(residue.name, new_chain, id=residue.id, insertionCode=residue.insertionCode)
+                        # maybe add this check?
+                        #if residue.insertionCode != ' ':
+                        #    raise ValueError(f"""Chain {file_chain.id} residue id {residue.id} has insertion code {residue.insertionCode}.
+                        #                         Non-empty insertion codes are not allowed for single memory structures.
+                        #                         Check your crystal_structure-cleaned.{extension} file.""")
+                        # we should also check that is_regular_res passes for each residue and probably have 
+                        # some other check to make sure that our gro files are like our normal fragment memory files?
+                        new_residue = new_top.addResidue(residue.name, new_chain, id=residue.id) #,insertionCode=residue.insertionCode)
                         for atom in residue.atoms():
                             new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
                             pos_indices.append(atom.index)
@@ -366,10 +373,18 @@ class AWSEMSimulationProject:
         seq_data = openawsem.helperFunctions.seq_length_from_pdb("crystal_structure-cleaned.pdb", self.chain)
         with open("single_frags.mem", "w") as out:
             out.write("[Target]\nquery\n\n[Memories]\n")
+            chain_index_start = 1
             for (chain_name, chain_start_residue_index, seq_length) in seq_data:
-                # print(f"write chain {chain_name}")
-                out.write(f"{self.name}_{chain_name}.{extension} {chain_start_residue_index} 1 {seq_length} 20\n")   # residue index in Gro always start at 1.
-
+                # the single memory algorithm requires chain_index_start and chain_start_residue_index to be the same,
+                # but if we want single memory for only part of a sequence, having two variables here could make it more flexible
+                #
+                #                                          start res in full pdb file, 
+                #                                                                    start res in memory file, 
+                #                                                                                           length of memory,
+                #                                                                                                            weight
+                out.write(f"{self.name}_{chain_name}.{extension} {chain_index_start} {chain_start_residue_index} {seq_length} 20\n")
+                chain_index_start += seq_length
+  
     def generate_charges(self):
         logging.info("Generating charges")
         openawsem.helperFunctions.generate_charge_array(Path(f"{self.name}.fasta"),Path('charge.txt'))
