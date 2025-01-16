@@ -165,7 +165,7 @@ class AWSEMSimulationProject:
         chain = self.args.chain
 
         if is_cif:
-            extension  = "cif"
+            extension = "cif"
         else:
             extension = "pdb"
         if not Path(f"crystal_structure.{extension}").exists():
@@ -208,7 +208,7 @@ class AWSEMSimulationProject:
         logging.info("Ensuring AWSEM atom order")
         openawsem.ensure_atom_order(input_pdb_filename)
         
-        self.input_pdb_filename = input_pdb_filename
+        self.input_pdb_filename = input_pdb_filename # crystal_structure-openmmawsem structure file
         self.cleaned_pdb_filename = cleaned_pdb_filename
         
         ###############################################################################
@@ -234,6 +234,7 @@ class AWSEMSimulationProject:
             openawsem.ensure_atom_order(input_pdb_filename)
         
         logging.info(f"Copying crystal_structure-cleaned.{extension} to {self.pdb}")
+        print(f"Copying crystal_structure-cleaned.{extension} to {self.pdb}")
         shutil.copy(f'crystal_structure-cleaned.{extension}',f'{self.pdb}')
         
         if self.args.keepLigands:
@@ -344,13 +345,14 @@ class AWSEMSimulationProject:
             extension = "cif"
         else:
             extension = "pdb"
+        io_class = openawsem.get_openmm_io_class(extension) 
+        temp = io_class(f"crystal_structure-cleaned.{extension}")
+        old_top = temp.getTopology()
+        pos = temp.getPositions(asNumpy=True)
         for c in self.chain:
             # print(f"convert chain {c} of crystal structure to Gro file")
             #self.run_command(["python", f"{__location__}/helperFunctions/Pdb2Gro.py", f"crystal_structure-cleaned.{extension}", f"{self.name}_{c}.gro", f"{c}"])
-            
-            io_class = openawsem.get_openmm_io_class(extension) 
-            temp = io_class(f"crystal_structure-cleaned.{extension}")
-            for file_chain in temp.getTopology().chains():
+            for file_chain in old_top.chains():
                 if c == file_chain.id:
                     new_top = openawsem.Topology() # really an openmm.app.Topology
                     new_chain = new_top.addChain(id=file_chain.id)
@@ -361,14 +363,12 @@ class AWSEMSimulationProject:
                         #    raise ValueError(f"""Chain {file_chain.id} residue id {residue.id} has insertion code {residue.insertionCode}.
                         #                         Non-empty insertion codes are not allowed for single memory structures.
                         #                         Check your crystal_structure-cleaned.{extension} file.""")
-                        # we should also check that is_regular_res passes for each residue and probably have 
-                        # some other check to make sure that our gro files are like our normal fragment memory files?
-                        new_residue = new_top.addResidue(residue.name, new_chain, id=residue.id) #,insertionCode=residue.insertionCode)
+                        new_residue = new_top.addResidue(residue.name, new_chain, id=str(residue.index+1)) #,insertionCode=residue.insertionCode)
                         for atom in residue.atoms():
                             new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
                             pos_indices.append(atom.index)
-                    pos = temp.getPositions(asNumpy=True)[pos_indices,:]
-                    io_class.writeFile(new_top, pos, f'{self.name}_{c}.{extension}', keepIds=True)
+                    chain_pos = pos[pos_indices,:]
+                    io_class.writeFile(new_top, chain_pos, f'{self.name}_{c}.{extension}', keepIds=True)
             
         seq_data = openawsem.helperFunctions.seq_length_from_pdb("crystal_structure-cleaned.pdb", self.chain)
         with open("single_frags.mem", "w") as out:
@@ -470,7 +470,10 @@ class AWSEMSimulationProject:
 
                 # Generate fragment memory files if the frag option is enabled
                 if self.args.frag:
-                    self.generate_fragment_memory(database=self.args.frag_database, fasta=self.args.frag_fasta, N_mem=self.args.frag_N_mem, brain_damage=self.args.frag_brain_damage, fragmentLength=self.args.frag_fragmentLength, cutoff_identical=self.args.frag_cutoff_identical, fragmem_structure=self.args.frag_fragmem_structure)
+                    self.generate_fragment_memory(database=self.args.frag_database, fasta=self.args.frag_fasta, 
+                        N_mem=self.args.frag_N_mem, brain_damage=self.args.frag_brain_damage, 
+                        fragmentLength=self.args.frag_fragmentLength, cutoff_identical=self.args.frag_cutoff_identical, 
+                        fragmem_structure=self.args.frag_fragmem_structure)
 
                 #Generate charges
                 self.generate_charges()
