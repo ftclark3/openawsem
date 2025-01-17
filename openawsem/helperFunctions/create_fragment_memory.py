@@ -450,7 +450,8 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
             visited_residue_ids = [] # see below
             added_residues = 0 # see below
             
-            for residue in file_chain.residues():
+            residues = [residue for residue in file_chain.residues()]
+            for residue in residues:
                 #print(residue.id)
                 #print(residue.name)
                 # We use this to eliminate pdb/cif files with multiple insertion codes at a single residue id
@@ -471,21 +472,36 @@ def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, h
                 atom_names = []
                 for atom in residue.atoms():
                     if atom.name in atom_names:
-                        raise ValueError(f"Duplicate atom name in residue {residue}, id {residue.id}, chain {residue.chain}")
-                        '''
-                        WE ACTUALLY DON'T EXPECT THIS BLOCK TO EVER RUN BECAUSE ALTLOCS ARE BASICALLY REMOVED BY 
-                        OPENMM WHEN LOADING THE Topology (IT JUST TAKES THE FIRST OCCURENCE OF EACH ATOM)
-                        THIS IS DIFFERENT FROM pdb2gro, WHICH WILL WRITE THE LAST OCCURENCE OF EACH ATOM
-                        print('found')
-                        print([atom for atom in residue.atoms()])
-                        # if we want to keep the last one in the event of an atom-level altloc
-                        # we don't want to add another Atom to the topology,
-                        # but we need to change the coordinates of the old one
-                        where = -(len(atom_names) - atom_names.index(atom.name))
-                        pos_indices[where] = atom.index
-                        # if we want to keep the first one in the event of an atom-level altloc
-                        #continue 
-                        '''
+                        if atom.element == element.hydrogen and "H1" not in atom_names and residue.index==residues[0].index:
+                            # openmm sometimes doesn't parse H atom names correctly (maybe related to the N-terminus?)
+                            # for example, in pdb 1MUW, atom id 13 with name H1
+                            # in the pdb file gets read in as having name H,
+                            # which causes an issue because there is another atom in
+                            # that residue with the name H
+                            new_top.addAtom('H1', atom.element, new_residue, id=atom.id)
+                            pos_indices.append(atom.index)
+                            atom_names.append(atom.name)
+                        else:
+                            raise ValueError(f"""
+                                                Duplicate atom name in residue {residue}, id {residue.id}, chain {residue.chain}.
+                                                pdbFile is {pdbFile}, atom index is {atom.index}. Full residue atom info is:
+                                                [index, id, name]
+                                                {[[atom_again.index, atom_again.id, atom_again.name] for atom_again in residue.atoms()]}                     
+                                            """)
+                            '''
+                            WE ACTUALLY DON'T EXPECT THIS BLOCK TO EVER RUN BECAUSE ALTLOCS ARE BASICALLY REMOVED BY 
+                            OPENMM WHEN LOADING THE Topology (IT JUST TAKES THE FIRST OCCURENCE OF EACH ATOM)
+                            THIS IS DIFFERENT FROM pdb2gro, WHICH WILL WRITE THE LAST OCCURENCE OF EACH ATOM
+                            print('found')
+                            print([atom for atom in residue.atoms()])
+                            # if we want to keep the last one in the event of an atom-level altloc
+                            # we don't want to add another Atom to the topology,
+                            # but we need to change the coordinates of the old one
+                            where = -(len(atom_names) - atom_names.index(atom.name))
+                            pos_indices[where] = atom.index
+                            # if we want to keep the first one in the event of an atom-level altloc
+                            #continue 
+                            '''
                     else:
                         new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
                         pos_indices.append(atom.index)

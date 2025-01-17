@@ -41,19 +41,19 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
     is_glycine = [] # keep track of whether atom is part of a glycine residue
     for i in range(oa.natoms):
         if i in oa.ca:
-            res_index = oa.resi[i]    # oa.resi start with 0, but pdb residue id start with 1
-                                   # (oa.resi is a wrapper for openmm.topology.Residue.index)
-            data_dic[("CA", 1+int(res_index))] = i
+            one_indexed_res_index = oa.resi[i]+1    # oa.resi start with 0, but pdb residue id start with 1
+                                                    # (oa.resi is a wrapper for openmm.topology.Residue.index)
+            data_dic[("CA", one_indexed_res_index)] = i
             res_id = oa.resids[i]
-            if oa.resnames[res_id] == "GLY": # oa.resnames gives the name of each residue
-                                             # where the length of the dictionary is equal to the number of residues
-                                             # note that keys are residues ids instead of residue indices
+            if oa.resnames[one_indexed_res_index] == "GLY": # oa.resnames gives the name of each residue
+                                                            # where the length of the dictionary is equal to the number of residues
+                                                            # note that keys are residues ids instead of residue indices
                 is_glycine.append(True)
             else:
                 is_glycine.append(False)
         if i in oa.cb:
-            res_index = oa.resi[i]
-            data_dic[("CB", 1+int(res_index))] = i
+            one_indexed_res_index = oa.resi[i]+1
+            data_dic[("CB", one_indexed_res_index)] = i
             is_glycine.append(False) # glycine doesn't have a CB
     if testing: # log interactions for each atom
         full_interaction_info = {atom_index:'' for atom_index in data_dic.values()}
@@ -99,7 +99,7 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
             #if fragment_start <= int(residue.index)+1 < fragment_start+frag_len: 
                 # Assuming target (the thing we're going to simulate) starts at residue 1, then correcting 0-indexed memory residue.index to compare.
                 # Instead of int(residue.index)+1, we could have said residue.id because we're assuming 1-indexed id
-            # ^^^ wait, but we're looping over frag, not target! int(residue.index)+1 != residue.id for frags!
+            # ^^^ wait, but we're looping over frag, not target! int(residue.index)+1 != residue.id in general for frags!
             if fragment_start <= int(residue.id) < fragment_start+frag_len: 
                 found_CA = False
                 found_CB = False
@@ -147,8 +147,18 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                 j_type = frag_ca_cb_atom_types[j] #frag["Type"].iloc[j]
                 #print(i_type)
                 #print(len(i_type))
-                i_corresponds_to_GLY_CB = (i_type == "CB" and oa.resnames[str(target_res_id_i)] == "IGL")
-                j_corresponds_to_GLY_CB = (j_type == "CB" and oa.resnames[str(target_res_id_j)] == "IGL")
+                i_corresponds_to_GLY_CB = (i_type == "CB" and oa.resnames[target_res_id_i] == "IGL")
+                try:
+                    j_corresponds_to_GLY_CB = (j_type == "CB" and oa.resnames[target_res_id_j] == "IGL")
+                except KeyError:
+                    print(oa.resnames)
+                    print(f'res_id_i: {res_id_i}')
+                    print(f'res_id_j: {res_id_j}')
+                    print(f'fragment start: {fragment_start}')
+                    print(f'target start: {target_start}')
+                    print(target_res_id_i)
+                    print(target_res_id_j)
+                    raise
                 if i_corresponds_to_GLY_CB or j_corresponds_to_GLY_CB:
                     continue # no CB in glycine residues
                 try:   

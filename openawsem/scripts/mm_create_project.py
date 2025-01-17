@@ -363,7 +363,8 @@ class AWSEMSimulationProject:
                         #    raise ValueError(f"""Chain {file_chain.id} residue id {residue.id} has insertion code {residue.insertionCode}.
                         #                         Non-empty insertion codes are not allowed for single memory structures.
                         #                         Check your crystal_structure-cleaned.{extension} file.""")
-                        new_residue = new_top.addResidue(residue.name, new_chain, id=str(residue.index+1)) #,insertionCode=residue.insertionCode)
+                        #new_residue = new_top.addResidue(residue.name, new_chain, id=str(residue.index+1)) #,insertionCode=residue.insertionCode)
+                        new_residue = new_top.addResidue(residue.name, new_chain, id=residue.id) #,insertionCode=residue.insertionCode)
                         for atom in residue.atoms():
                             new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
                             pos_indices.append(atom.index)
