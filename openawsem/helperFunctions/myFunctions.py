@@ -661,34 +661,28 @@ def get_seq_dic(fasta="../crystal_structure.fasta"):
     return seq_dic
 
 
-def seq_length_from_pdb(fileLocation, chains):
-    # the is the up-to-date, correct way to do it with the biopython pdbparser
-    # in the future, I could update this to use the openmm Topology class if we want 
+def seq_length_from_pdb(top_for_seq_data,chains):#fileLocation, chains):
     data = []
-    parser = PDBParser()
-    structure = parser.get_structure('X', fileLocation)
-    for c in structure.get_chains():
-        chain_name = c.get_id()
+    for chain in top_for_seq_data.chains():
+        chain_name = chain.id
         if chain_name in chains:
-            residues = list(c.get_residues())
-            
-            #Get the regions of the pdb that are not missing residues           
+            residues = [residue for residue in chain.residues()]
+            #Get the regions of the pdb that are not missing residues  
             contiguous_regions = []
             current_region = [residues[0]]
             for i in range(1, len(residues)):
-                if residues[i].get_id()[1] == residues[i-1].get_id()[1] + 1:
+                if int(residues[i].id) == int(residues[i-1].id) + 1:
                     current_region.append(residues[i])
                 else:
                     contiguous_regions.append(current_region)
                     current_region = [residues[i]]
             contiguous_regions.append(current_region)
-            
             #Add a fragment for every contiguous sequence
             for sequence in contiguous_regions:
                 seq_len = len(sequence)
-                chain_start_residue_index = sequence[0].get_id()[1]  # Set to first residue's number
+                chain_start_residue_id = sequence[0].id  # Set to first residue's number
                 logging.info(f"Chain {chain_name}: Sequence length {seq_len}")
-                data.append((chain_name, chain_start_residue_index, seq_len))
+                data.append((chain_name, chain_start_residue_id, seq_len))
     return data
 
 def get_frame(file="movie.pdb", to="last_frame.pdb", frame=-1):

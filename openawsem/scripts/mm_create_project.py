@@ -216,11 +216,13 @@ class AWSEMSimulationProject:
         # and a crystal_structure-openmmawsem.pdb/cif
         # i don't know why we call this function on the crystal_structure-cleaned.pdb file
         # and at this point in the program
-        self.chain = openawsem.helperFunctions.getAllChains("crystal_structure-cleaned.pdb")  
+        self.chain = openawsem.helperFunctions.getAllChains(f"crystal_structure-cleaned.{extension}")  
         openawsem.getSeqFromCleanPdb(input_pdb_filename, chains=self.chain, writeFastaFile=True)
         shutil.copy('crystal_structure.fasta',f'{self.name}.fasta')
         ###############################################################################
         if self.args.extended:
+            if extension == "cif":
+                raise NotImplementedError("Still need to implement cif support for extended pdbs")
             # print("Trying to create the extended structure extended.pdb using pymol, please ensure that pymol is installed and callable using 'pymol' in terminal.")
             # self.run_command(["python", f"{__location__}/helperFunctions/fasta2pdb.py", "extended", "-f", f"{self.name}.fasta"])
             # # print("If you has multiple chains, please use other methods to generate the extended structures.")
@@ -238,13 +240,15 @@ class AWSEMSimulationProject:
         shutil.copy(f'crystal_structure-cleaned.{extension}',f'{self.pdb}')
         
         if self.args.keepLigands:
+            if extension == "cif":
+                raise NotImplementedError("Still need to implement cif support for extended pdbs")
             # cleaned_pdb_filename = f"{name}-cleaned.pdb"
             # input_pdb_filename = f"{name}-openmmawsem.pdb"
             # do(f"grep 'ATOM' {input_pdb_filename} > tmp.pdb")
             # do(f"grep 'HETATM' {cleaned_pdb_filename} >> tmp.pdb")
             # do(f"mv tmp.pdb {input_pdb_filename}")
-            logging.info(f"Copying HETATM records from crystal_structure-cleaned.pdb to {self.name}-openmmawsem.pdb")
-            shutil.copy("crystal_structure-cleaned.pdb", f"{self.name}-cleaned.pdb")
+            logging.info(f"Copying HETATM records from crystal_structure-cleaned.{extension} to {self.name}-openmmawsem.{extension}")
+            shutil.copy(f"crystal_structure-cleaned.{extension}", f"{self.name}-cleaned.{extension}")
             with open("tmp.pdb", "w") as output_file:
                 with open("crystal_structure-openmmawsem.pdb", "r") as input_file:
                     for line in input_file:
@@ -260,13 +264,17 @@ class AWSEMSimulationProject:
             input_pdb_filename, cleaned_pdb_filename = openawsem.prepare_pdb(self.pdb, self.chain, keepIds=self.args.keepIds, removeHeterogens=removeHeterogens)
             openawsem.ensure_atom_order(input_pdb_filename)
 
-    def generate_ssweight_from_stride(self):
+    def generate_ssweight_from_stride(self,is_cif=False):
         """
         Generate the secondary structure weight file (ssweight) using stride or Predict_Property.
         """
+        if is_cif:
+            extension = "cif"
+        else:
+            extension = "pdb"
         logging.info("Generating ssweight from stride")
-        logging.info("stride crystal_structure.pdb")
-        self.run_command(["stride", "crystal_structure.pdb"], stdout="ssweight.stride")
+        logging.info(f"stride crystal_structure.{extension}")
+        self.run_command(["stride", f"crystal_structure.{extension}"], stdout="ssweight.stride")
         logging.info(f'python {__location__/"helperFunctions"/"stride2ssweight.py"}')
         self.run_command(["python", __location__/"helperFunctions"/"stride2ssweight.py"], stdout="ssweight")
         protein_length = openawsem.helperFunctions.getFromTerminal("wc ssweight").split()[0]
@@ -371,11 +379,13 @@ class AWSEMSimulationProject:
                     chain_pos = pos[pos_indices,:]
                     io_class.writeFile(new_top, chain_pos, f'{self.name}_{c}.{extension}', keepIds=True)
             
-        seq_data = openawsem.helperFunctions.seq_length_from_pdb("crystal_structure-cleaned.pdb", self.chain)
+        # something like [('A', 10, 115), ('B', 10, 115)] or [('A', 1, 115), ('B', 1, 115)], depending on --resetIds
+        top_for_seq_data = io_class(f"crystal_structure-cleaned.{extension}").getTopology()
+        seq_data = openawsem.helperFunctions.seq_length_from_pdb(top_for_seq_data, self.chain)
         with open("single_frags.mem", "w") as out:
             out.write("[Target]\nquery\n\n[Memories]\n")
             chain_index_start = 1
-            for (chain_name, chain_start_residue_index, seq_length) in seq_data:
+            for (chain_name, chain_start_residue_id, seq_length) in seq_data:
                 # the single memory algorithm requires chain_index_start and chain_start_residue_index to be the same,
                 # but if we want single memory for only part of a sequence, having two variables here could make it more flexible
                 #
@@ -383,7 +393,7 @@ class AWSEMSimulationProject:
                 #                                                                    start res in memory file, 
                 #                                                                                           length of memory,
                 #                                                                                                            weight
-                out.write(f"{self.name}_{chain_name}.{extension} {chain_index_start} {chain_start_residue_index} {seq_length} 20\n")
+                out.write(f"{self.name}_{chain_name}.{extension} {chain_index_start} {chain_start_residue_id} {seq_length} 20\n")
                 chain_index_start += seq_length
   
     def generate_charges(self):
@@ -460,7 +470,7 @@ class AWSEMSimulationProject:
                 if self.args.predict_ssweight_from_fasta:
                     self.generate_ssweight_from_fasta()
                 else:
-                    self.generate_ssweight_from_stride()
+                    self.generate_ssweight_from_stride(is_cif=is_cif)
                 
                 # Prepare the membrane-related files if membrane or hybrid option is enabled
                 if self.args.membrane or self.args.hybrid:
