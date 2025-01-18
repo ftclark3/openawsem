@@ -385,17 +385,11 @@ class AWSEMSimulationProject:
         with open("single_frags.mem", "w") as out:
             out.write("[Target]\nquery\n\n[Memories]\n")
             chain_index_start = 1
-            for (chain_name, chain_start_residue_id, seq_length) in seq_data:
-                # the single memory algorithm requires chain_index_start and chain_start_residue_index to be the same,
-                # but if we want single memory for only part of a sequence, having two variables here could make it more flexible
-                #
-                #                                          start res in full pdb file, 
-                #                                                                    start res in memory file, 
-                #                                                                                           length of memory,
-                #                                                                                                            weight
-                out.write(f"{self.name}_{chain_name}.{extension} {chain_index_start} {chain_start_residue_id} {seq_length} 20\n")
+            for (chain_name, chain_start_residue_index, seq_length) in seq_data:
+                # print(f"write chain {chain_name}")
+                out.write(f"{self.name}_{chain_name}.gro {chain_index_start} {chain_start_residue_index} {seq_length} 20\n")   # single_memory is always read starting from 1.
                 chain_index_start += seq_length
-  
+
     def generate_charges(self):
         logging.info("Generating charges")
         openawsem.helperFunctions.generate_charge_array(Path(f"{self.name}.fasta"),Path('charge.txt'))
