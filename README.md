@@ -70,7 +70,7 @@ echo 'export PATH=$PATH:'`pwd` >> ~/.bashrc
 * Download pdb_seqres.txt and put it in the cloned openawsem repository location
 
 ```bash
-wget ftp://ftp.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt
+wget https://files.wwpdb.org/pub/pdb/derived_data/pdb_seqres.txt
 OPENAWSEM_LOCATION=$(python -c "import openawsem; print(openawsem.__location__)")
 cp pdb_seqres.txt $OPENAWSEM_LOCATION/data
 ```
