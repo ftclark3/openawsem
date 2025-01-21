@@ -87,7 +87,7 @@ def run(args):
     spec.loader.exec_module(forces)
 
 
-    oa = OpenMMAWSEMSystem(input_pdb_filename, k_awsem=1.0, chains=chain, xml_filename=openawsem.xml, seqFromPdb=seq, includeLigands=args.includeLigands)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
+    oa = OpenMMAWSEMSystem(input_pdb_filename, k_awsem=1.0, chains=chain, xml_filename=openawsem.xml, seqFromPdb=seq, includeLigands=args.includeLigands,periodic=True)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
     myForces = forces.set_up_forces(oa, submode=args.subMode, contactParameterLocation=parametersLocation)
     # print(forces)
     # oa.addForces(myForces)

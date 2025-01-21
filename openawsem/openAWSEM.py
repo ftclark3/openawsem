@@ -886,7 +886,8 @@ class OpenMMAWSEMSystem:
             self.resi = [x.residue.index if x in protein_atom_list else -1 for x in atom_list]
             self.atom_lists,self.res_type=build_lists_of_atoms_2(self.nres, self.residues, protein_atom_list)
 
-
+        if self.periodic:
+            self.system.setDefaultPeriodicBoxVectors(Vec3(500,0,0),Vec3(0,500,0),Vec3(0,0,500))
         # print(self.atom_lists,self.res_type)
         self.n =self.atom_lists['n']
         self.h =self.atom_lists['h']
