@@ -11,22 +11,27 @@ import pandas as pd
 import pickle
 from .fragmentMemoryTerms import *
 
-def read_reference_structure_for_q_calculation_4(oa, contact_threshold,rnative_dat, min_seq_sep=3, max_seq_sep=np.inf):
+def read_reference_structure_for_q_calculation_4(oa, contact_threshold,rnative_dat, min_seq_sep=3, target_q=1.0, max_seq_sep=np.inf, load_method=np.loadtxt):
     # use contact matrix for Q calculation
     # this change use the canonical Qw/Qo calculation for reference Q
     # for Qw calculation is 0; Qo is 1;
-    in_rnative = np.loadtxt(rnative_dat)  # read in rnative_dat file for Q calculation
+    in_rnative = load_method(rnative_dat)  # read in rnative_dat file for Q calculation
     structure_interactions = []
     chain_start = 0
     count = 0
     for i in range(oa.nres):
+        if i&37 < 17 or i%37 > 36:
+            continue
         chain_start += count
         count = 0
         for j in range(oa.nres):
             count +=1
+            if j%37 < 17 or j%37 > 36:
+                continue
             # if abs(i-j) >= min_seq_sep and abs(i-j) <= max_seq_sep:  # taking the signed value to avoid double counting
             if j-i >= min_seq_sep and j-i <= max_seq_sep:  # taking the signed value to avoid double counting
-                r_ijN = in_rnative[i][j]/10.0 * nanometers  # convert to nm
+                r_ijN = in_rnative[i%37-17][j%37-17] * nanometers  # already in nm
+                print(r_ijN)
                 if r_ijN < contact_threshold:
                     continue
                 sigma_ij = 0.1*abs(i-j)**0.15  # 0.1 nm = 1 A
@@ -40,11 +45,12 @@ def read_reference_structure_for_q_calculation_4(oa, contact_threshold,rnative_d
 
 
 
-def q_value_dat(oa, contact_threshold, rnative_dat="rnative.dat", min_seq_sep=3, max_seq_sep=np.inf):
+def q_value_dat(oa, contact_threshold, rnative_dat="rnative.dat", target_q=1.0, min_seq_sep=3, max_seq_sep=np.inf,load_method=np.loadtxt):
     ### Added by Mingchen
     ### this function is solely used for template based modelling from rnative.dat file
     ### for details, refer to Chen, Lin & Lu Wolynes JCTC 2018
-    structure_interactions_tbm_q = read_reference_structure_for_q_calculation_4(oa, contact_threshold=contact_threshold,rnative_dat=rnative_dat, min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep)
+    structure_interactions_tbm_q = read_reference_structure_for_q_calculation_4(oa, contact_threshold=contact_threshold,
+                                      rnative_dat=rnative_dat, min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep,load_method=load_method)
     normalization = len(structure_interactions_tbm_q)
     qvalue_dat = CustomBondForce(f"(1/{normalization})*gamma_ij*exp(-(r-r_ijN)^2/(2*sigma_ij^2))")
     qvalue_dat.addPerBondParameter("gamma_ij")
@@ -56,13 +62,13 @@ def q_value_dat(oa, contact_threshold, rnative_dat="rnative.dat", min_seq_sep=3,
     return qvalue_dat
 
 
-def tbm_q_term(oa, k_tbm_q, rnative_dat="rnative.dat", tbm_q_min_seq_sep=3, tbm_q_cutoff=0.2*nanometers, tbm_q_well_width=0.1, target_q=1.0, forceGroup=26):
+def tbm_q_term(oa, k_tbm_q, rnative_dat="rnative.dat", tbm_q_min_seq_sep=3, tbm_q_cutoff=0.2*nanometers, tbm_q_well_width=0.1, target_q=1.0, forceGroup=26,load_method=np.loadtxt):
     ### Added by Mingchen Chen
     ### this function is solely used for template based modelling from rnative.dat file
     ### for details, refer to Chen, Lin & Lu Wolynes JCTC 2018
     print("TBM_Q term ON")
     tbm_q = CustomCVForce(f"{k_tbm_q}*(q-{target_q})^2")
-    q = q_value_dat(oa, contact_threshold=tbm_q_cutoff, rnative_dat=rnative_dat, min_seq_sep=tbm_q_min_seq_sep, max_seq_sep=np.inf)
+    q = q_value_dat(oa, contact_threshold=tbm_q_cutoff, rnative_dat=rnative_dat, min_seq_sep=tbm_q_min_seq_sep, max_seq_sep=np.inf,load_method=load_method)
     tbm_q.addCollectiveVariable("q", q)
     tbm_q.setForceGroup(forceGroup)
     return tbm_q
