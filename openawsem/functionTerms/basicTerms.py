@@ -32,6 +32,8 @@ def con_term(oa, k_con=50208, bond_lengths=[.3816, .240, .276, .153], forceGroup
         print('\ncon_term is periodic')
     
     for i in range(oa.nres):
+        if i in oa.fixed_residue_indices:
+            continue
         con.addBond(oa.ca[i], oa.o[i], bond_lengths[1], k_con)
         if not oa.res_type[i] == "IGL":  # OpenAWSEM system doesn't have CB for glycine, so the following bond is not exist for Glycine, but LAMMPS include this bond by using virtual HB as CB.
             con.addBond(oa.ca[i], oa.cb[i], bond_lengths[3], k_con)
@@ -54,6 +56,8 @@ def chain_term(oa, k_chain=50208, bond_k=[1, 1, 1], bond_lengths=[0.2459108, 0.2
         print('\nchain_term is periodic')
 
     for i in range(oa.nres):
+        if i in oa.fixed_residue_indices:
+            continue
         if i not in oa.chain_starts and not oa.res_type[i] == "IGL":
             chain.addBond(oa.n[i], oa.cb[i], bond_lengths[0], k_chain*bond_k[0])
         if i not in oa.chain_ends and not oa.res_type[i] == "IGL":
@@ -86,6 +90,8 @@ def chi_term(oa, k_chi=251.04, chi0=-0.71, forceGroup=20):
         print('\nchi_term is periodic')
 
     for i in range(oa.nres):
+        if i in oa.fixed_residue_indices:
+            continue
         if i not in oa.chain_starts and i not in oa.chain_ends and not oa.res_type[i] == "IGL":
             chi.addBond([oa.ca[i], oa.c[i], oa.n[i], oa.cb[i]])
     chi.setForceGroup(forceGroup)
@@ -106,8 +112,16 @@ def excl_term(oa, k_excl=8368, r_excl=0.35, periodic=False, excludeCB=False, for
     else:
         excl.setNonbondedMethod(excl.CutoffNonPeriodic)
 
+    pos = oa.pdb.positions
     for i in range(oa.natoms):
         excl.addParticle()
+        if i in oa.fixed_atom_indices:
+            for j in range(i,oa.natoms):
+                if j in oa.fixed_atom_indices:
+                    if (i,j) not in oa.bonds and np.linalg.norm((pos[i]-pos[j]).value_in_unit(nanometer)) > r_excl:
+                        excl.addExclusion(i,j)
+                    else:
+                        pass # if (i,j) is in bonds and/or the distance between them is less than 0.35, we will add it later
     # print(oa.ca)
     # print(oa.bonds)
     # print(oa.cb)
@@ -118,8 +132,6 @@ def excl_term(oa, k_excl=8368, r_excl=0.35, periodic=False, excludeCB=False, for
     excl.addInteractionGroup(oa.o, oa.o)
 
     excl.setCutoffDistance(r_excl)
-
-    # excl.setNonbondedMethod(excl.CutoffNonPeriodic)
     excl.createExclusionsFromBonds(oa.bonds, 1)
     excl.setForceGroup(forceGroup)
     return excl
