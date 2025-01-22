@@ -224,10 +224,17 @@ def run(args):
         analysis_fasta = ""
     else:
         analysis_fasta = f"--fasta {args.fasta}"
+    additional_cmd = ""
     if args.includeLigands:
-        additional_cmd = "--includeLigands"
-    else:
-        additional_cmd = ""
+        additional_cmd += "--includeLigands "
+    if args.periodic:
+        additional_cmd += "--periodic "
+    if args.periodic_xyz_length:
+        additional_cmd += f"--periodic_xyz_length {args.periodic_xyz_length} "
+    if args.fixed_residue_indices:
+        additional_cmd += f"--fixed_residue_indices {fixed_residue_indices} "
+    if args.fromOpenMMPDB:
+        additional_cmd += f"--fromOpenMMPDB "
     os.system(f"{sys.executable} mm_analyze.py {args.protein} -t {os.path.join(toPath, 'movie.dcd')} --subMode {args.subMode} -f {args.forces} {analysis_fasta} {additional_cmd} -c {chain}")
 
 
@@ -266,7 +273,7 @@ def main(args=None):
     parser.add_argument('--removeCMMotionRemover', action="store_true", default=False, help='Removes CMMotionRemover. Recommended for periodic boundary conditions and membrane simulations')
     parser.add_argument('--fixed_residue_indices', type=str, default='', help='csv file with indices (not "ids" or "resnums") of residues whose positions should be fixed)')
     parser.add_argument('--periodic',action="store_true",default=False,help='applies periodic boundary condition')
-    parser.add_argument('--periodic_xyz_length',type=float,default=10,help='periodic box size in x, y, and z dimensions')
+    parser.add_argument('--periodic_xyz_length',type=float,default=10,help='periodic box size (nanometers) in x, y, and z dimensions')
     parser.add_argument('--dryRun',action="store_true",default=False,help="Return the configuration and exit without running the simulation")
 
     if args is None:
