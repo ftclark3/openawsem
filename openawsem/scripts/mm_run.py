@@ -92,6 +92,14 @@ def run(args):
     # start simulation
     collision_rate = 5.0 / picoseconds
 
+    # check for atoms whose positions are intended to be fixed
+    if args.fixed_residue_indices:
+        with open(args.fixed_residue_indices,'r') as f:
+            for line in f: # only expect 1 line
+                fixed_residue_indices = line.strip().split(',') #expecting a one-line csv
+                fixed_residue_indices = [int(item) for item in fixed_residue_indices]
+                break
+
     # assign annealing parameters
     Tstart = args.tempStart
     Tend = args.tempEnd
@@ -103,7 +111,9 @@ def run(args):
     spec.loader.exec_module(forces)
 
 
-    oa = OpenMMAWSEMSystem(input_pdb_filename, k_awsem=1.0, chains=chain, xml_filename=openawsem.xml, seqFromPdb=seq, includeLigands=args.includeLigands)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
+    oa = OpenMMAWSEMSystem(input_pdb_filename, k_awsem=1.0, chains=chain, xml_filename=openawsem.xml, seqFromPdb=seq, 
+                           includeLigands=args.includeLigands, periodic=True,fixed_residue_indices=fixed_residue_indices,
+                           )  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
     myForces = forces.set_up_forces(oa, submode=args.subMode, contactParameterLocation=parametersLocation, extension=extension)
     # print(forces)
     # oa.addForces(myForces)
@@ -252,6 +262,7 @@ def main(args=None):
     parser.add_argument("--includeLigands", action="store_true", default=False)
     parser.add_argument('--device', default=0, help='OpenCL/CUDA device index')
     parser.add_argument('--removeCMMotionRemover', action="store_true", default=False, help='Removes CMMotionRemover. Recommended for periodic boundary conditions and membrane simulations')
+    parser.add_argument('--fixed_residue_indices', type=str, default='', help='csv file with indices (not "ids" or "resnums") of residues whose positions should be fixed)')
     parser.add_argument('--dryRun',action="store_true",default=False,help="Return the configuration and exit without running the simulation")
 
     if args is None:
