@@ -179,7 +179,7 @@ def test_fragment_generation_from_fraglib():
     # eventually, we might have a structural alignment-based fragment memory function
     # in addition to the usual one
     test_funcs = ['fragment_memory_term']
-    test_funcs = {name:func for name,func in inspect.getmembers(openawsem.templateTerms) if name in test_funcs}
+    test_funcs = {name:func for name,func in inspect.getmembers(openawsem.functionTerms.templateTerms) if name in test_funcs}
 
     # set up list of test proteins
     # we should have at least 1r69 and one multi-chain protein
