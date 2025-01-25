@@ -300,7 +300,7 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
             assert(ij_sep > 0)
             frag_table[index] = raw_frag_table[i][ij_sep]
             interaction_pair_to_bond_index[(i,j)] = index
-        # np.save(frag_table_file, (frag_table, interaction_list, interaction_pair_to_bond_index))
+        np.save(frag_table_file, (frag_table, interaction_list, interaction_pair_to_bond_index))
         #with open(frag_table_file, 'wb') as f:
         #    pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)
         #with open(f'tests/data/new_raw_frag_table.npy','wb') as f:
