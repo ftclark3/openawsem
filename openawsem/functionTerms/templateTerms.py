@@ -12,12 +12,38 @@ import pickle
 #from .fragmentMemoryTerms import *
 
 ###################################
-#### COPIED FROM openAWSEM.py
-def get_openmm_io_class(file_type):
+#### MODIFIED FOR templateTerms ONLY FOR BACKWARDS COMPATIBILITY WITH GRO FRAGMEMS
+def get_openmm_io_class(file_type,full_name=None):
     if file_type == "pdb":
         io_class = PDBFile
     elif file_type == "cif":
         io_class = PDBxFile
+    elif file_type == "gro":
+        # for backwards compatibility with fragment method
+        df = pd.read_csv(full_name, skiprows=2, sep="\s+", header=None, names=["Res_id", "Res", "Type", "i", "x", "y", "z"])
+        top = Topology()
+        chain = top.addChain() # we don't care about chain id if we're just reading things in for a fragment memory
+        pos = []
+        res_id_dict = {}
+        for index, row in df.iterrows():
+            if row['Res_id'] not in res_id_dict.keys():
+                residue = top.addResidue(row['Res'], chain, id=row['Res_id'])
+                res_id_dict.update({row['Res_id']:residue})
+            top.addAtom(row['Type'],element.Element.getBySymbol(row['Type'][0]),res_id_dict[row['Res_id']],id=row['i'])
+            pos.append([float(row['x']),float(row['y']),float(row['z'])])
+        pos = np.array(pos)
+        pos = Quantity(pos,unit=nanometer)
+        class DummyOpenmmReader:
+            def __init__(self,top,pos):
+                self.top = top
+                self.pos = pos
+            def getTopology(self):
+                return top
+            def getPositions(self,asNumpy=False):
+                return pos
+            def __call__(self,_):
+                return self
+        io_class = DummyOpenmmReader(top,pos)
     else:
         raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}") 
     return io_class
@@ -147,7 +173,7 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         target_start = frag_file_list["target_start"].iloc[frag_index]  # residue id
         fragment_start = frag_file_list["fragment_start"].iloc[frag_index]  # residue id
 
-        io_class = get_openmm_io_class(frag_name[-3:])
+        io_class = get_openmm_io_class(frag_name[-3:],full_name=frag_name)
         temp = io_class(frag_name)
         frag_top = temp.getTopology()
         frag_pos = temp.getPositions(asNumpy=True)
