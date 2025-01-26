@@ -1,9 +1,10 @@
 import os
 import subprocess
 
-for filename in os.listdir('tests/data/fraglib-1r69-fragment_memory_term'):
-    #if '5jfnA' not in filename:
-    #    continue
+folder_location = '/home/fc36/openawsem/tests/data/fraglib-4tlt-fragment_memory_term'
+coords_folder_location = f'{"/".join(folder_location.split("/")[:-1])}/coords_{folder_location.split("/")[-1]}'
+
+for filename in os.listdir(folder_location):
     bad_flag = False
     if filename[-4:] == '.pdb':
         base = filename[:-4]
@@ -12,7 +13,7 @@ for filename in os.listdir('tests/data/fraglib-1r69-fragment_memory_term'):
         continue
     coords = []
     names = []
-    with open(f'tests/data/coords_fraglib-1r69-fragment_memory_term/{coords_filename}','r') as f:
+    with open(f'{coords_folder_location}/{coords_filename}','r') as f:
         for line in f:
             string_coords = [element for element in line.split(' ') if element not in ['','\n']]
             float_coords_in_angstrom = [round(float(coord)*10,3) for coord in string_coords]
@@ -28,7 +29,7 @@ for filename in os.listdir('tests/data/fraglib-1r69-fragment_memory_term'):
             coords.append(string_coords_in_angstrom)
     lines = []
     counter = 0
-    with open(f'tests/data/fraglib-1r69-fragment_memory_term/{filename}','r') as f:
+    with open(f'{folder_location}/{filename}','r') as f:
         for line in f:
             if line[:4] == "ATOM" or line[:6] == "HETATM":
                 try:
@@ -57,6 +58,6 @@ for filename in os.listdir('tests/data/fraglib-1r69-fragment_memory_term'):
     #    with open('foo.txt','w') as f:
     #        for line in lines:
     #            f.write(line)
-    with open(f'tests/data/fraglib-1r69-fragment_memory_term/{filename}','w') as f:
+    with open(f'{folder_location}/{filename}','w') as f:
         for line in lines:
             f.write(line)

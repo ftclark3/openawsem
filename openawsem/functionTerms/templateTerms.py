@@ -245,6 +245,7 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                     #    print(i,j)
                     #    print(frag_ca_cb_atom_types[i:i+4])
                 except Exception as e:
+                    print(data_dic)
                     print("\n\n\n\n\n\n\n\n\n\n\n\n\nTHAT EXCEPTION")
                     print(frag_index)
                     print(frag_name)
@@ -300,7 +301,7 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
             assert(ij_sep > 0)
             frag_table[index] = raw_frag_table[i][ij_sep]
             interaction_pair_to_bond_index[(i,j)] = index
-        np.save(frag_table_file, (frag_table, interaction_list, interaction_pair_to_bond_index))
+        np.save(frag_table_file, np.array((frag_table, interaction_list, interaction_pair_to_bond_index),dtype=object))
         #with open(frag_table_file, 'wb') as f:
         #    pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)
         #with open(f'tests/data/new_raw_frag_table.npy','wb') as f:
@@ -309,7 +310,8 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         #    pickle.dump(raw_frag_table_count,f)
         print(f"All gro files information have been stored in the {frag_table_file}. \
             \nYou might want to set the 'UseSavedFragTable'=True to speed up the loading next time. \
-            \nBut be sure to remove the .npy file if you modify the .mem file. otherwise it will keep using the old frag memeory.")
+            \nBut we recommend removing the .npy file if you modify the .mem file \
+              so that you don't accidentally keep loading the old frag memeories in the .npy file.")
     # fm = CustomNonbondedForce(f"-k_fm*((v2-v1)*r+v1*r_2-v2*r_1)/(r_2-r_1); \
     #                             v1=frag_table(index_smaller, sep, r_index_1);\
     #                             v2=frag_table(index_smaller, sep, r_index_2);\
