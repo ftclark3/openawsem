@@ -3,6 +3,7 @@ import os
 import inspect
 from pathlib import Path
 import pickle
+import warnings
 
 data_path = Path('tests')/'data'
 
@@ -145,7 +146,7 @@ def definitely_correct(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy_f
     return fm
 
 def test_fragment_generation_from_fraglib():
-    np.warnings.filterwarnings('error', category=np.VisibleDeprecationWarning) 
+    warnings.filterwarnings('error', category=np.VisibleDeprecationWarning) 
     print("Configuring test and checking for necessary files")
 
     # set up list of test functions
