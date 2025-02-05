@@ -11,7 +11,7 @@ import pandas as pd
 import pickle
 from .fragmentMemoryTerms import *
 
-def read_reference_structure_for_q_calculation_4(oa, contact_threshold,rnative_dat, min_seq_sep=3, target_q=1.0, max_seq_sep=np.inf, load_method=np.loadtxt):
+def read_reference_structure_for_q_calculation_4(oa, contact_threshold,rnative_dat, min_seq_sep=3, max_seq_sep=np.inf, load_method=np.loadtxt):
     # use contact matrix for Q calculation
     # this change use the canonical Qw/Qo calculation for reference Q
     # for Qw calculation is 0; Qo is 1;
@@ -31,7 +31,7 @@ def read_reference_structure_for_q_calculation_4(oa, contact_threshold,rnative_d
             # if abs(i-j) >= min_seq_sep and abs(i-j) <= max_seq_sep:  # taking the signed value to avoid double counting
             if j-i >= min_seq_sep and j-i <= max_seq_sep:  # taking the signed value to avoid double counting
                 r_ijN = in_rnative[i%37-17][j%37-17] * nanometers  # already in nm
-                print(r_ijN)
+                #print(r_ijN)
                 if r_ijN < contact_threshold:
                     continue
                 sigma_ij = 0.1*abs(i-j)**0.15  # 0.1 nm = 1 A
