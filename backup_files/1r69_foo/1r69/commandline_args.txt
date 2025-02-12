@@ -1,0 +1,3 @@
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_run 1r69 --platform CUDA --steps 100 --tempStart 300 --tempEnd 300 -f forces_setup.py --to foo
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_run 1r69 --platform CUDA --steps 100 --tempStart 300 --tempEnd 300 -f forces_setup.py --to foo
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_run 1r69 --platform CUDA --steps 100 --tempStart 300 --tempEnd 300 -f forces_setup.py --to foo

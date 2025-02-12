@@ -1,0 +1,1 @@
+mm_analyze.py 1ag2 -t /home/fc36/openawsem/1ag2_single_memory/no_reset/reset/1ag2/test/movie.dcd --subMode -1 -f forces_setup.py --fasta crystal_structure.fasta -c A

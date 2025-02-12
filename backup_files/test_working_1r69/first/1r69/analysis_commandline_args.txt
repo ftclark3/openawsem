@@ -1,0 +1,1 @@
+mm_analyze.py 1r69 -t /home/fc36/openawsem/test_working_1r69/first/1r69/run1/movie.dcd --subMode -1 -f forces_setup.py --fasta crystal_structure.fasta -c A

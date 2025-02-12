@@ -1,0 +1,5 @@
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_create 4tlt --resetIds --frag --frag_N_mem 2
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_create 4tlt --resetIds --frag --frag_N_mem 2
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_create 4tlt --resetIds --frag --frag_N_mem 2
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_create 4tlt --resetIds --frag --frag_N_mem 2
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_create 4tlt --resetIds --frag --frag_N_mem 2

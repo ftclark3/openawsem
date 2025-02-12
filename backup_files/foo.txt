@@ -1,0 +1,1482 @@
+On branch process_cif
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   openawsem/functionTerms/fragmentMemoryTerms.py
+	modified:   openawsem/helperFunctions/create_fragment_memory.py
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1a6dB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1bqgA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1c6rA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1ctjA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1cyjA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1dj3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1e3oC.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1e58A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1e8gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1f0kA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1f1sA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1fepA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1fiuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1g8lA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1gkrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1goiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1gv3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1gvnA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1hc7A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1i6lA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1in4A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1iv8A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1jhfA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1jjvA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1kblA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1knvA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1m1jC.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1mx3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1n93X.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1nf2A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1noyA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1nxuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1o97C.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1oaoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1oz9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1q1rA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1q33A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1qh4A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1qh8B.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1qlmA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1qxoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1qyiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1r69A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1rqpA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1rrhA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1ryiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1ryp1.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1s2xA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1s96A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1se8A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1sg4A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1siqA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1ua4A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1v7wA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1vhcA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1vp4A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1vrpA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1w52X.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1wwiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1wxrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1x3sA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1xrtA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1xzpA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1y66A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1y7tA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1ya0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1yt8A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1z15A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1z3eA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/1zunB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2a1xA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2a6hD.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2bi0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2bl0C.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2bmxA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2c0nA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2croA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2ct9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2cu9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2cx1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2d0oA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2d29A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2dpnA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2dstA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2e67A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2ebaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2erxA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2f3oA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2f69A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2fbhA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2fheA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2fzsA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2gigA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2gm5A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2halA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2hcfA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2hd9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2he9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2hg4A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2hkjA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2ivxA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2iwgB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2j23A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2j96A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2jlnA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2mysA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2nlyA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2nxwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2nztA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2o0tA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2o36A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2oo3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2oqaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2oseA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2otmA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2owyA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2oyrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2p0oA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2p4wA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2pfzA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2pl2A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2plrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2pozA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2pq5A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2pusA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2q12A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2q3gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2q49A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2qibA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2qsfA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2ra5A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2rknA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2rkvA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2v79A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2vigA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2vn2A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2vnuD.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2vu1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2vzwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2w3sA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2w3zA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2wjiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2wpgA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2wqdA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2x0dA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2x0sA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2x48A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2x98A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2xkoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2y3vA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2yfoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2yh9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2yihA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2yutA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2yw6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2yxeA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2z43A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2zueA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/2zyjA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3a09A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3a6pA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3agtA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3aiaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3amiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3bmaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3bofA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3bxpA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3c3pA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3cf6E.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3cigA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3cpgA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3d02A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3d8hA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3df8A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3djlA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3drwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3dzcA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3e7dA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3eusA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3eypA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3f5lA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3fn9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3fo3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3goaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3gp3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3grdA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3h2bA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3h7oA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3hazA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3hjjA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3hr6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3i4kA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3i5xA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3i7tA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3ia1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3im9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3ip4B.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3ju5A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3k1dA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3kbbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3kkkA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3l78A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3l7nA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3l84A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3looA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3m1aA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3m49A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3m5uA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3m6wA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3m8eA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3msuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3mw6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3n79A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3o0yA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3o6cA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3o74A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3o8oA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3obaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3oepA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3ojoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3oq3B.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3os4A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3oyvA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3p2yA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3p8cA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3pctA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3pfdA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3pkoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3pn3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3pv2A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3pxpA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3qq5A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3qtpA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3rgbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3rvaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3s28A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3sf6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3sovA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3sv0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3swoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3sy8A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3tbdA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3tm8A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3tqhA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3triA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3u9gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3uarA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3uitA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3umvA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3v8dA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3vabA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3vavA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3w9iA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3we0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3ws7A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3zg9B.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3zqiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/3zx1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4a0gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4a3uA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4afxA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4c7vA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4cbbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4cd8A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4cijA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4cokA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4cujA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4cxfA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4d5cA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4dddA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4dziA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4e37A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4e5sA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4efzA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4eo3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4fccA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4fdaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4fnqA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4fyyB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4g26A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4g4sP.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4g9bA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4gypC.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4h4dA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4hcwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4htlA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4htpA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4in3B.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4izhA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4jd0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4k5uA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4kctA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4kd5A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4kemA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4kk2A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4l22A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4ldgA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4lgvA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4lkrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4m0eA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4m0qA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4m5rA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4m83A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4m9dA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4mb0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4mfuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4n0lA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4o5hA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4o5pA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4o9aA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4odiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4ovdA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4pawA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4pe3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4ptxA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4qbuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4qm6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4qshA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4r1hA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4r5oA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4r6iA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4repA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4rl6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4rybA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4s3rA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4tqjA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4txgA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4u06A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4u09A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4u4cA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4u7iA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4u83A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4uirA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4uozA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4up7A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4uulA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4wqmA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4ww2C.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4x6gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4xeuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4xiaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4xwhA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4y8fA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4yfuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4z5hA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4z5qA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4z9mA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4znmA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/4zqeA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5aunA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5azpA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5b68A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5bq5A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5c2vA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5c6kA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5ccfA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5cxwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5dezA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5eqnA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5fbsA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5fi3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5g3xA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5gheA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5gr8A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5gzcA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5h5zB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5h83A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5hj9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5j44A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5j9rA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5jddA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5jfnA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5jybA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5kdwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5kvmA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5kymA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5l6gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5lq6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5m3hA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5m9bA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5mabA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5mltA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5mqnA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5n4bA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5nj9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5njlA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5nkmA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5nx5A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5o0jA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5o5yA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5o8pA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5odbB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5odqA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5oiuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5t8uA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5t8vA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5thyA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5tj3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5towA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5trvA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5ttyA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5uqsA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5uquA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5uuoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5vafA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5x32A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5xecC.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5y2wA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5yknA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5ytiA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5zcrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/5zihA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6a77A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6aavA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6aigA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6as6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6b9rA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6c33A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6cr0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6e8yA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6ed1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6eerA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6efwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6f9nA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6fcgA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6fkmA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6g49A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6g8uA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6gneA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6grrB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6gvbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6h26A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6hxgA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6hzrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6igbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6ij1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6isbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6isnB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6jqfA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6k5pA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6kguA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6kqwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6l2gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6lkkA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6lqlA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6m3dC.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6mywA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6n8eA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6n9aB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6ofbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6oidA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6oiuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6oqqA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6pgmA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6ponA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6q1sA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6qp3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6qv4A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6rvbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6ry0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6ryzA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6s6qA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6s9fA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6sbqA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6uztA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6vddA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6wctA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6wsbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6xazA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6xbbA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6xgzA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6xrwA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6xsoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6ypcT.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6z1eA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6zdtB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/6zxqA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7bqjA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7buuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7c72A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7co3A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7cohG.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7diaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7e3tA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7e5cA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7e6gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7ehrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7etsA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7fe1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7k4oA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7lhaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7m0oA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7mjdA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7monB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7nccA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7nu0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7osoA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7pbkA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7qrrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7s7gA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7t5uA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7tclX.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7tifA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7tpuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7tz1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7ubuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7ulgA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7v5lA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7vhvA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7vlzA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7vuaA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7vyuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7wlsA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7wolA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7x7hA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7y4hA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7ylrA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7yt9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7ziuA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7zm9A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/7zn6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8a0cA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8boqA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8c8uA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8cipA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8cjhA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8debA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8e1uA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8ee0A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8etyA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8eztA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8grdB.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8i0aA.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8in1A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8j83A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8j83B.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8jj6A.pdb
+	modified:   tests/data/fraglib-1r69-fragment_memory_term/8wlbA.pdb
+	modified:   tests/test_fragment_generation_from_fraglib.py
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	0_energy.txt
+	0_rm.txt
+	0_rm_new.txt
+	101_energy.txt
+	101_rm.txt
+	101_rm_new.txt
+	104_energy.txt
+	104_rm.txt
+	104_rm_new.txt
+	107_energy.txt
+	107_rm.txt
+	107_rm_new.txt
+	110_energy.txt
+	110_rm.txt
+	110_rm_new.txt
+	113_energy.txt
+	113_rm.txt
+	113_rm_new.txt
+	116_energy.txt
+	116_rm.txt
+	116_rm_new.txt
+	119_energy.txt
+	119_rm.txt
+	119_rm_new.txt
+	122_energy.txt
+	122_rm.txt
+	122_rm_new.txt
+	125_energy.txt
+	125_rm.txt
+	125_rm_new.txt
+	128_energy.txt
+	128_rm.txt
+	128_rm_new.txt
+	12_energy.txt
+	12_rm.txt
+	12_rm_new.txt
+	131_energy.txt
+	131_rm.txt
+	131_rm_new.txt
+	134_energy.txt
+	134_rm.txt
+	134_rm_new.txt
+	137_energy.txt
+	137_rm.txt
+	137_rm_new.txt
+	140_energy.txt
+	140_rm.txt
+	140_rm_new.txt
+	143_energy.txt
+	143_rm.txt
+	143_rm_new.txt
+	148_energy.txt
+	148_rm.txt
+	148_rm_new.txt
+	151_energy.txt
+	151_rm.txt
+	151_rm_new.txt
+	154_energy.txt
+	154_rm.txt
+	154_rm_new.txt
+	157_energy.txt
+	157_rm.txt
+	157_rm_new.txt
+	15_energy.txt
+	15_rm.txt
+	15_rm_new.txt
+	160_energy.txt
+	160_rm.txt
+	160_rm_new.txt
+	163_energy.txt
+	163_rm.txt
+	163_rm_new.txt
+	166_energy.txt
+	166_rm.txt
+	166_rm_new.txt
+	169_energy.txt
+	169_rm.txt
+	169_rm_new.txt
+	172_energy.txt
+	172_rm.txt
+	172_rm_new.txt
+	175_energy.txt
+	175_rm.txt
+	175_rm_new.txt
+	178_energy.txt
+	178_rm.txt
+	178_rm_new.txt
+	181_energy.txt
+	181_rm.txt
+	181_rm_new.txt
+	184_energy.txt
+	184_rm.txt
+	184_rm_new.txt
+	187_energy.txt
+	187_rm.txt
+	187_rm_new.txt
+	18_energy.txt
+	18_rm.txt
+	18_rm_new.txt
+	190_energy.txt
+	190_rm.txt
+	190_rm_new.txt
+	193_energy.txt
+	193_rm.txt
+	193_rm_new.txt
+	196_energy.txt
+	196_rm.txt
+	196_rm_new.txt
+	199_energy.txt
+	199_rm.txt
+	199_rm_new.txt
+	1r69/
+	1r69_coordswrongbuttrying/
+	1r69_fragtablewrongbuttrying/
+	1r69_nocb_check/
+	202_energy.txt
+	202_rm.txt
+	202_rm_new.txt
+	205_energy.txt
+	205_rm.txt
+	205_rm_new.txt
+	208_energy.txt
+	208_rm.txt
+	208_rm_new.txt
+	211_energy.txt
+	211_rm.txt
+	211_rm_new.txt
+	214_energy.txt
+	214_rm.txt
+	214_rm_new.txt
+	219_energy.txt
+	219_rm.txt
+	219_rm_new.txt
+	21_energy.txt
+	21_rm.txt
+	21_rm_new.txt
+	222_energy.txt
+	222_rm.txt
+	222_rm_new.txt
+	225_energy.txt
+	225_rm.txt
+	225_rm_new.txt
+	228_energy.txt
+	228_rm.txt
+	228_rm_new.txt
+	231_energy.txt
+	231_rm.txt
+	231_rm_new.txt
+	234_energy.txt
+	234_rm.txt
+	234_rm_new.txt
+	237_energy.txt
+	237_rm.txt
+	237_rm_new.txt
+	240_energy.txt
+	240_rm.txt
+	240_rm_new.txt
+	242_energy.txt
+	242_rm.txt
+	242_rm_new.txt
+	245_energy.txt
+	245_rm.txt
+	245_rm_new.txt
+	248_energy.txt
+	248_rm.txt
+	248_rm_new.txt
+	24_energy.txt
+	24_rm.txt
+	24_rm_new.txt
+	251_energy.txt
+	251_rm.txt
+	251_rm_new.txt
+	254_energy.txt
+	254_rm.txt
+	254_rm_new.txt
+	257_energy.txt
+	257_rm.txt
+	257_rm_new.txt
+	260_energy.txt
+	260_rm.txt
+	260_rm_new.txt
+	263_energy.txt
+	263_rm.txt
+	263_rm_new.txt
+	265_energy.txt
+	265_rm.txt
+	265_rm_new.txt
+	268_energy.txt
+	268_rm.txt
+	268_rm_new.txt
+	271_energy.txt
+	271_rm.txt
+	271_rm_new.txt
+	274_energy.txt
+	274_rm.txt
+	274_rm_new.txt
+	277_energy.txt
+	277_rm.txt
+	277_rm_new.txt
+	27_energy.txt
+	27_rm.txt
+	27_rm_new.txt
+	280_energy.txt
+	280_rm.txt
+	280_rm_new.txt
+	283_energy.txt
+	283_rm.txt
+	283_rm_new.txt
+	286_energy.txt
+	286_rm.txt
+	286_rm_new.txt
+	289_energy.txt
+	289_rm.txt
+	289_rm_new.txt
+	292_energy.txt
+	292_rm.txt
+	292_rm_new.txt
+	295_energy.txt
+	295_rm.txt
+	295_rm_new.txt
+	298_energy.txt
+	298_rm.txt
+	298_rm_new.txt
+	301_energy.txt
+	301_rm.txt
+	301_rm_new.txt
+	304_energy.txt
+	304_rm.txt
+	304_rm_new.txt
+	307_energy.txt
+	307_rm.txt
+	307_rm_new.txt
+	30_energy.txt
+	30_rm.txt
+	30_rm_new.txt
+	312_energy.txt
+	312_rm.txt
+	312_rm_new.txt
+	315_energy.txt
+	315_rm.txt
+	315_rm_new.txt
+	318_energy.txt
+	318_rm.txt
+	318_rm_new.txt
+	321_energy.txt
+	321_rm.txt
+	321_rm_new.txt
+	324_energy.txt
+	324_rm.txt
+	324_rm_new.txt
+	327_energy.txt
+	327_rm.txt
+	327_rm_new.txt
+	330_energy.txt
+	330_rm.txt
+	330_rm_new.txt
+	333_energy.txt
+	333_rm.txt
+	333_rm_new.txt
+	336_energy.txt
+	336_rm.txt
+	336_rm_new.txt
+	339_energy.txt
+	339_rm.txt
+	339_rm_new.txt
+	33_energy.txt
+	33_rm.txt
+	33_rm_new.txt
+	342_energy.txt
+	342_rm.txt
+	342_rm_new.txt
+	345_energy.txt
+	345_rm.txt
+	345_rm_new.txt
+	348_energy.txt
+	348_rm.txt
+	348_rm_new.txt
+	351_energy.txt
+	351_rm.txt
+	351_rm_new.txt
+	36_energy.txt
+	36_rm.txt
+	36_rm_new.txt
+	39_energy.txt
+	39_rm.txt
+	39_rm_new.txt
+	3_energy.txt
+	3_rm.txt
+	3_rm_new.txt
+	42_energy.txt
+	42_rm.txt
+	42_rm_new.txt
+	45_energy.txt
+	45_rm.txt
+	45_rm_new.txt
+	48_energy.txt
+	48_rm.txt
+	48_rm_new.txt
+	4tlt/
+	51_energy.txt
+	51_rm.txt
+	51_rm_new.txt
+	54_energy.txt
+	54_rm.txt
+	54_rm_new.txt
+	57_energy.txt
+	57_rm.txt
+	57_rm_new.txt
+	60_energy.txt
+	60_rm.txt
+	60_rm_new.txt
+	63_energy.txt
+	63_rm.txt
+	63_rm_new.txt
+	66_energy.txt
+	66_rm.txt
+	66_rm_new.txt
+	69_energy.txt
+	69_rm.txt
+	69_rm_new.txt
+	6_energy.txt
+	6_rm.txt
+	6_rm_new.txt
+	72_energy.txt
+	72_rm.txt
+	72_rm_new.txt
+	75_energy.txt
+	75_rm.txt
+	75_rm_new.txt
+	78_energy.txt
+	78_rm.txt
+	78_rm_new.txt
+	83_energy.txt
+	83_rm.txt
+	83_rm_new.txt
+	86_energy.txt
+	86_rm.txt
+	86_rm_new.txt
+	89_energy.txt
+	89_rm.txt
+	89_rm_new.txt
+	92_energy.txt
+	92_rm.txt
+	92_rm_new.txt
+	95_energy.txt
+	95_rm.txt
+	95_rm_new.txt
+	98_energy.txt
+	98_rm.txt
+	98_rm_new.txt
+	9_energy.txt
+	9_rm.txt
+	9_rm_new.txt
+	cif_handling/
+	coords_compare.txt
+	coords_from_pdb_gro.py
+	copy_pdbs.py
+	difference.txt
+	difference1.txt
+	difference2.txt
+	foo.npy
+	foo.png
+	foo.txt
+	frag_table.npy
+	fragstxt_old/
+	new.txt
+	old.txt
+	pdb_to_gro_coords.py
+	test_fixer_foo.cif
+	test_fixer_foo.mmcif
+	test_fixer_foo.pdb
+	test_working_1r69/
+	tests/data/1brs-single_frags.npy
+	tests/data/1mbn-single_frags.npy
+	tests/data/1r69-cleaned.pdb
+	tests/data/1r69-fragment_memory_term-test.npy
+	tests/data/1r69-openmmawsem.pdb
+	tests/data/1ubq-single_frags.npy
+	tests/data/2lyz-single_frags.npy
+	tests/data/2lzm-single_frags.npy
+	tests/data/4tlt-cleaned.pdb
+	tests/data/4tlt-fragment_memory_term-test.npy
+	tests/data/4tlt-fragment_memory_term.mem
+	tests/data/4tlt-fragment_memory_term.npy
+	tests/data/4tlt-openmmawsem.pdb
+	tests/data/coords_fraglib-1r69-fragment_memory_term/
+	tests/data/foo.mem
+	tests/data/fraglib-1r69-fragment_memory_term/1a6dB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1bqgA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1c6rA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1ctjA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1cyjA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1dj3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1e3oC.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1e58A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1e8gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1f0kA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1f1sA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1fepA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1fiuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1g8lA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1gkrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1goiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1gv3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1gvnA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1hc7A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1i6lA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1in4A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1iv8A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1jhfA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1jjvA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1kblA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1knvA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1m1jC.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1mx3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1n93X.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1nf2A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1noyA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1nxuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1o97C.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1oaoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1oz9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1q1rA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1q33A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1qh4A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1qh8B.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1qlmA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1qxoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1qyiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1r69A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1rqpA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1rrhA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1ryiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1ryp1.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1s2xA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1s96A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1se8A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1sg4A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1siqA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1ua4A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1v7wA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1vhcA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1vp4A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1vrpA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1w52X.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1wwiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1wxrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1x3sA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1xrtA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1xzpA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1y66A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1y7tA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1ya0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1yt8A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1z15A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1z3eA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/1zunB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2a1xA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2a6hD.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2bi0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2bl0C.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2bmxA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2c0nA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2croA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2ct9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2cu9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2cx1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2d0oA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2d29A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2dpnA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2dstA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2e67A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2ebaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2erxA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2f3oA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2f69A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2fbhA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2fheA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2fzsA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2gigA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2gm5A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2halA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2hcfA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2hd9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2he9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2hg4A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2hkjA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2ivxA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2iwgB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2j23A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2j96A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2jlnA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2mysA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2nlyA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2nxwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2nztA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2o0tA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2o36A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2oo3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2oqaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2oseA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2otmA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2owyA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2oyrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2p0oA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2p4wA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2pfzA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2pl2A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2plrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2pozA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2pq5A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2pusA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2q12A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2q3gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2q49A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2qibA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2qsfA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2ra5A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2rknA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2rkvA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2v79A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2vigA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2vn2A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2vnuD.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2vu1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2vzwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2w3sA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2w3zA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2wjiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2wpgA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2wqdA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2x0dA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2x0sA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2x48A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2x98A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2xkoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2y3vA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2yfoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2yh9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2yihA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2yutA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2yw6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2yxeA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2z43A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2zueA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/2zyjA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3a09A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3a6pA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3agtA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3aiaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3amiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3bmaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3bofA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3bxpA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3c3pA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3cf6E.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3cigA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3cpgA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3d02A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3d8hA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3df8A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3djlA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3drwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3dzcA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3e7dA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3eusA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3eypA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3f5lA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3fn9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3fo3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3goaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3gp3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3grdA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3h2bA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3h7oA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3hazA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3hjjA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3hr6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3i4kA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3i5xA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3i7tA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3ia1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3im9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3ip4B.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3ju5A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3k1dA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3kbbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3kkkA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3l78A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3l7nA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3l84A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3looA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3m1aA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3m49A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3m5uA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3m6wA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3m8eA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3msuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3mw6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3n79A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3o0yA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3o6cA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3o74A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3o8oA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3obaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3oepA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3ojoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3oq3B.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3os4A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3oyvA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3p2yA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3p8cA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3pctA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3pfdA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3pkoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3pn3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3pv2A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3pxpA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3qq5A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3qtpA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3rgbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3rvaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3s28A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3sf6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3sovA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3sv0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3swoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3sy8A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3tbdA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3tm8A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3tqhA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3triA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3u9gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3uarA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3uitA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3umvA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3v8dA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3vabA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3vavA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3w9iA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3we0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3ws7A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3zg9B.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3zqiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/3zx1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4a0gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4a3uA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4afxA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4c7vA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4cbbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4cd8A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4cijA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4cokA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4cujA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4cxfA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4d5cA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4dddA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4dziA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4e37A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4e5sA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4efzA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4eo3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4fccA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4fdaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4fnqA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4fyyB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4g26A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4g4sP.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4g9bA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4gypC.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4h4dA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4hcwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4htlA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4htpA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4in3B.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4izhA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4jd0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4k5uA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4kctA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4kd5A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4kemA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4kk2A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4l22A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4ldgA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4lgvA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4lkrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4m0eA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4m0qA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4m5rA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4m83A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4m9dA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4mb0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4mfuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4n0lA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4o5hA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4o5pA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4o9aA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4odiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4ovdA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4pawA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4pe3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4ptxA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4qbuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4qm6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4qshA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4r1hA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4r5oA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4r6iA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4repA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4rl6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4rybA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4s3rA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4tqjA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4txgA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4u06A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4u09A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4u4cA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4u7iA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4u83A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4uirA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4uozA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4up7A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4uulA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4wqmA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4ww2C.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4x6gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4xeuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4xiaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4xwhA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4y8fA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4yfuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4z5hA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4z5qA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4z9mA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4znmA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/4zqeA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5aunA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5azpA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5b68A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5bq5A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5c2vA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5c6kA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5ccfA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5cxwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5dezA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5eqnA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5fbsA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5fi3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5g3xA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5gheA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5gr8A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5gzcA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5h5zB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5h83A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5hj9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5j44A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5j9rA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5jddA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5jfnA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5jybA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5kdwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5kvmA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5kymA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5l6gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5lq6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5m3hA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5m9bA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5mabA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5mltA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5mqnA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5n4bA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5nj9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5njlA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5nkmA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5nx5A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5o0jA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5o5yA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5o8pA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5odbB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5odqA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5oiuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5t8uA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5t8vA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5thyA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5tj3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5towA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5trvA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5ttyA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5uqsA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5uquA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5uuoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5vafA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5x32A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5xecC.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5y2wA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5yknA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5ytiA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5zcrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/5zihA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6a77A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6aavA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6aigA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6as6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6b9rA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6c33A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6cr0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6e8yA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6ed1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6eerA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6efwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6f9nA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6fcgA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6fkmA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6g49A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6g8uA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6gneA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6grrB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6gvbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6h26A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6hxgA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6hzrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6igbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6ij1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6isbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6isnB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6jqfA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6k5pA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6kguA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6kqwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6l2gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6lkkA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6lqlA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6m3dC.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6mywA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6n8eA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6n9aB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6ofbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6oidA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6oiuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6oqqA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6pgmA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6ponA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6q1sA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6qp3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6qv4A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6rvbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6ry0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6ryzA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6s6qA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6s9fA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6sbqA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6uztA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6vddA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6wctA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6wsbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6xazA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6xbbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6xgzA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6xrwA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6xsoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6ypcT.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6z1eA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6zdtB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/6zxqA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7bqjA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7buuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7c72A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7co3A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7cohG.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7diaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7e3tA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7e5cA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7e6gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7ehrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7etsA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7fe1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7k4oA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7lhaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7m0oA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7mjdA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7monB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7nccA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7nu0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7osoA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7pbkA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7qrrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7s7gA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7t5uA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7tclX.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7tifA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7tpuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7tz1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7ubuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7ulgA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7v5lA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7vhvA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7vlzA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7vuaA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7vyuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7wlsA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7wolA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7x7hA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7y4hA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7ylrA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7yt9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7ziuA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7zm9A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/7zn6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8a0cA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8boqA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8c8uA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8cipA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8cjhA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8debA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8e1uA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8ee0A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8etyA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8eztA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8grdB.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8i0aA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8in1A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8j83A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8j83B.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8jj6A.gro
+	tests/data/fraglib-1r69-fragment_memory_term/8wlbA.gro
+	tests/data/fraglib-1r69-fragment_memory_term/backup/
+	tests/data/fraglib-1r69-fragment_memory_term/backup2/
+	tests/data/fraglib-4tlt-fragment_memory_term/
+	tests/data/new_raw_frag_table.npy
+	tests/data/new_raw_frag_table_count.npy
+	tests/data/old_raw_frag_table.npy
+	tests/data/old_raw_frag_table_count.npy
+
+no changes added to commit (use "git add" and/or "git commit -a")

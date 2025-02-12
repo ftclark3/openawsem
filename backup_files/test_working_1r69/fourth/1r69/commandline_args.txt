@@ -1,0 +1,1 @@
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_run 1r69 --platform CUDA --steps 6e6 --tempStart 800 --tempEnd 200 -f forces_setup.py --to run1
