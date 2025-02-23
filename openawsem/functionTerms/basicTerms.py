@@ -115,16 +115,6 @@ def excl_term(oa, k_excl=8368, r_excl=0.35, periodic=False, excludeCB=False, for
     pos = oa.pdb.positions
     for i in range(oa.natoms):
         excl.addParticle()
-        if i in oa.fixed_atom_indices:
-            for j in range(i,oa.natoms):
-                if j in oa.fixed_atom_indices:
-                    if (i,j) not in oa.bonds and np.linalg.norm((pos[i]-pos[j]).value_in_unit(nanometer)) > r_excl:
-                        excl.addExclusion(i,j)
-                    else:
-                        pass # if (i,j) is in bonds and/or the distance between them is less than 0.35, we will add it later
-    # print(oa.ca)
-    # print(oa.bonds)
-    # print(oa.cb)
     excl.addInteractionGroup(oa.ca, oa.ca)
     if not excludeCB:
         excl.addInteractionGroup([x for x in oa.cb if x > 0], [x for x in oa.cb if x > 0])
@@ -213,6 +203,8 @@ def rama_term(oa, k_rama=8.368, num_rama_wells=3, w=[1.3149, 1.32016, 1.0264], s
         rama.addGlobalParameter(f"phi0{i}", phi_i[i])
         rama.addGlobalParameter(f"psi0{i}", psi_i[i])
     for i in range(oa.nres):
+        if i in oa.fixed_residue_indices:
+            continue
         if i not in oa.chain_starts and i not in oa.chain_ends and not oa.res_type[i] == "IGL" and not oa.res_type[i] == "IPR":
             rama.addBond([oa.c[i-1], oa.n[i], oa.ca[i], oa.c[i], oa.n[i+1]])
     rama.setForceGroup(forceGroup)
@@ -245,6 +237,8 @@ def rama_proline_term(oa, k_rama_proline=8.368, num_rama_proline_wells=2, w=[2.1
         rama.addGlobalParameter(f"phi0_P{i}", phi_i[i])
         rama.addGlobalParameter(f"psi0_P{i}", psi_i[i])
     for i in range(oa.nres):
+        if i in oa.fixed_residue_indices:
+            continue
         if i not in oa.chain_starts and i not in oa.chain_ends and oa.res_type[i] == "IPR":
             rama.addBond([oa.c[i-1], oa.n[i], oa.ca[i], oa.c[i], oa.n[i+1]])
     rama.setForceGroup(forceGroup)
@@ -279,6 +273,8 @@ def rama_ssweight_term(oa, k_rama_ssweight=8.368, num_rama_wells=2, w=[2.0, 2.0]
         ramaSS.addGlobalParameter(f"phi0SS{i}", phi_i[i])
         ramaSS.addGlobalParameter(f"psi0SS{i}", psi_i[i])
     for i in range(oa.nres):
+        if i in oa.fixed_residue_indices:
+            continue
         if i not in oa.chain_starts and i not in oa.chain_ends and not oa.res_type[i] == "IGL" and not oa.res_type == "IPR":
             ramaSS.addBond([oa.c[i-1], oa.n[i], oa.ca[i], oa.c[i], oa.n[i+1]], [i])
     ssweight = np.loadtxt(ssweight_file)
