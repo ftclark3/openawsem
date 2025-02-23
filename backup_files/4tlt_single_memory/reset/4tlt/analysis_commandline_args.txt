@@ -1,0 +1,1 @@
+mm_analyze.py 4tlt -t /home/fc36/openawsem/4tlt_single_memory/reset/4tlt/test/movie.dcd --subMode -1 -f forces_setup.py --fasta crystal_structure.fasta -c AB

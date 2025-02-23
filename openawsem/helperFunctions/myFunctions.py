@@ -568,7 +568,7 @@ def cleanPdb(pdb_list, chain=None, source=None, toFolder="cleaned_pdbs", formatN
             Chosen_chain = chain
             
         chains_to_remove = [i for i, x in enumerate(chains) if x.id not in Chosen_chain]
-        fixer.removeChains(chains_to_remove)
+        #fixer.removeChains(chains_to_remove)
         logging.info('Adding Missing residues')
         
         fixer.findMissingResidues()
@@ -610,7 +610,7 @@ def getAllChains(pdbFile, removeDNAchains=True):
     fixer.removeHeterogens(keepWater=False)
     # remove unwanted chains
     chains = list(fixer.topology.chains())
-    a = ""
+    a = []
 
     proteinResidues = ['ALA', 'ASN', 'CYS', 'GLU', 'HIS', 'LEU', 'MET', 'PRO', 'THR', 'TYR', 'ARG', 'ASP', 'GLN', 'GLY', 'ILE', 'LYS', 'PHE', 'SER', 'TRP', 'VAL']
     rnaResidues = ['A', 'G', 'C', 'U', 'I']
@@ -621,12 +621,11 @@ def getAllChains(pdbFile, removeDNAchains=True):
             logging.info(f"chain {c.id} is a DNA chain. it will be removed")
             continue
         if c.id in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789':
-            a += c.id
+            a.append(c.id)
         elif pdbFile[-4:] == ".cif": 
             # if we're actually working with a cif file, we can handle other characters for chain names
-            a += c.id
-    # return ''.join(sorted(set(a.upper().replace(" ", ""))))
-    return ''.join(sorted(set(a.replace(" ", ""))))
+            a.append(c.id)
+    return a
 
 def add_chain_to_pymol_pdb(location):
     # location = "/Users/weilu/Research/server/nov_2018/openMM/random_start/1r69.pdb"

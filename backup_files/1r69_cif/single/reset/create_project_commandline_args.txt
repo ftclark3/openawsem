@@ -1,0 +1,2 @@
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_create 1r69 --resetIds --predict_ssweight_from_fasta
+/home/fc36/miniforge3/envs/openawsem310/bin/awsem_create 1r69.cif --resetIds --predict_ssweight_from_fasta
