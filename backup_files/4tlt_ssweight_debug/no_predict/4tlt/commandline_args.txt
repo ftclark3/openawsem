@@ -1,1 +1,0 @@
-/home/fc36/miniforge3/envs/openawsem310/bin/awsem_run 4tlt --platform CUDA --steps 100 --tempStart 400 --tempEnd 400
