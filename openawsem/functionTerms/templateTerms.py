@@ -56,7 +56,7 @@ def q_value_dat(oa, contact_threshold, rnative_dat="rnative.dat", target_q=1.0, 
     qvalue_dat.addPerBondParameter("gamma_ij")
     qvalue_dat.addPerBondParameter("r_ijN")
     qvalue_dat.addPerBondParameter("sigma_ij")
-
+    qvalue_dat.setUsesPeriodicBoundaryConditions(True)
     for structure_interaction_tbm_q in structure_interactions_tbm_q:
         qvalue_dat.addBond(*structure_interaction_tbm_q)
     return qvalue_dat
