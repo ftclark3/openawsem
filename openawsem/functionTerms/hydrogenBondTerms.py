@@ -781,7 +781,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
     for condition in nu_1_bit_list:
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing *
-    nu_j = f"0.5*(1+tanh({eta_beta_1}*(r_CAjm2_CAjp2-{r_HB_c})))"#*{nu_1_bit}+(1-{nu_1_bit})"
+    nu_j = f"0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))"#*{nu_1_bit}+(1-{nu_1_bit})"
 
     # Oi Nj Hj CAi-2 CAi+2 CAj-2 CAj+2
     # 1  2  3  4     5     6     7
@@ -837,6 +837,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
                 if -1 in [o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2]:
                     raise ValueError(f"found index of -1! {[o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2]}. i: {i}, j: {j}")
                 beta_1.addBond([o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2], [get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends), i, j])
+                print(f"bond added! ({i},{j})")
 
 
     # beta_1.setForceGroup(23)
@@ -879,7 +880,7 @@ def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24):
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing *
     print(nu_1_bit)
-    nu_j = f"0.5*(1+tanh({eta_beta_1}*(r_CAjm2_CAjp2-{r_HB_c})))"#*{nu_1_bit}+(1-{nu_1_bit})"
+    nu_j = f"0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))"#*{nu_1_bit}+(1-{nu_1_bit})"
 
     # Oi Nj Hj CAi-2 CAi+2 CAj-2 CAj+2
     # 1  2  3  4     5     6     7
@@ -1000,7 +1001,7 @@ def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25):
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing *
     print(nu_1_bit)
-    nu_j = f"0.5*(1+tanh({eta_beta_1}*(r_CAjm2_CAjp2-{r_HB_c})))"#*{nu_1_bit}+(1-{nu_1_bit})"
+    nu_j = f"0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))"#*{nu_1_bit}+(1-{nu_1_bit})"
 
     # Oi Nj Hj CAi-2 CAi+2 CAj-2 CAj+2
     # 1  2  3  4     5     6     7
