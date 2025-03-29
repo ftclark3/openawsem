@@ -128,13 +128,15 @@ def get_lambda_by_index(i, j, lambda_i, chain_starts, chain_ends):
     lambda_table = [[1.37, 1.36, 1.17], #lambda1 values as a function of sequence separation
                     [3.49, 3.50, 3.52], # lambda2 values as a function of sequence separation
                     [0.00, 3.47, 3.62]] # lambda3 values as a function of sequence separation
+    if i in chain_starts or i in chain_ends or j in chain_starts or j in chain_ends: # this is not the best place to address this, but it's what Aram's code does, so copying that here
+        return 0
     # determine whether residues are in the same chain
     same_chain = inSameChain(i,j,chain_starts,chain_ends)
     # treat residues from different chains as intrachain residues of the largest sequence separation class
     if same_chain==False:
         return lambda_table[lambda_i][2]
     # for intrachain pairs, proceed as before
-    elif abs(j-i) >= 4 and abs(j-i) < 18:
+    elif abs(j-i) >= 5 and abs(j-i) < 18: # 3 instead of 4! the real sequence separation is different from that defined in the paper!
         return lambda_table[lambda_i][0]
     elif abs(j-i) >= 18 and abs(j-i) < 45:
         return lambda_table[lambda_i][1]
@@ -774,20 +776,23 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing *
     print(nu_1_bit)
-    nu_i = f"0.5*(1+tanh({eta_beta_1}*(r_CAim2_CAip2-{r_HB_c})))"#*{nu_1_bit}+(1-{nu_1_bit})"
+    nu_i = f"0.5*(1+tanh({eta_beta_1}*(r_CAim2_CAip2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit})"
     nu_1_bit_list = [f"step(res_index_j-{start_res_index}-1)*step(res_index_j-{start_res_index}-1-1)*step({end_res_index}-res_index_j-1)*step({end_res_index}-1-res_index_j-1)*"\
             for start_res_index,end_res_index in zip(oa.chain_starts,oa.chain_ends)]
     nu_1_bit = ""
     for condition in nu_1_bit_list:
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing *
-    nu_j = f"0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))"#*{nu_1_bit}+(1-{nu_1_bit})"
+    nu_j = f"0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit})"
 
     # Oi Nj Hj CAi-2 CAi+2 CAj-2 CAj+2
     # 1  2  3  4     5     6     7
     # the step(-(r_Oi_Nj-.7)) implements the dssp_hdrgn_cut from the lammps code
-    beta_string_1 = f"-k_beta*lambda_1*theta_ij*nu_i*nu_j*step(-(r_Oi_Nj-.7));theta_ij={theta_ij};r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
+    # the nu_i*nu_j*step(abs(i-j)-18) + step(-(abs(i-j)-18))   ensures that nu_j*nu_j is replaced with 1 when abs(i-j)<18, as is done in the lammps code
+    beta_string_1 = f"-k_beta*lambda_1*theta_ij*(nu_i*nu_j*step(abs(res_index_i-res_index_j)-18)+step(-(abs(res_index_i-res_index_j)-18)))*step(-(r_Oi_Nj-.7));theta_ij={theta_ij};r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
                     nu_i={nu_i};nu_j={nu_j};r_CAim2_CAip2=distance(p4,p5);r_CAjm2_CAjp2=distance(p6,p7)"
+    #beta_string_1 = f"nu_i*step(-(r_Oi_Nj-.7))/.24;theta_ij={theta_ij};r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
+    #                nu_i={nu_i};nu_j={nu_j};r_CAim2_CAip2=distance(p4,p5);r_CAjm2_CAjp2=distance(p6,p7)"
     # # below used for debug, set, vi vj = 0
     if debug:
         beta_string_1 = f"-k_beta*lambda_1*theta_ij*nu_i*nu_j*step(-(r_Oi_Nj-.7));theta_ij={theta_ij};r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
@@ -810,7 +815,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
     for i in range(nres):
         for j in range(nres):
             # the conditional that guards the entire compute_dssp_hdrgn function in the lammps code
-            if isChainEnd(i,oa.chain_ends) or isChainStart(j,oa.chain_starts) or res_type[j] == "IPR":
+            if isChainEnd(i,oa.chain_ends,n=1) or isChainStart(j,oa.chain_starts,n=1) or res_type[j] == "IPR":
                 continue
             elif abs(i-j) <= 2 and inSameChain(i, j, oa.chain_starts, oa.chain_ends):
                 continue
@@ -838,11 +843,8 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
                     raise ValueError(f"found index of -1! {[o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2]}. i: {i}, j: {j}")
                 beta_1.addBond([o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2], [get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends), i, j])
                 print(f"bond added! ({i},{j})")
+                print(get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends))
 
-
-    # beta_1.setForceGroup(23)
-    #beta_2.setForceGroup(24)
-    #beta_3.setForceGroup(25)
     beta_1.setForceGroup(forceGroup)
     return beta_1
 
