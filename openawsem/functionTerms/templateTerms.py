@@ -212,7 +212,11 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                         frag_ca_cb_atom_types.append(atom.name)
                 if not (found_CA and found_CB) and residue.name != "GLY":
                     raise AssertionError(f"missing atom in fragment {frag_name} residue index (0-indexed) {residue.index}, number {residue.id}, {residue.name}")
-        f = frag_pos[frag_ca_cb_indices,:]
+        try:
+            f = frag_pos[frag_ca_cb_indices,:]
+        except IndexError:
+            print(f"IndexError: {frag_file_list}")
+            continue
         assert f.shape[0] == len(frag_ca_cb_indices)
         assert f.shape[0] == len(frag_ca_cb_atom_types)
         w_m = weight
