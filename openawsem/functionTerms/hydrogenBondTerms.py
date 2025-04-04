@@ -787,8 +787,8 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
 
     # Oi Nj Hj CAi-2 CAi+2 CAj-2 CAj+2
     # 1  2  3  4     5     6     7
-    # the step(-(r_Oi_Nj-.7)) implements the dssp_hdrgn_cut from the lammps code
-    # the nu_i*nu_j*step(abs(i-j)-18) + step(-(abs(i-j)-18))   ensures that nu_j*nu_j is replaced with 1 when abs(i-j)<18, as is done in the lammps code
+    # the step(-(r_Oi_Nj-.7)) implements the dssp_hdrgn_cut from the lammps code (just a long-range truncation)
+    # the (nu_i*nu_j*step(abs(res_index_i-res_index_j)-18)+step(-(abs(res_index_i-res_index_j)-18)))*  ensures that nu_j*nu_j is replaced with 1 when abs(i-j)<18, as is done in the lammps code
     beta_string_1 = f"-k_beta*lambda_1*theta_ij*(nu_i*nu_j*step(abs(res_index_i-res_index_j)-18)+step(-(abs(res_index_i-res_index_j)-18)))*step(-(r_Oi_Nj-.7));theta_ij={theta_ij};r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
                     nu_i={nu_i};nu_j={nu_j};r_CAim2_CAip2=distance(p4,p5);r_CAjm2_CAjp2=distance(p6,p7)"
     #beta_string_1 = f"nu_i*step(-(r_Oi_Nj-.7))/.24;theta_ij={theta_ij};r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
@@ -815,7 +815,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
     for i in range(nres):
         for j in range(nres):
             # the conditional that guards the entire compute_dssp_hdrgn function in the lammps code
-            if isChainEnd(i,oa.chain_ends,n=1) or isChainStart(j,oa.chain_starts,n=1) or res_type[j] == "IPR":
+            if isChainEnd(i,oa.chain_ends,n=1) or isChainStart(j,oa.chain_starts,n=1) or res_type[j] in ("IPR","PRO"):
                 continue
             elif abs(i-j) <= 2 and inSameChain(i, j, oa.chain_starts, oa.chain_ends):
                 continue
@@ -843,7 +843,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
                     raise ValueError(f"found index of -1! {[o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2]}. i: {i}, j: {j}")
                 beta_1.addBond([o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2], [get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends), i, j])
                 print(f"bond added! ({i},{j})")
-                print(get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends))
+                #print(get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends))
 
     beta_1.setForceGroup(forceGroup)
     return beta_1
