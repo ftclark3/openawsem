@@ -29,7 +29,10 @@ def get_openmm_io_class(file_type,full_name=None):
             if row['Res_id'] not in res_id_dict.keys():
                 residue = top.addResidue(row['Res'], chain, id=row['Res_id'])
                 res_id_dict.update({row['Res_id']:residue})
-            top.addAtom(row['Type'],element.Element.getBySymbol(row['Type'][0]),res_id_dict[row['Res_id']],id=row['i'])
+            try:
+                top.addAtom(row['Type'],element.Element.getBySymbol(row['Type'][0]),res_id_dict[row['Res_id']],id=row['i'])
+            except KeyError: # sometimes element is parsed as "A", my only guess is it should be CA?
+                top.addAtom(row['Type'],element.carbon,res_id_dict[row['Res_id']],id=row['i'])
             pos.append([float(row['x']),float(row['y']),float(row['z'])])
         pos = np.array(pos)
         pos = Quantity(pos,unit=nanometer)
@@ -336,8 +339,11 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         for seqsep in range(2,10):
             seqsep_pairs_functions = []
             for counter in range(len(oa.ca)-seqsep):
-                seqsep_pairs_functions.append(frag_table[interaction_pair_to_bond_index[(oa.ca[counter],oa.ca[counter+seqsep])],:])
-            np.save(f'seqsep{seqsep}_pairs_functions',np.array(seqsep_pairs_functionss))
+                try:
+                    seqsep_pairs_functions.append(frag_table[interaction_pair_to_bond_index[(oa.ca[counter],oa.ca[counter+seqsep])],:])
+                except KeyError: # happens between chains if we have multiple chains
+                    continue
+            np.save(f'seqsep{seqsep}_pairs_functions',np.array(seqsep_pairs_functions))
         #np.save('test0-28.npy',frag_table[interaction_pair_to_bond_index[(oa.ca[4],oa.ca[10])],:])
         #np.save(frag_table_file, np.array((frag_table, interaction_list, interaction_pair_to_bond_index),dtype=object))
         #with open(frag_table_file, 'wb') as f:
