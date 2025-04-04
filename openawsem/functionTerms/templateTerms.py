@@ -113,14 +113,14 @@ def tbm_q_term(oa, k_tbm_q, rnative_dat="rnative.dat", tbm_q_min_seq_sep=3, tbm_
 
 
 
-def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy_frag_table="./frag_table.npy",
+def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy_frag_table="./frag_table.npy", frag_table_dr = 0.01,
                     min_seq_sep=3, max_seq_sep=9, fm_well_width=0.1, UseSavedFragTable=True, caOnly=False, forceGroup=23,
                     testing=False):
     # 0.8368 = 0.01 * 4.184 # in kJ/mol, converted from default value in LAMMPS AWSEM
     k_fm *= oa.k_awsem
     frag_table_rmin = 0
     frag_table_rmax = 5  # in nm
-    frag_table_dr = 0.01
+    
     r_array = np.arange(frag_table_rmin, frag_table_rmax, frag_table_dr)
     number_of_atoms = oa.natoms
     r_table_size = int((frag_table_rmax - frag_table_rmin)/frag_table_dr)  # 500 here.
@@ -333,7 +333,13 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
             assert(ij_sep > 0)
             frag_table[index] = raw_frag_table[i][ij_sep]
             interaction_pair_to_bond_index[(i,j)] = index
-        np.save(frag_table_file, np.array((frag_table, interaction_list, interaction_pair_to_bond_index),dtype=object))
+        for seqsep in range(2,10):
+            seqsep_pairs_functions = []
+            for counter in range(len(oa.ca)-seqsep):
+                seqsep_pairs_functions.append(frag_table[interaction_pair_to_bond_index[(oa.ca[counter],oa.ca[counter+seqsep])],:])
+            np.save(f'seqsep{seqsep}_pairs_functions',np.array(seqsep_pairs_functionss))
+        #np.save('test0-28.npy',frag_table[interaction_pair_to_bond_index[(oa.ca[4],oa.ca[10])],:])
+        #np.save(frag_table_file, np.array((frag_table, interaction_list, interaction_pair_to_bond_index),dtype=object))
         #with open(frag_table_file, 'wb') as f:
         #    pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)
         #with open(f'tests/data/new_raw_frag_table.npy','wb') as f:
