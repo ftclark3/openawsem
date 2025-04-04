@@ -215,7 +215,7 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         try:
             f = frag_pos[frag_ca_cb_indices,:]
         except IndexError:
-            print(f"IndexError: {frag_file_list}")
+            print(f"IndexError: {frag_index}")
             continue
         assert f.shape[0] == len(frag_ca_cb_indices)
         assert f.shape[0] == len(frag_ca_cb_atom_types)
