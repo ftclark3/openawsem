@@ -347,8 +347,8 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                     seqsep_pairs_functions.append(frag_table[interaction_pair_to_bond_index[(oa.ca[counter],oa.ca[counter+seqsep])],:])
                 except KeyError: # happens between chains if we have multiple chains
                     continue
-            np.save(f'seqsep{seqsep}_pairs_functions',np.array(seqsep_pairs_functions))
-        #np.save('test0-28.npy',frag_table[interaction_pair_to_bond_index[(oa.ca[4],oa.ca[10])],:])
+            np.save(f'seqsep{seqsep}_pairs_functions_width{int(fm_well_width*100)}',np.array(seqsep_pairs_functions))
+        np.save(f'CA511_width{int(fm_well_width*100)}.npy',frag_table[interaction_pair_to_bond_index[(oa.ca[4],oa.ca[10])],:])
         #np.save(frag_table_file, np.array((frag_table, interaction_list, interaction_pair_to_bond_index),dtype=object))
         #with open(frag_table_file, 'wb') as f:
         #    pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)
