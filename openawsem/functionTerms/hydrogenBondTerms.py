@@ -551,6 +551,25 @@ def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
     helical.setForceGroup(forceGroup)
     return helical
 
+def sequence_independent_helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
+    # without density dependency.
+    # without z dependency for now.
+    k_helical *= oa.k_awsem
+    sigma_NO = 0.068
+    sigma_HO = 0.076
+    r_ON = 0.298
+    r_OH = 0.206
+
+    theta_ij = f"exp(-(r_Oi_Nip4-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hip4-{r_OH})^2/(2*{sigma_HO}^2))"
+    helical = CustomCompoundBondForce(3, f"-{k_helical}*(1)*{theta_ij};\
+                                        r_Oi_Nip4=distance(p1,p2);r_Oi_Hip4=distance(p1,p3);")
+    for i in range(oa.nres):
+        if not isChainEnd(i, oa.chain_ends, n=4) and oa.res_type[i+4] != "IPR":
+            helical.addBond([oa.o[i], oa.n[i+4], oa.h[i+4]])
+
+    helical.setForceGroup(forceGroup)
+    return helical
+
 def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_m=1.5, forceGroup=29):
     # without density dependency.
     k_helical *= oa.k_awsem

@@ -228,7 +228,8 @@ class AWSEMSimulationProject:
             # # print("If you has multiple chains, please use other methods to generate the extended structures.")
             # openawsem.helperFunctions.myFunctions.add_chain_to_pymol_pdb("extended.pdb")  # only work for one chain only now
             logging.info("Creating extended structure using PyMOL")
-            if self.chain != "A":
+            if self.chain != ["A"]:
+                print(f"self.chain: {self.chain}")
                 logging.error("Multiple chains detected. Please use other methods to generate the extended structures or fix this function.")
                 exit()
             openawsem.helperFunctions.create_extended_pdb_from_fasta(f"{self.name}.fasta", output_file_name="extended.pdb") #should do f"extended.{extension}"
