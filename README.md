@@ -154,13 +154,15 @@ Simulation of the amino terminal domain of Phage 434 repressor (1r69)
    ./mm_analyze.py 1r69 > energy.dat
    ```
 
-## Notes:
+## Notes
 AWSEM is capable of modeling protein-DNA interactions when used together with open3SPN2, which can be found in a separate package at https://github.com/cabb99/open3spn2.
 
 For small proteins, the LAMMPS version may be faster than OpenAWSEM, especially if a GPU is unavailable. Consider using http://awsem-md.org for such cases.
 
 A quick check of the stability of a protein in AWSEM can be done using the frustratometer server http://frustratometer.qb.fcen.uba.ar/
 
+## Acknowledgements
+This project is also supported by the Center for Theoretical Biological Physics (NSF Grants PHY-2019745 and PHY-1522550), with additional support from the D.R. Bullard Welch Chair at Rice University (Grant No. C-0016 to PGW).  We thank AMD (Advanced Micro Devices, Inc.) for the donation of high-performance computing hardware and HPC resources.  Carlos Bueno was supported by the MolSSI Software Fellowship.
 
 
 ## Data availability
