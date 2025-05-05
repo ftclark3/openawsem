@@ -131,10 +131,9 @@ def get_pap_gamma_APH(donor_idx, acceptor_idx, chain_i, chain_j, gamma_APH):
         return 0
 
 def get_pap_gamma_AP(donor_idx, acceptor_idx, chain_i, chain_j, gamma_AP, ssweight):
-    if ssweight[donor_idx][1] == 1 and ssweight[acceptor_idx][1] == 1:
-        additional_scale = 1.5
-    else:
-        additional_scale = 1.0
+    # geometric mean of donor and acceptor ssweight gives additional_scale==1.5 when both equal to 1
+    # but allows us to try values other than 0 or 1 in the ssweight file
+    additional_scale = 1 + 0.5*sqrt(ssweight[donor_idx][1]*ssweight[acceptor_idx][1])
     # if (donor_idx - acceptor_idx >= 17):
     if (donor_idx - acceptor_idx >= 17) or chain_i != chain_j:
         return additional_scale * gamma_AP
@@ -142,10 +141,9 @@ def get_pap_gamma_AP(donor_idx, acceptor_idx, chain_i, chain_j, gamma_AP, ssweig
         return 0
 
 def get_pap_gamma_P(donor_idx, acceptor_idx, chain_i, chain_j, gamma_P, ssweight):
-    if ssweight[donor_idx][1] == 1 and ssweight[acceptor_idx][1] == 1:
-        additional_scale = 1.5
-    else:
-        additional_scale = 1.0
+    # geometric mean of donor and acceptor ssweight gives additional_scale==1.5 when both equal to 1
+    # but allows us to try values other than 0 or 1 in the ssweight file
+    additional_scale = 1 + 0.5*sqrt(ssweight[donor_idx][1]*ssweight[acceptor_idx][1])
     if (donor_idx - acceptor_idx >= 9) or chain_i != chain_j:
         return additional_scale * gamma_P
     else:
