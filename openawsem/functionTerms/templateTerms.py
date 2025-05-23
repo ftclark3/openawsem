@@ -58,7 +58,7 @@ def read_reference_structure_for_q_calculation_4(oa, contact_threshold,rnative_d
     chain_start = 0
     count = 0
     for i in range(oa.nres):
-        if i&37 < 17 or i%37 > 36:
+        if i%37 < 17 or i%37 > 36:
             continue
         chain_start += count
         count = 0
