@@ -10,10 +10,6 @@ import numpy as np
 from pathlib import Path
 import openawsem
 
-#se_map_1_letter = {'A': 0,  'P': 1,  'K': 2,  'N': 3,  'R': 4,
-#                   'F': 5,  'D': 6,  'Q': 7,  'E': 8,  'G': 9,
-#                   'I': 10, 'H': 11, 'L': 12, 'C': 13, 'M': 14,
-#                   'S': 15, 'T': 16, 'Y': 17, 'V': 18, 'W': 19}
 se_map_1_letter = {'A':0, 'C':4, 'D':3, 'E':6, 'F':13, 'G':7,
                    'H':8, 'I':9, 'K': 11, 'L': 10, 'M':12, 'N':2,
                    'P':14, 'Q':5, 'R':1, 'S':15, 'T':16, 'V':19,
@@ -139,32 +135,34 @@ def get_lambda_by_index(i, j, lambda_i, chain_starts, chain_ends, ssweight="sswe
     #    return 0
     """
     # load ssweight
-    rama_biases = []
-    with open(ssweight,'r') as f:
-        for line in f:
-            if line.strip() == "0.0 1.0":
-                rama_biases.append('beta')
-            else:
-                rama_biases.append("not beta")
+    #rama_biases = []
+    #with open(ssweight,'r') as f:
+    #    for line in f:
+    #        if line.strip() == "0.0 1.0":
+    #            rama_biases.append('beta')
+    #        else:
+    #            rama_biases.append("not beta")
     #import pdb; pdb.set_trace()
     # determine whether residues are in the same chain
     same_chain = inSameChain(i,j,chain_starts,chain_ends)
+    assert ((same_chain is True) or (same_chain is False)), f"same_chain should be bool but was {same_chain}"
     # treat residues from different chains as intrachain residues of the largest sequence separation class
     if same_chain==False:
         return lambda_table[lambda_i][2]
     # for intrachain pairs, proceed as before
     #elif abs(j-i) >= 5 and abs(j-i) < 18: # 3 instead of 4! the real sequence separation is different from that defined in the paper!
     elif abs(j-i) >= 4 and abs(j-i) < 18: # 3 instead of 4! the real sequence separation is different from that defined in the paper!
-        if not (rama_biases[i] == "beta" and rama_biases[j] == "beta"):
-            return 0
-        else:
-            return lambda_table[lambda_i][0]
+        #if not (rama_biases[i] == "beta" and rama_biases[j] == "beta"):
+        #    return 0
+        #else:
+        #    return lambda_table[lambda_i][0]
+        return lambda_table[lambda_i][0]
     elif abs(j-i) >= 18 and abs(j-i) < 45:
         return lambda_table[lambda_i][1]
     elif abs(j-i) >= 45:
         return lambda_table[lambda_i][2]
     else:
-        return 0
+        raise AssertionError(f"Unexpected i,j ({i},{j}) combination passed to get_lambda_by_index!")
 
 def get_alpha_by_index(i, j, alpha_i, chain_starts, chain_ends):
     alpha_table = [[1.30, 1.30, 1.30], # alpha1 for short seq sep, alpha 1 for medium seq sep, alpha 1 for long seq sep
@@ -219,21 +217,9 @@ def get_pap_gamma_P(donor_idx, acceptor_idx, chain_i, chain_j, gamma_P, ssweight
 
 def get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
     Lambda = get_lambda_by_index(i, j, 1, chain_starts, chain_ends)
-    print(f"lambda2: {Lambda}")
-    Lambda += -0.5*get_alpha_by_index(i, j, 0, chain_starts, chain_ends)*p_antihb[a[i], a[j]][0]
-    print(f"alpha1: {get_alpha_by_index(i, j, 0, chain_starts, chain_ends)}")
-    try:
-        Lambda += -0.25*get_alpha_by_index(i, j, 1, chain_starts, chain_ends)*(p_antinhb[a[i+1], a[j-1]][0] + p_antinhb[a[i-1], a[j+1]][0])
-    except IndexError:
-        print(f"i: {i}")
-        print(f"j: {j}")
-        print(f"chain_starts: {chain_starts}")
-        print(f"chain_ends: {chain_ends}")
-        raise
-    print(f"alpha2: {get_alpha_by_index(i, j, 1, chain_starts, chain_ends)}")
-    Lambda += -get_alpha_by_index(i, j, 2, chain_starts, chain_ends)*(p_anti[a[i]] + p_anti[a[j]])
-    print(f"alpha3: {get_alpha_by_index(i, j, 2, chain_starts, chain_ends)}")
-    print(f"Lambda: {Lambda}")
+    Lambda += 0.5*get_alpha_by_index(i, j, 0, chain_starts, chain_ends)*p_antihb[a[i], a[j]][0]
+    Lambda += 0.25*get_alpha_by_index(i, j, 1, chain_starts, chain_ends)*(p_antinhb[a[i+1], a[j-1]][0] + p_antinhb[a[i-1], a[j+1]][0])
+    Lambda += get_alpha_by_index(i, j, 2, chain_starts, chain_ends)*(p_anti[a[i]] + p_anti[a[j]])
     return Lambda
 
 def get_Lambda_2_old(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends, ssweight):
@@ -266,10 +252,9 @@ def get_Lambda_2_old(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain
 
 def get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
     Lambda = get_lambda_by_index(i, j, 2, chain_starts, chain_ends)
-    Lambda += -get_alpha_by_index(i, j, 3, chain_starts, chain_ends)*p_parhb[a[i+1], a[j]][0]
-    Lambda += -get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[i+1]]
-    # Lambda += -get_alpha_by_index(i, j, 3)*p_par[a[j]]
-    Lambda += -get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[j]] # Fix typo for https://github.com/npschafer/openawsem/issues/19
+    Lambda += get_alpha_by_index(i, j, 3, chain_starts, chain_ends)*p_parhb[a[i+1], a[j]][0]
+    Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[i+1]]
+    Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[j]] # Fix typo for https://github.com/npschafer/openawsem/issues/19
     return Lambda
 
 
@@ -801,8 +786,191 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     pap.setForceGroup(26)
 #     return pap
 
+def beta_cea754f(oa,term_number,ssweight,forceGroup,k_beta=4.184):
+    """ 
+    Function to compute either beta 1, beta 2, or beta 3, as implemented in a particular LAMMPS AWSEM-MD commit,
+    https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb
 
-def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='ssweight'):
+    Standard usage is forceGroup=23 for term 1, forceGroup=24 for term 2, and forceGroup=25 for term 3.
+    """
+    print(f"beta_{term_number} term ON")
+    #
+    # set constants
+    nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
+    r_ON = .298
+    sigma_NO = .068
+    r_OH = .206
+    sigma_HO = .076
+    eta_beta_1 = 10.0
+    eta_beta_2 = 5.0
+    r_HB_c = 1.2
+    number_atoms = [7,10,10] # number of atoms participating in each interaction type (beta1, beta2, beta3)
+    #
+    # load ssweight
+    rama_biases = []
+    with open(ssweight,'r') as f:
+        for line in f:
+            if line.strip() == "0.0 1.0":
+                rama_biases.append('beta')
+            else:
+                rama_biases.append("not beta")
+    #
+    # load parameters
+    p_par, p_anti, p_antihb, p_antinhb, p_parhb = read_beta_parameters()
+    a = [] # list to help us to convert from amino acid type to the appropriate row/column indices in p_par, p_anti, etc.
+    for ii in range(oa.nres):
+        a.append(se_map_1_letter[oa.seq[ii]])
+    #
+    # define energy functions
+    #   hydrogen bond geometry
+    theta_ij =   f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
+    theta_ji =   f"exp(-(r_Oj_Ni-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hi-{r_OH})^2/(2*{sigma_HO}^2))"
+    theta_jip2 = f"exp(-(r_Oj_Nip2-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hip2-{r_OH})^2/(2*{sigma_HO}^2))" 
+    theta = [theta_ij, f"{theta_ij}*{theta_ji}", f"{theta_ij}*{theta_jip2}"] # [theta for beta1, theta for beta2, theta for beta3]
+    distance_definitions = [f"r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
+                                  r_CAim2_CAip2=distance(p4,p5);r_CAjm2_CAjp2=distance(p6,p7);",
+                            f"r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
+                                  r_Oj_Ni=distance(p4,p5);r_Oj_Hi=distance(p4,p6);\
+                                  r_CAim2_CAip2=distance(p7,p8);r_CAjm2_CAjp2=distance(p9,p10)",
+                            f"r_Oi_Nj=distance(p1,p2);r_Oi_Hj=distance(p1,p3);\
+                                  r_Oj_Nip2=distance(p4,p5);r_Oj_Hip2=distance(p4,p6);\
+                                  r_CAim2_CAip2=distance(p7,p8);r_CAjm2_CAjp2=distance(p9,p10)"]
+    #   set up nu as in the lammps version
+    #   if we are on an edge or second-to-edge residue, we can't compute nu by the normal method
+    #   (the CA i-2 or i+2 does not exist) and we set nu to 1
+    #   we do this by constructing a conditional expression for each chain, equal to 1 when we're not either one of the first two or last two residues
+    #   and equal to 0 otherwise.
+    #   Then, we take the max of all these expressions to tell us if we're in the middle (not first or last 2 residues) of ANY chain.
+    #   If 1, then the answer is YES; if 0, the answer is NO.
+    #   these are then incorporated algebraically into our nu expression to apply the proper computation method
+    #      nu_i
+    nu_1_bit_list = [f"step(res_index_i-{start_res_index}-1)*step(res_index_i-{start_res_index}-1-1)*step({end_res_index}-res_index_i-1)*step({end_res_index}-1-res_index_i-1),"\
+            for start_res_index,end_res_index in zip(oa.chain_starts,oa.chain_ends)]
+    nu_1_bit = "max("
+    for condition in nu_1_bit_list:
+        nu_1_bit += condition
+    nu_1_bit = nu_1_bit[:-1] # get rid of trailing ,
+    nu_1_bit += ")" # add ) to close the max( opened at the beginning of the statement
+    nu_i = f"0.5*(1+tanh({eta_beta_1}*(r_CAim2_CAip2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit})"
+    #      nu_j
+    nu_1_bit_list = [f"step(res_index_j-{start_res_index}-1)*step(res_index_j-{start_res_index}-1-1)*step({end_res_index}-res_index_j-1)*step({end_res_index}-1-res_index_j-1),"\
+            for start_res_index,end_res_index in zip(oa.chain_starts,oa.chain_ends)]
+    nu_1_bit = "max("
+    for condition in nu_1_bit_list:
+        nu_1_bit += condition
+    nu_1_bit = nu_1_bit[:-1] # get rid of trailing ,
+    nu_1_bit += ")" # add ) to close the max( opened at the beginning of the statement
+    nu_j = f"0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit})"
+    #      adjusted nu_i*nu_j
+    seqsep_lessthan18 = "1-step(abs(res_index_i-res_index_j)-18)" # useful conditional to check whether our sequence separation is strictly less than 18
+    #         set nu_i*nu_j to 1 if sequence separation is less than 18 and i and j are in the same chain;
+    #         otherwise, pass through the unadjusted value nu_i*nu_j
+    adjusted_nu = f"(samechain*({seqsep_lessthan18}+(1-{seqsep_lessthan18})*{nu_i}*{nu_j})+(1-samechain)*{nu_i}*{nu_j})" # samechain is a per-bond parameter
+    #   this just truncates the potential to 0 for long range
+    distance_truncation = "step(-(r_Oi_Nj-.7))"
+    #
+    # total energy function
+    #    we make k_beta a global parameter so we can pass it in as an openmm unit object
+    #    note that Lambda is a per bond parameter
+    beta_term = f"-k_beta*Lambda*{theta[term_number-1]}*{adjusted_nu}*{distance_truncation};{distance_definitions[term_number-1]}"
+    print(f"beta_term: {beta_term}")
+    #
+    # set up openmm Force
+    Beta = CustomCompoundBondForce(number_atoms[term_number-1],beta_term)
+    Beta.addGlobalParameter("k_beta", k_beta)
+    Beta.addPerBondParameter("Lambda")
+    Beta.addPerBondParameter("res_index_i")
+    Beta.addPerBondParameter("res_index_j")
+    Beta.addPerBondParameter("samechain")
+    for i in range(nres):
+        for j in range(nres):
+            # compute something needed below
+            same_chain_end = [chain_end for chain_end in oa.chain_ends if inSameChain(i,chain_end, oa.chain_starts, oa.chain_ends)]
+            assert(len(same_chain_end)) == 1, f"same_chain_end: {same_chain_end}, oa.chain_ends: {oa.chain_ends}, i: {i}, inSameChain(i,chain_end,oa.chain_starts,oa.chain_ends):{inSameChain(1,299,oa.chain_starts,oa.chain_ends)}"
+            same_chain_end = same_chain_end[0]
+            # the conditionals that guard the entire compute_dssp_hdrgn function in the lammps code
+            if isChainEnd(i,oa.chain_ends) or isChainStart(j,oa.chain_starts) or res_type[j] == "IPR":
+                continue
+            elif abs(i-j) < 4 and inSameChain(i, j, oa.chain_starts, oa.chain_ends): 
+                # the guard conditional actually has a cutoff of <=2 (not <=3) in the lammps code, but the energy is always set to 0 for |i-j|=3
+                # so there's no need to add a bond if |i-j|=3
+                continue
+            # if sequence separation is less than 18, i and j are in the same chain, and both are not designated as beta in ssweight,
+            #     then we alway set the energy to 0, so we can just exclude the Bond from the Force
+            elif abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i]=="not beta" or rama_biases[j]=="not beta"):
+                continue
+            # the lammps code excludes certain pairs of residues from Beta2 but not the others
+            elif term_number==2 and (isChainStart(i,oa.chain_starts) or isChainEnd(j,oa.chain_ends) or res_type[i]=='IPR'):
+                continue 
+            elif term_number==3 and (i>=same_chain_end-2 or isChainEnd(j,oa.chain_ends) or res_type[i+2]=="IPR"):
+                # res_type[i+2] may not exist, but only if i>=same_chain_end-2 is True, so the conditional passes without needing to compute res_type[i+2]
+                continue
+            # if we've made it this far, we can now set up Bonds
+            else:
+                # Set variables representing certain atoms in the equations (for example, ca_im2 for CA of residue i-2) 
+                # to their index in the structure (for example, ca[i-2]), if it exists; otherwise (for example, the case that i==0),
+                # set the variable to the index of an atom that does exist. It doesn't matter which one. The force term knows that it shouldn't
+                # contibute to the potential. We just need some atom to exist at the given index to avoid an OpenMM error
+                if i<2: 
+                    ca_im2 = 0 # we could have chosen the index of any atom in the system
+                else:
+                    ca_im2 = ca[i-2]
+                if j<2:
+                    ca_jm2 = 0 # we could have chosen the index of any atom in the system
+                else:
+                    ca_jm2 = ca[j-2]
+                if j>nres-3: # implies j+2>n-1, meaning that ca[j+2] doesn't exist
+                    ca_jp2 = 0 # we could have chosen the index of any atom in the system
+                else:
+                    ca_jp2 = ca[j+2] 
+                if i>nres-3: # implies i+2>n-1, meaning that ca[i+2] doesn't exist
+                    ca_ip2 = 0 # we could have chosen the index of any atom in the system
+                    n_ip2 = 0 # we could have chosen the index of any atom in the system
+                    h_ip2 = 0 # we could have chosen the index of any atom in the system
+                else:
+                    ca_ip2 = ca[i+2]
+                    n_ip2 = n[i+2] # needed for beta3 (but not the others)
+                    h_ip2 = h[i+2] # needed for beta3 (but not the others)
+                if term_number==1:
+                    # make list of atoms to be included in Bond
+                    bond_atoms = [o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2]
+                    if -1 in bond_atoms:
+                        # missing atoms should be caught by earlier code in the system setup (Structure? AWSEM?), 
+                        # so it's probably an issue with something in this function, not the user input
+                        raise AssertionError(f"Found index of -1 in list o, n, or h! {[o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2]}. i: {i}, j: {j}")
+                    # assign per-bond parameters
+                    res_index_i = i
+                    res_index_j = j
+                    samechain = int(inSameChain(res_index_i,res_index_j,oa.chain_starts,oa.chain_ends))
+                    Lambda = get_lambda_by_index(res_index_i, res_index_j, term_number-1, oa.chain_starts, oa.chain_ends)
+                    # add Bond with designated atoms a per-bond parameters
+                    Beta.addBond(bond_atoms, [Lambda, res_index_i, res_index_j, samechain])
+    Beta.setForceGroup(forceGroup)
+    return Beta
+
+def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight='ssweight'):
+    """
+    Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
+    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
+    """
+    return beta_cea754f(oa, 1, ssweight, forceGroup, k_beta=k_beta)
+
+def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight='ssweight'):
+    """
+    Wrapper that allows us to call hydrogenBondTerms.beta_term_2_old() in forces_setup.py as before.
+    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
+    """
+    #return beta_cea754f(oa, 2, ssweight, forceGroup, k_beta=k_beta)
+    return beta_term_2_old_reference(oa,forceGroup=24,k_beta=0.5*4.184)
+
+def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='ssweight'):
+    """
+    Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
+    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
+    """
+    return beta_cea754f(oa, 3, ssweight, forceGroup, k_beta=k_beta)
+
+def beta_term_1_old_reference(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='ssweight'):
     # the awsem-md paper doesn't say exactly which pairs of residues should be summed over for the beta 
     # terms, so we use the lammps code as our reference.
     # in the lammps code, beta1, beta2, and beta3 are evaluated within the same function
@@ -931,7 +1099,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='sswe
     beta_1.setForceGroup(forceGroup)
     return beta_1
 
-def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight="ssweight"):
+def beta_term_2_old_reference(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight="ssweight"):
     print("beta_2 term ON");
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
     # add beta potential
@@ -1128,7 +1296,7 @@ def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight="sswe
     #beta_3.setForceGroup(25)
     return beta_2
 
-def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25):
+def beta_term_3_old_reference(oa, k_beta=4.184, debug=False, forceGroup=25):
     print("beta_3 term ON")
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
     # add beta potential
@@ -1256,7 +1424,7 @@ def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25):
                 #print("assert passed!")
                 #print(same_chain_end)
                 same_chain_end = same_chain_end[0]
-                if i>=same_chain_end-2 or isChainEnd(j,oa.chain_ends) or res_type[i+2]=="IPR":
+                if i>=same_chain_end-2 or isChainEnd(j,oa.chain_ends) or res_type[i+2]=="IPR": # i think res_type[i+2] is not guaranteed to exist, but this only happens when i>=same_chain_end-2 evaluates to True and the conditional becomes True
                     continue
                     i_P_knockout = 0 # set theta_j,i+2 to 0
                 else:
