@@ -937,14 +937,36 @@ def beta_cea754f(oa,term_number,ssweight,forceGroup,k_beta=4.184):
                     if -1 in bond_atoms:
                         # missing atoms should be caught by earlier code in the system setup (Structure? AWSEM?), 
                         # so it's probably an issue with something in this function, not the user input
-                        raise AssertionError(f"Found index of -1 in list o, n, or h! {[o[i], n[j], h[j], ca_im2, ca_ip2, ca_jm2, ca_jp2]}. i: {i}, j: {j}")
-                    # assign per-bond parameters
-                    res_index_i = i
-                    res_index_j = j
-                    samechain = int(inSameChain(res_index_i,res_index_j,oa.chain_starts,oa.chain_ends))
-                    Lambda = get_lambda_by_index(res_index_i, res_index_j, term_number-1, oa.chain_starts, oa.chain_ends)
-                    # add Bond with designated atoms a per-bond parameters
-                    Beta.addBond(bond_atoms, [Lambda, res_index_i, res_index_j, samechain])
+                        raise AssertionError(f"Found index of -1 in list o, n, or h! {bond_atoms}. i: {i}, j: {j}")
+                    # assign Lambda, a per-bond parameter that is different for each beta term
+                    Lambda = get_lambda_by_index(i, j, 0, oa.chain_starts, oa.chain_ends)
+                elif term_number==2:
+                    # make list of atoms to be included in Bond
+                    bond_atoms = [o[i], n[j], h[j], o[j], n[i], h[i], ca_im2, ca_ip2, ca_jm2, ca_jp2]
+                    if -1 in bond_atoms:
+                        # missing atoms should be caught by earlier code in the system setup (Structure? AWSEM?), 
+                        # so it's probably an issue with something in this function, not the user input
+                        raise AssertionError(f"Found index of -1 in list o, n, or h! {bond_atoms}. i: {i}, j: {j}")
+                    # assign Lambda, a per-bond parameter that is different for each beta term
+                    Lambda = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
+                else:
+                    # check that we have a valid term_number argument
+                    if not term_number==3:
+                        raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
+                    # make list of atoms to be included in Bond
+                    bond_atoms = [o[i], n[j], h[j], o[j], n_ip2, h_ip2, ca_im2, ca_ip2, ca_jm2, ca_jp2]
+                    if -1 in bond_atoms:
+                        # missing atoms should be caught by earlier code in the system setup (Structure? AWSEM?), 
+                        # so it's probably an issue with something in this function, not the user input
+                        raise AssertionError(f"Found index of -1 in list o, n, or h! {bond_atoms}. i: {i}, j: {j}")
+                    # assign Lambda, a per-bond parameter that is different for each beta term
+                    Lambda = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
+                # assign per-bond parameters
+                res_index_i = i
+                res_index_j = j
+                samechain = int(inSameChain(res_index_i,res_index_j,oa.chain_starts,oa.chain_ends))
+                # add Bond with designated atoms and per-bond parameters
+                Beta.addBond(bond_atoms, [Lambda, res_index_i, res_index_j, samechain])
     Beta.setForceGroup(forceGroup)
     return Beta
 
@@ -960,8 +982,8 @@ def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight='sswei
     Wrapper that allows us to call hydrogenBondTerms.beta_term_2_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    #return beta_cea754f(oa, 2, ssweight, forceGroup, k_beta=k_beta)
-    return beta_term_2_old_reference(oa,forceGroup=24,k_beta=0.5*4.184)
+    return beta_cea754f(oa, 2, ssweight, forceGroup, k_beta=k_beta)
+    #return beta_term_2_old_reference(oa,forceGroup=24,k_beta=0.5*4.184)
 
 def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='ssweight'):
     """
