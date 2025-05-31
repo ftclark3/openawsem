@@ -851,7 +851,7 @@ def beta_cea754f(oa,term_number,ssweight,forceGroup,k_beta=4.184):
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing ,
     nu_1_bit += ")" # add ) to close the max( opened at the beginning of the statement
-    nu_i = f"0.5*(1+tanh({eta_beta_1}*(r_CAim2_CAip2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit})"
+    nu_i = f"(0.5*(1+tanh({eta_beta_1}*(r_CAim2_CAip2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit}))"
     #      nu_j
     nu_1_bit_list = [f"step(res_index_j-{start_res_index}-1)*step(res_index_j-{start_res_index}-1-1)*step({end_res_index}-res_index_j-1)*step({end_res_index}-1-res_index_j-1),"\
             for start_res_index,end_res_index in zip(oa.chain_starts,oa.chain_ends)]
@@ -860,9 +860,9 @@ def beta_cea754f(oa,term_number,ssweight,forceGroup,k_beta=4.184):
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing ,
     nu_1_bit += ")" # add ) to close the max( opened at the beginning of the statement
-    nu_j = f"0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit})"
+    nu_j = f"(0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit}))"
     #      adjusted nu_i*nu_j
-    seqsep_lessthan18 = "1-step(abs(res_index_i-res_index_j)-18)" # useful conditional to check whether our sequence separation is strictly less than 18
+    seqsep_lessthan18 = "(1-step(abs(res_index_i-res_index_j)-18))" # useful conditional to check whether our sequence separation is strictly less than 18
     #         set nu_i*nu_j to 1 if sequence separation is less than 18 and i and j are in the same chain;
     #         otherwise, pass through the unadjusted value nu_i*nu_j
     adjusted_nu = f"(samechain*({seqsep_lessthan18}+(1-{seqsep_lessthan18})*{nu_i}*{nu_j})+(1-samechain)*{nu_i}*{nu_j})" # samechain is a per-bond parameter
@@ -889,7 +889,8 @@ def beta_cea754f(oa,term_number,ssweight,forceGroup,k_beta=4.184):
             assert(len(same_chain_end)) == 1, f"same_chain_end: {same_chain_end}, oa.chain_ends: {oa.chain_ends}, i: {i}, inSameChain(i,chain_end,oa.chain_starts,oa.chain_ends):{inSameChain(1,299,oa.chain_starts,oa.chain_ends)}"
             same_chain_end = same_chain_end[0]
             # the conditionals that guard the entire compute_dssp_hdrgn function in the lammps code
-            if isChainEnd(i,oa.chain_ends) or isChainStart(j,oa.chain_starts) or res_type[j] == "IPR":
+            #    these might have changed over time. try the commented lines if trying to reproduce an earlier lammps commit
+            if isChainEnd(i,oa.chain_ends,n=1) or isChainStart(j,oa.chain_starts,n=1) or res_type[j] == "IPR":
                 continue
             elif abs(i-j) < 4 and inSameChain(i, j, oa.chain_starts, oa.chain_ends): 
                 # the guard conditional actually has a cutoff of <=2 (not <=3) in the lammps code, but the energy is always set to 0 for |i-j|=3
@@ -900,9 +901,9 @@ def beta_cea754f(oa,term_number,ssweight,forceGroup,k_beta=4.184):
             elif abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i]=="not beta" or rama_biases[j]=="not beta"):
                 continue
             # the lammps code excludes certain pairs of residues from Beta2 but not the others
-            elif term_number==2 and (isChainStart(i,oa.chain_starts) or isChainEnd(j,oa.chain_ends) or res_type[i]=='IPR'):
+            elif term_number==2 and (isChainStart(i,oa.chain_starts,n=1) or isChainEnd(j,oa.chain_ends,n=1) or res_type[i]=='IPR'):
                 continue 
-            elif term_number==3 and (i>=same_chain_end-2 or isChainEnd(j,oa.chain_ends) or res_type[i+2]=="IPR"):
+            elif term_number==3 and (i>=same_chain_end-2 or isChainEnd(j,oa.chain_ends,n=1) or res_type[i+2]=="IPR"):
                 # res_type[i+2] may not exist, but only if i>=same_chain_end-2 is True, so the conditional passes without needing to compute res_type[i+2]
                 continue
             # if we've made it this far, we can now set up Bonds
