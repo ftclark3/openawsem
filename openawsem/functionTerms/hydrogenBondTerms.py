@@ -252,7 +252,7 @@ def get_Lambda_2_old(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain
 
 def get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
     Lambda = get_lambda_by_index(i, j, 2, chain_starts, chain_ends)
-    Lambda += get_alpha_by_index(i, j, 3, chain_starts, chain_ends)*p_parhb[a[i+1], a[j]][0]
+    Lambda += get_alpha_by_index(i, j, 3, chain_starts, chain_ends)*p_parhb[a[i+1], a[j]][1]
     Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[i+1]]
     Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[j]] # Fix typo for https://github.com/npschafer/openawsem/issues/19
     return Lambda
