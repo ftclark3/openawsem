@@ -72,10 +72,6 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
                     min_seq_sep=3, max_seq_sep=9, fm_well_width=0.1, UseSavedFragTable=True, caOnly=False, forceGroup=23,
                     debug=False, frag_table_rmin = 0, frag_table_rmax = 5, frag_table_dr = 0.01):
     # 0.8368 = 0.01 * 4.184 # in kJ/mol, converted from default value in LAMMPS AWSEM
-    k_fm *= oa.k_awsem
-    frag_table_rmin = 0
-    frag_table_rmax = 5  # in nm
-    
     r_array = np.arange(frag_table_rmin, frag_table_rmax, frag_table_dr)
     number_of_atoms = oa.natoms
     r_table_size = int((frag_table_rmax - frag_table_rmin)/frag_table_dr)  # 500 here.
@@ -166,19 +162,9 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
             assert(ij_sep > 0)
             frag_table[index] = raw_frag_table[i][ij_sep]
             interaction_pair_to_bond_index[(i,j)] = index
-        for seqsep in range(2,10):
-            seqsep_pairs_functions = []
-            for counter in range(len(oa.ca)-seqsep):
-                seqsep_pairs_functions.append(frag_table[interaction_pair_to_bond_index[(oa.ca[counter],oa.ca[counter+seqsep])],:])
-            np.save(f'seqsep{seqsep}_pairs_functions',np.array(seqsep_pairs_functionss))
-        #np.save('test0-28.npy',frag_table[interaction_pair_to_bond_index[(oa.ca[4],oa.ca[10])],:])
-        #np.save(frag_table_file, np.array((frag_table, interaction_list, interaction_pair_to_bond_index),dtype=object))
-        #with open(frag_table_file, 'wb') as f:
-        #    pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)
-        #with open(f'tests/data/new_raw_frag_table.npy','wb') as f:
-        #    pickle.dump(raw_frag_table,f)
-        #with open(f'tests/data/new_raw_frag_table_count.npy','wb') as f:
-        #    pickle.dump(raw_frag_table_count,f)
+        # np.save(frag_table_file, (frag_table, interaction_list, interaction_pair_to_bond_index))
+        with open(frag_table_file, 'wb') as f:
+            pickle.dump((frag_table, interaction_list, interaction_pair_to_bond_index), f)    
         print(f"All gro files information have been stored in the {frag_table_file}. \
             \nYou might want to set the 'UseSavedFragTable'=True to speed up the loading next time. \
             \nBut be sure to remove the .npy file if you modify the .mem file. otherwise it will keep using the old frag memeory.")
