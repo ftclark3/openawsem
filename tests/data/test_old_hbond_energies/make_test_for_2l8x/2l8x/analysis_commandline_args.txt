@@ -1,0 +1,5 @@
+mm_analyze.py 4q28 -t ../lammps_movie.pdb -f forces_setup.py
+mm_analyze.py 2l8x -t ../lammps_movie.pdb -f forces_setup.py
+mm_analyze.py 2l8x -t ../lammps_movie.pdb -f forces_setup.py
+mm_analyze.py 2l8x -t ../lammps_movie.pdb -f forces_setup.py
+mm_analyze.py 2l8x -t ../lammps_movie.pdb -f forces_setup.py
