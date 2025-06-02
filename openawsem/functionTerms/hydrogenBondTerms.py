@@ -807,7 +807,7 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     pap.setForceGroup(26)
 #     return pap
 
-def beta_cea754f(oa,term_number,ssweight,forceGroup,k_beta=4.184):
+def beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta=4.184):
     """ 
     Function to compute either beta 1, beta 2, or beta 3, as implemented in a particular LAMMPS AWSEM-MD commit,
     https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb
@@ -997,14 +997,14 @@ def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight='sswei
     Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_cea754f(oa, 1, ssweight, forceGroup, k_beta=k_beta)
+    return beta_lammps_awsemmd(oa, 1, ssweight, forceGroup, k_beta=k_beta)
 
 def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight='ssweight'):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_2_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_cea754f(oa, 2, ssweight, forceGroup, k_beta=k_beta)
+    return beta_lammps_awsemmd(oa, 2, ssweight, forceGroup, k_beta=k_beta)
     #return beta_term_2_old_reference(oa,forceGroup=24,k_beta=0.5*4.184)
 
 def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='ssweight'):
@@ -1012,7 +1012,7 @@ def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='sswei
     Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_cea754f(oa, 3, ssweight, forceGroup, k_beta=k_beta)
+    return beta_lammps_awsemmd(oa, 3, ssweight, forceGroup, k_beta=k_beta)
 
 def beta_term_1_old_reference(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='ssweight'):
     # the awsem-md paper doesn't say exactly which pairs of residues should be summed over for the beta 
