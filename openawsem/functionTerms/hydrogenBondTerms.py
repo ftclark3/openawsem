@@ -162,7 +162,9 @@ def get_lambda_by_index(i, j, lambda_i, chain_starts, chain_ends, ssweight="sswe
     elif abs(j-i) >= 45:
         return lambda_table[lambda_i][2]
     else:
-        raise AssertionError(f"Unexpected i,j ({i},{j}) combination passed to get_lambda_by_index!")
+        return 0 # need to do this for the regular hydrogen bond terms
+        #            (the guard conditional should prevent this point from being reached for the beta_term_?_old terms)
+        #raise AssertionError(f"Unexpected i,j ({i},{j}) combination passed to get_lambda_by_index!")
 
 def get_alpha_by_index(i, j, alpha_i, chain_starts, chain_ends):
     alpha_table = [[1.30, 1.30, 1.30], # alpha1 for short seq sep, alpha 1 for medium seq sep, alpha 1 for long seq sep
