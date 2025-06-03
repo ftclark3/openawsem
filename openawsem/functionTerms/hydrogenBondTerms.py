@@ -855,7 +855,7 @@ def beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta=4.184):
             assert(len(same_chain_end)) == 1, f"same_chain_end: {same_chain_end}, oa.chain_ends: {oa.chain_ends}, i: {i}, inSameChain(i,chain_end,oa.chain_starts,oa.chain_ends):{inSameChain(1,299,oa.chain_starts,oa.chain_ends)}"
             same_chain_end = same_chain_end[0]
             # the conditionals that guard the entire compute_dssp_hdrgn function in the lammps code
-            #    these might have changed over time. try the commented lines if trying to reproduce an earlier lammps commit
+            #    these might have changed over time
             if isChainEnd(i,oa.chain_ends,n=1) or isChainStart(j,oa.chain_starts,n=1) or res_type[j] == "IPR":
                 continue
             elif abs(i-j) < 4 and inSameChain(i, j, oa.chain_starts, oa.chain_ends): 
@@ -869,8 +869,8 @@ def beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta=4.184):
             # the lammps code excludes certain pairs of residues from Beta2 but not the others
             elif term_number==2 and (isChainStart(i,oa.chain_starts,n=1) or isChainEnd(j,oa.chain_ends,n=1) or res_type[i]=='IPR'):
                 continue 
-            elif term_number==3 and (i>=same_chain_end-2 or isChainEnd(j,oa.chain_ends,n=1) or res_type[i+2]=="IPR"):
-                # res_type[i+2] may not exist, but only if i>=same_chain_end-2 is True, so the conditional passes without needing to compute res_type[i+2]
+            elif term_number==3 and (i>same_chain_end-2 or isChainEnd(j,oa.chain_ends,n=1) or res_type[i+2]=="IPR"):
+                # res_type[i+2] may not exist, but only if i>same_chain_end-2 is True, so the conditional passes without needing to compute res_type[i+2]
                 continue
             # if we've made it this far, we can now set up Bonds
             else:
