@@ -1,8 +1,9 @@
 #!/bin/bash
 source ~/.bashrc
-for PDBID in "2lnq"; do
+for PDBID in "7umq"; do
     n=208 # 2lnq
     n=587 # 1le5
+    n=620 # 7umq
     cd "make_test_for_${PDBID}"
     conda activate openawsem310                                                                  # openawsem installation required                           
     awsem_create $PDBID.pdb
