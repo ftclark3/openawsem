@@ -193,6 +193,8 @@ def get_weight_and_p_by_index(i,j,chain_starts,chain_ends,alpha_label,p_array):
         return weight*p_array[0]
     elif abs(j-i) >= 18 and abs(j-i) < 45:
         return weight*p_array[1]
+    elif abs(j-i) >= 45:
+        return weight*p_array[1]
     else:
         return 0    
 
@@ -820,7 +822,7 @@ def beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta=4.184):
     #    we make k_beta a global parameter so we can pass it in as an openmm unit object
     #    note that Lambda is a per bond parameter
     beta_term = f"-k_beta*Lambda*{theta[term_number-1]}*{adjusted_nu}*{distance_truncation};{distance_definitions[term_number-1]}"
-    print(f"beta_term: {beta_term}")
+    #print(f"beta_term: {beta_term}")
     #
     # set up openmm Force
     Beta = CustomCompoundBondForce(number_atoms[term_number-1],beta_term)
