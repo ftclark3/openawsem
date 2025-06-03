@@ -41,7 +41,7 @@ Finding 1-2 1-3 1-4 neighbors ...
      5 = max # of 1-2 neighbors
      5 = max # of special neighbors
   special bonds CPU = 0.000 seconds
-  read_data CPU = 0.018 seconds
+  read_data CPU = 0.010 seconds
 
 pair_coeff * * 0.0
 pair_coeff 1 1 20.0 3.5 4.5
@@ -84,7 +84,7 @@ dump		1 all atom 1000 dump.lammpstrj
 dump_modify	1 sort id
 
 reset_timestep	0
-run	        130000
+run		130000
 
 CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE-CITE
 
@@ -255,21 +255,21 @@ Per MPI rank memory allocation (min/avg/max) = 7.184 | 7.184 | 7.184 Mbytes
     128000   309.55823      1.6717737      45.991583      163.00514     -1194.9479      14422.928    
     129000   297.18847      2.2731933      43.957804      156.9638      -1249.8245      15083.64     
     130000   300.74313      1.1601401      44.326705      157.54411      1322.8039      13505.789    
-Loop time of 39.3669 on 1 procs for 130000 steps with 126 atoms
+Loop time of 39.194 on 1 procs for 130000 steps with 126 atoms
 
-Performance: 570.631 ns/day, 0.042 hours/ns, 3302.263 timesteps/s, 416.085 katom-step/s
+Performance: 573.149 ns/day, 0.042 hours/ns, 3316.836 timesteps/s, 417.921 katom-step/s
 98.1% CPU use with 1 MPI tasks x no OpenMP threads
 
 MPI task timing breakdown:
 Section |  min time  |  avg time  |  max time  |%varavg| %total
 ---------------------------------------------------------------
-Pair    | 3.2336     | 3.2336     | 3.2336     |   0.0 |  8.21
-Bond    | 0.29626    | 0.29626    | 0.29626    |   0.0 |  0.75
-Neigh   | 0.020053   | 0.020053   | 0.020053   |   0.0 |  0.05
-Comm    | 0.012619   | 0.012619   | 0.012619   |   0.0 |  0.03
-Output  | 0.01249    | 0.01249    | 0.01249    |   0.0 |  0.03
-Modify  | 35.727     | 35.727     | 35.727     |   0.0 | 90.75
-Other   |            | 0.0654     |            |       |  0.17
+Pair    | 3.2292     | 3.2292     | 3.2292     |   0.0 |  8.24
+Bond    | 0.29306    | 0.29306    | 0.29306    |   0.0 |  0.75
+Neigh   | 0.019746   | 0.019746   | 0.019746   |   0.0 |  0.05
+Comm    | 0.011024   | 0.011024   | 0.011024   |   0.0 |  0.03
+Output  | 0.01188    | 0.01188    | 0.01188    |   0.0 |  0.03
+Modify  | 35.566     | 35.566     | 35.566     |   0.0 | 90.74
+Other   |            | 0.06306    |            |       |  0.16
 
 Nlocal:            126 ave         126 max         126 min
 Histogram: 1 0 0 0 0 0 0 0 0 0

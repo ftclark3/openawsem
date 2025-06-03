@@ -5,7 +5,27 @@ As for the other energy tests, we need for each protein *_energies.csv  *-openmm
 
 Since we are not checking associative memory or Debye-Huckel energies, we do not need *-single_frags.mem, *-single_frags.npy, *.gro, or *-charge.txt.
 
-The make_test_for_* directories contain the files needed to generate the test input files: LAMMPS input files;, LAMMPS trajectories, trajectories reformatted using BuildAllAtomsFromLammps_openAWSEM.py, OpenAWSEM projects giving the required crystal_structure.pdb and crystal_structure.fasta files, and LAMMPS output files (energy.log being the important one)
+The make_test_for_* directories contain the files needed to generate the test input files: LAMMPS setup scripts, LAMMPS input files, LAMMPS trajectories, trajectories reformatted using BuildAllAtomsFromLammps_openAWSEM.py, OpenAWSEM projects giving the required crystal_structure.pdb and crystal_structure.fasta files, and LAMMPS output files (energy.log being the important one)
+
+To make a test for a new PDB, create directory make_test_for_PDBID, put your PDB file there, change into the directory, then
+conda activate openawsem310                                                                  # openawsem installation required                           
+awsem_create PDBID.pdb
+cp PDBID/ssweight ../PDBID-ssweight                                                          # or modify if if you don't like what openawsem did
+cp PDBID/ssweight ./ssweight                                                                 # or modify if if you don't like what openawsem did
+cp PDBID/crystal_structure.pdb ../PDBID-crystal_structure.pdb   
+cp PDBID/crystal_structure.fasta ../PDBID-crystal_structure.fasta 
+cp PDBID/PDBID-openmmawsem.pdb ../PDBID-openmmawsem.pdb
+conda deactivate
+conda activate lammps_awsem                                                                  # suggested to configure dependencies
+bash ../lammps_setup_scripts/NewPdb2Lammps.sh PDBID PDBID                                    # requires python=2.7.15, Bio=1.76
+cp ../lammps_setup_parameters/* .
+sed -i -e 's/peptide/awsemmd/g' PDBID.in
+sed -i -e 's/run\t\t10000/run\t\t0/g' PDBID.in                                               # 0 or whatever number of steps you want to run
+~/lammps24/lammps-29Aug2024/src/lmp_serial < PDBID.in > lammps_stdout.txt                    # or whatever the path to your lammps binary is 
+python3 ../BuildAllAtomsFromLammps_openAWSEM.py dump.lammpstrj lammps_movie.pdb PDBID.seq    # requires python=3.6.8 (other versions probably okay)
+CONVERT PDB FORMAT TRAJECTORY TO DCD FORMAT (name it lammps_movie.dcd)                       # can be done easily with VMD, for example
+cp lammps_movie.dcd ../PDBID-movie.dcd
+TAKE THE INFORMATION FROM energy.log AND PUT IT IN ../PDBID_energies.csv, FOLLOWING THE FORMAT OF OTHER PDBID_energies.csv FILES
 
 
 

@@ -27,25 +27,7 @@ def analyze(args):
     setupFolderPath = "." if setupFolderPath == "" else setupFolderPath
     proteinName = pdb_id = os.path.basename(args.protein)
     chain=args.chain
-    if pdb_id[-4:] == ".pdb":
-        pdb_id = pdb_id[:-4]
-        extension = "pdb"
-    elif pdb_id[-4:] == ".cif":
-        pdb_id = pdb_id[:-4]
-        extension = "cif"
-    else: # pdb_id is just a protein id, like 1r69
-        pdb_check = None
-        cif_check = None
-        if os.path.isfile(f"{pdb_id}.pdb"):
-            pdb_check = f"{pdb_id}.pdb"
-            extension = "pdb"
-        if os.path.isfile(f"{pdb_id}.cif"):
-            cif_check = f"{pdb_id}.cif"
-            extension = "cif"
-        if pdb_check and cif_check:
-            raise ValueError(f"Found both pdb and cif structure files {pdb_id}.pdb and {pdb_id}.cif. Fix your project directory!")
-        elif not pdb_check and not cif_check:
-            raise ValueError(f"Could not find {pdb_id}.pdb or {pdb_id}.cif")
+    pdb = f"{pdb_id}.pdb"
 
     trajectoryPath = os.path.abspath(args.trajectory)
     if args.output is None:
@@ -67,7 +49,7 @@ def analyze(args):
 
 
     if chain == "-1":
-        chain = getAllChains(f"crystal_structure.{extension}")
+        chain = getAllChains("crystal_structure.pdb")
         print("Chains to simulate: ", chain)
 
     # for compute Q
@@ -76,11 +58,11 @@ def analyze(args):
         seq=read_fasta("crystal_structure.fasta")
         print(f"Using Seq:\n{seq}")
     else:
-        suffix = f'-openmmawsem.{extension}'
+        suffix = '-openmmawsem.pdb'
         if pdb_id[-len(suffix):] == suffix:
             input_pdb_filename = pdb_id
         else:
-            input_pdb_filename = f"{pdb_id}-openmmawsem.{extension}"
+            input_pdb_filename = f"{pdb_id}-openmmawsem.pdb"
         seq=None
 
     if args.fasta == "":
@@ -99,26 +81,15 @@ def analyze(args):
         print(f"Unknown fileType {fileType}")
     # pdb_trajectory = read_trajectory_pdb_positions(trajectoryPath)
 
-    # check for atoms whose positions are intended to be fixed
-    if args.fixed_residue_indices:
-        with open(args.fixed_residue_indices,'r') as f:
-            for line in f: # only expect 1 line
-                fixed_residue_indices = line.strip().split(',') #expecting a one-line csv
-                fixed_residue_indices = [int(item) for item in fixed_residue_indices]
-                break
-    else:
-        fixed_residue_indices = []
 
-    oa = OpenMMAWSEMSystem(input_pdb_filename, chains=chain, k_awsem=1.0, xml_filename=openawsem.xml, seqFromPdb=seq, 
-                           fixed_residue_indices=fixed_residue_indices,periodic=args.periodic, periodic_xyz_length=args.periodic_xyz_length,
-                           includeLigands=args.includeLigands)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
+    oa = OpenMMAWSEMSystem(input_pdb_filename, chains=chain, k_awsem=1.0, xml_filename=openawsem.xml, seqFromPdb=seq, includeLigands=args.includeLigands)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
 
     print(f"using force setup file from {forceSetupFile}")
     spec = importlib.util.spec_from_file_location("forces", forceSetupFile)
     # print(spec)
     forces = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(forces)
-    forces = forces.set_up_forces(oa, computeQ=True, submode=args.subMode, contactParameterLocation=parametersLocation, extension=extension)
+    forces = forces.set_up_forces(oa, computeQ=True, submode=args.subMode, contactParameterLocation=parametersLocation)
     oa.addForcesWithDefaultForceGroup(forces)
     # print(forces)
 
@@ -129,7 +100,7 @@ def analyze(args):
     simulation = Simulation(oa.pdb.topology, oa.system, integrator, platform)
 
     # apply forces
-    forceGroupTable = {"Backbone":20, "Rama":21, "Contact":22, "Beta1":23, "Beta2":24, "Beta3":25, "P-AP":26, "Fragment":29,
+    forceGroupTable = {"Backbone":20, "Rama":21, "Contact":22, "Fragment":23, "Membrane":24, "ER":25, "TBM_Q":26, "Beta":27, "Pap":28, "Helical":29,
                         "Q":1, "Rg":2, "Qc":3,
                         "Helix_orientation":18, "Pulling":19, "Debye_huckel":30,
                         "Total":list(range(11, 32))
@@ -151,7 +122,7 @@ def analyze(args):
     showValue = ["Q", "Qc", "Rg"]
     # term in showEnergy will assume to take on the energy unit of kilojoule_per_mole, it will be shown in unit of kilocalories_per_mole(divided by 4.184) 
     # term in showValue will not be converted.
-    showEnergy = ["Backbone", "Rama", "Contact", "Fragment", "Beta1","Beta2","Beta3","P-AP", "Debye_huckel","Total"]
+    showEnergy = ["Backbone", "Rama", "Contact", "Fragment", "Membrane", "ER", "TBM_Q", "Beta", "Pap", "Helical", "Debye_huckel","Total"]
     showAll = showValue + showEnergy
     # , "Disulfide"
     # showEnergy = ["Q", "Qc", "Rg", "Con", "Chain", "Chi", "Excluded", "Rama", "Contact", "Helical", "Fragment", "Membrane", "ER", "Beta", "Pap", "Total"]
@@ -210,10 +181,6 @@ def main(args=None):
     parser.add_argument("--fromOpenMMPDB", action="store_true", default=False)
     parser.add_argument("--fasta", type=str, default="crystal_structure.fasta")
     parser.add_argument("--includeLigands", action="store_true", default=False)
-    parser.add_argument('--periodic',action="store_true",default=False,help='applies periodic boundary condition')
-    parser.add_argument('--periodic_xyz_length',type=float,default=10,help='periodic box size (nanometers) in x, y, and z dimensions')
-    parser.add_argument('--fixed_residue_indices', type=str, default='', help='csv file with indices (not "ids" or "resnums") of residues whose positions should be fixed)')
-
     if args is None:
         args = parser.parse_args()
     else:

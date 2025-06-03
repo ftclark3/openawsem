@@ -84,29 +84,3 @@
 0.76 0.68
 2.1558 2.9862
 
-[Fragment_Memory_Table]-
-0.2
-fragsLAMW.mem.single
-seq.gamma
-0 50 0.01
-0.1
-0
-0.15
-
-[DebyeHuckel]-
-5.0 5.0 5.0
-1.0
-10.0 
-1
-
-[Tertiary_Frustratometer]-
-10
-1000
-1
-MD
-
-[Tertiary_Frustratometer]-
-9.5   #contact cut-off
-10000 #number of decoys
-1
-MD / mutational / singleresidue

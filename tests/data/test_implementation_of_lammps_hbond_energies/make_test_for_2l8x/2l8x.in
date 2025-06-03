@@ -49,4 +49,4 @@ dump		1 all atom 1000 dump.lammpstrj
 dump_modify	1 sort id
 
 reset_timestep	0
-run	        130000	
+run		130000

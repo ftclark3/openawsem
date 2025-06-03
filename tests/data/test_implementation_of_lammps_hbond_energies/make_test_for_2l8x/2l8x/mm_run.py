@@ -27,7 +27,7 @@ def run(args):
     # if mm_run.py is not at the same location of your setup folder.
     setupFolderPath = os.path.dirname(args.protein)
     setupFolderPath = "." if setupFolderPath == "" else setupFolderPath
-    proteinName = pdb_id = os.path.basename(args.protein) # I think basename chops off the .pdb or .cif extension, if provided
+    proteinName = pdb_id = os.path.basename(args.protein)
 
     pwd = os.getcwd()
     toPath = os.path.abspath(args.to)
@@ -36,30 +36,14 @@ def run(args):
     parametersLocation = "." if args.parameters is None else os.path.abspath(args.parameters)
     os.chdir(setupFolderPath)
 
-    chain=args.chain
 
-    if pdb_id[-4:] == ".pdb":
-        pdb_id = pdb_id[:-4]
-        extension = "pdb"
-    elif pdb_id[-4:] == ".cif":
-        pdb_id = pdb_id[:-4]
-        extension = "cif"
-    else: # pdb_id is just a protein id, like 1r69
-        pdb_check = None
-        cif_check = None
-        if os.path.isfile(f"{pdb_id}.pdb"):
-            pdb_check = f"{pdb_id}.pdb"
-            extension = "pdb"
-        if os.path.isfile(f"{pdb_id}.cif"):
-            cif_check = f"{pdb_id}.cif"
-            extension = "cif"
-        if pdb_check and cif_check:
-            raise ValueError(f"Found both pdb and cif structure files {pdb_id}.pdb and {pdb_id}.cif. Fix your project directory!")
-        elif not pdb_check and not cif_check:
-            raise ValueError(f"Could not find {pdb_id}.pdb or {pdb_id}.cif")
+
+    # chain=args.chain
+    chain=args.chain
+    pdb = f"{pdb_id}.pdb"
 
     if chain == "-1":
-        chain = getAllChains(f"crystal_structure.{extension}")
+        chain = getAllChains("crystal_structure.pdb")
         print("Chains to simulate: ", chain)
 
 
@@ -68,7 +52,7 @@ def run(args):
         os.makedirs(toPath, exist_ok=True)
         os.system(f"cp {forceSetupFile} {toPath}/forces_setup.py")
         os.system(f"cp crystal_structure.fasta {toPath}/")
-        os.system(f"cp crystal_structure.{extension} {toPath}/")
+        os.system(f"cp crystal_structure.pdb {toPath}/")
         # os.system(f"cp {pdb} {args.to}/{pdb}")
         # pdb = os.path.join(args.to, pdb)
 
@@ -77,11 +61,11 @@ def run(args):
         seq=read_fasta("crystal_structure.fasta")
         print(f"Using Seq:\n{seq}")
     else:
-        suffix = f'-openmmawsem.{extension}'
+        suffix = '-openmmawsem.pdb'
         if pdb_id[-len(suffix):] == suffix:
             input_pdb_filename = pdb_id
         else:
-            input_pdb_filename = f"{pdb_id}-openmmawsem.{extension}"
+            input_pdb_filename = f"{pdb_id}-openmmawsem.pdb"
         seq=None
 
     if args.fasta == "":
@@ -91,16 +75,6 @@ def run(args):
         print(f"Using Seq:\n{seq}")
     # start simulation
     collision_rate = 5.0 / picoseconds
-
-    # check for atoms whose positions are intended to be fixed
-    if args.fixed_residue_indices:
-        with open(args.fixed_residue_indices,'r') as f:
-            for line in f: # only expect 1 line
-                fixed_residue_indices = line.strip().split(',') #expecting a one-line csv
-                fixed_residue_indices = [int(item) for item in fixed_residue_indices]
-                break
-    else:
-        fixed_residue_indices = []
 
     # assign annealing parameters
     Tstart = args.tempStart
@@ -113,10 +87,8 @@ def run(args):
     spec.loader.exec_module(forces)
 
 
-    oa = OpenMMAWSEMSystem(input_pdb_filename, k_awsem=1.0, chains=chain, xml_filename=openawsem.xml, seqFromPdb=seq, 
-                           includeLigands=args.includeLigands, periodic=args.periodic, periodic_xyz_length=args.periodic_xyz_length,
-                           fixed_residue_indices=fixed_residue_indices)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
-    myForces = forces.set_up_forces(oa, submode=args.subMode, contactParameterLocation=parametersLocation, extension=extension)
+    oa = OpenMMAWSEMSystem(input_pdb_filename, k_awsem=1.0, chains=chain, xml_filename=openawsem.xml, seqFromPdb=seq, includeLigands=args.includeLigands)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
+    myForces = forces.set_up_forces(oa, submode=args.subMode, contactParameterLocation=parametersLocation)
     # print(forces)
     # oa.addForces(myForces)
 
@@ -133,10 +105,7 @@ def run(args):
         integrator = CustomIntegrator(0.001)
         simulation = Simulation(oa.pdb.topology, oa.system, integrator, platform)
         simulation.context.setPositions(oa.pdb.positions)  # set the initial positions of the atoms
-        if extension == "pdb": # we might not be able to write cif file as pdb
-            simulation.reporters.append(PDBReporter(os.path.join(toPath, "native.pdb"), 1))
-        else:
-            logging.warning("Will not write pdb format trajectory for system loaded from cif file")
+        simulation.reporters.append(PDBReporter(os.path.join(toPath, "native.pdb"), 1))
         simulation.reporters.append(DCDReporter(os.path.join(toPath, "movie.dcd"), 1))
         simulation.step(int(1))
         simulation.minimizeEnergy()  # first, minimize the energy to a local minimum to reduce any large forces that might be present
@@ -163,10 +132,7 @@ def run(args):
     print("num_frames", args.numFrames)
     simulation.reporters.append(StateDataReporter(sys.stdout, args.reportInterval, step=True, potentialEnergy=True, temperature=True))  # output energy and temperature during simulation
     simulation.reporters.append(StateDataReporter(os.path.join(toPath, "output.log"), args.reportInterval, step=True, potentialEnergy=True, temperature=True)) # output energy and temperature to a file
-    if extension == "pdb": # we might not be able to write cif file as pdb
-        simulation.reporters.append(PDBReporter(os.path.join(toPath, "movie.pdb"), reportInterval=args.reportInterval))  # output PDBs of simulated structures
-    else:
-        logging.warning("Will not write pdb format trajectory for system loaded from cif file")
+    simulation.reporters.append(PDBReporter(os.path.join(toPath, "movie.pdb"), reportInterval=args.reportInterval))  # output PDBs of simulated structures
     simulation.reporters.append(DCDReporter(os.path.join(toPath, "movie.dcd"), reportInterval=args.reportInterval, append=True))  # output PDBs of simulated structures
     # simulation.reporters.append(DCDReporter(os.path.join(args.to, "movie.dcd"), 1))  # output PDBs of simulated structures
     # simulation.reporters.append(PDBReporter(os.path.join(args.to, "movie.pdb"), 1))  # output PDBs of simulated structures
@@ -224,17 +190,10 @@ def run(args):
         analysis_fasta = ""
     else:
         analysis_fasta = f"--fasta {args.fasta}"
-    additional_cmd = ""
     if args.includeLigands:
-        additional_cmd += "--includeLigands "
-    if args.periodic:
-        additional_cmd += "--periodic "
-    if args.periodic_xyz_length:
-        additional_cmd += f"--periodic_xyz_length {args.periodic_xyz_length} "
-    if args.fixed_residue_indices:
-        additional_cmd += f"--fixed_residue_indices {fixed_residue_indices} "
-    if args.fromOpenMMPDB:
-        additional_cmd += f"--fromOpenMMPDB "
+        additional_cmd = "--includeLigands"
+    else:
+        additional_cmd = ""
     os.system(f"{sys.executable} mm_analyze.py {args.protein} -t {os.path.join(toPath, 'movie.dcd')} --subMode {args.subMode} -f {args.forces} {analysis_fasta} {additional_cmd} -c {chain}")
 
 
@@ -271,9 +230,6 @@ def main(args=None):
     parser.add_argument("--includeLigands", action="store_true", default=False)
     parser.add_argument('--device', default=0, help='OpenCL/CUDA device index')
     parser.add_argument('--removeCMMotionRemover', action="store_true", default=False, help='Removes CMMotionRemover. Recommended for periodic boundary conditions and membrane simulations')
-    parser.add_argument('--fixed_residue_indices', type=str, default='', help='csv file with indices (not "ids" or "resnums") of residues whose positions should be fixed)')
-    parser.add_argument('--periodic',action="store_true",default=False,help='applies periodic boundary condition')
-    parser.add_argument('--periodic_xyz_length',type=float,default=10,help='periodic box size (nanometers) in x, y, and z dimensions')
     parser.add_argument('--dryRun',action="store_true",default=False,help="Return the configuration and exit without running the simulation")
 
     if args is None:
