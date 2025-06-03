@@ -37,5 +37,5 @@ TAKE THE INFORMATION FROM energy.log AND PUT IT IN ../PDBID_energies.csv, FOLLOW
 DON'T FORGET TO ADD PDBID TO THE PROTEINS LIST IN THE TEST SCRIPT, test_implementation_of_lammps_hbond_energies.py
 
 
-See make_amyloid_6chain_tests.sh for an example
+See make_test.sh for an example
 

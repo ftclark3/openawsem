@@ -15,7 +15,7 @@ compares OpenAWSEM implementation of "old" hbond energy from LAMMPS AWSEM-MD com
 """
 
 
-PROTEINS = ["2onv_6chains","2l8x"]
+PROTEINS = ["1le5","2onv_6chains","2y3j_6chains","3loz_6chains","3nve_6chains","3nhc_6chains","3ow9_6chains","4r0p_6chains","2lnq","2l8x"]
 COLUMNS = ["Beta"] #"Pap", "Helical"]
 PLATFORMS = ['Reference', 'CPU', 'OpenCL', 'CUDA']
 data_path = Path('tests')/'data'/'test_implementation_of_lammps_hbond_energies'
