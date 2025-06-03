@@ -26,6 +26,7 @@ python3 ../BuildAllAtomsFromLammps_openAWSEM.py dump.lammpstrj lammps_movie.pdb 
 CONVERT PDB FORMAT TRAJECTORY TO DCD FORMAT (name it lammps_movie.dcd)                       # can be done easily with VMD, for example
 cp lammps_movie.dcd ../PDBID-movie.dcd
 TAKE THE INFORMATION FROM energy.log AND PUT IT IN ../PDBID_energies.csv, FOLLOWING THE FORMAT OF OTHER PDBID_energies.csv FILES
+DON'T FORGET TO ADD PDBID TO THE PROTEINS LIST IN THE TEST SCRIPT, test_implementation_of_lammps_hbond_energies.py
 
 
 
