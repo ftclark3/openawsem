@@ -735,7 +735,7 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     pap.setForceGroup(26)
 #     return pap
 
-def beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta=4.184):
+def _beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta):
     """ 
     Function to compute either beta 1, beta 2, or beta 3, as implemented in a particular LAMMPS AWSEM-MD commit,
     https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb
@@ -925,25 +925,24 @@ def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight='sswei
     Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_lammps_awsemmd(oa, 1, ssweight, forceGroup, k_beta=k_beta)
+    return _beta_lammps_awsemmd(oa, 1, ssweight, forceGroup, k_beta)
 
 def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight='ssweight'):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_2_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_lammps_awsemmd(oa, 2, ssweight, forceGroup, k_beta=k_beta)
-    #return beta_term_2_old_reference(oa,forceGroup=24,k_beta=0.5*4.184)
+    return _beta_lammps_awsemmd(oa, 2, ssweight, forceGroup, k_beta)
 
 def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='ssweight'):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_lammps_awsemmd(oa, 3, ssweight, forceGroup, k_beta=k_beta)
+    return _beta_lammps_awsemmd(oa, 3, ssweight, forceGroup, k_beta)
 
 
-def pap_term_old(oa, k_pap=4.184, forceGroup=26):
+def _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap):
     print("pap term ON")
     nres, ca = oa.nres, oa.ca
     # r0 = 2.0 # nm
@@ -985,3 +984,9 @@ def pap_term_old(oa, k_pap=4.184, forceGroup=26):
     # print(count)
     pap.setForceGroup(forceGroup)
     return pap
+
+def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight="ssweight"):
+    """
+    Wrapper that allows us to call hydrogenBondTerms.pap_term_old() in forces_setup.py as before.
+    """
+    return _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap)
