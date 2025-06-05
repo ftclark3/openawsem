@@ -16,7 +16,7 @@ compares OpenAWSEM implementation of "old" hbond energy from LAMMPS AWSEM-MD com
 
 
 PROTEINS = ["1le5","2onv_6chains","2y3j_6chains","3loz_6chains","3nve_6chains","3nhc_6chains","3ow9_6chains","4r0p_6chains","2lnq","2l8x","7umq"]
-COLUMNS = ["Beta"] #"Pap", "Helical"]
+COLUMNS = ["Beta","Pap",]# "Helical"]
 PLATFORMS = ['Reference', 'CPU', 'OpenCL', 'CUDA']
 data_path = Path('tests')/'data'/'test_implementation_of_lammps_hbond_energies'
 
@@ -66,9 +66,8 @@ def set_up_forces(oa, protein, force_name=None):
         "Beta1": lambda: openawsem.functionTerms.hydrogenBondTerms.beta_term_1_old(oa,k_beta=0.5*4.184,ssweight=data_path/f'{protein}-ssweight'), 
         "Beta2": lambda: openawsem.functionTerms.hydrogenBondTerms.beta_term_2_old(oa,k_beta=0.5*4.184,ssweight=data_path/f'{protein}-ssweight'), 
         "Beta3": lambda: openawsem.functionTerms.hydrogenBondTerms.beta_term_3_old(oa,k_beta=0.5*4.184,ssweight=data_path/f'{protein}-ssweight'), 
-        "Helical": lambda: openawsem.functionTerms.hydrogenBondTerms.helical_term(oa),
-        "Pap1": lambda: openawsem.functionTerms.hydrogenBondTerms.pap_term_1(oa),
-        "Pap2": lambda: openawsem.functionTerms.hydrogenBondTerms.pap_term_2(oa),
+        "Helical": lambda: openawsem.functionTerms.hydrogenBondTerms.helical_term(oa,forceGroup=29),
+        "Pap": lambda: openawsem.functionTerms.hydrogenBondTerms.pap_term_old(oa,k_pap=0.5*4.184,ssweight=data_path/f'{protein}-ssweight',forceGroup=28),
     }
 
     forces = []
