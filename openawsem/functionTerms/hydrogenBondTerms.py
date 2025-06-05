@@ -57,12 +57,12 @@ def inSameChain(i,j,chain_starts,chain_ends):
     # but it shouldn't really affect anything
     if i<0 or j<0:
         if i<0 and j<0:
-            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+            raise AssertionError(f"Residues i and j are not within chain boundaries i: {i}, j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}")
         else:
             return False
     if i>chain_ends[-1] or j>chain_ends[-1]:
         if i>chain_ends[-1] and j>chain_ends[-1]:
-            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+            raise AssertionError(f"Residues i and j are not within chain boundaries i: {i}, j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}")
         else:
             return False
     # if we've made it this far, we know that both residues exist
