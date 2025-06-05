@@ -126,45 +126,44 @@ def read_beta_parameters(parametersLocation=None):
     return p_par, p_anti, p_antihb, p_antinhb, p_parhb
 
 
+def get_beta_class(i,j,lambda_i, chain_starts, chain_ends):
+    """
+    Return the beta class of the pair (i, j) based on the sequence separation and chain information.
+    """
+    same_chain = inSameChain(i,j,chain_starts,chain_ends)
+    # for intrachain pairs, proceed as before
+    if abs(j-i) >= 4 and abs(j-i) < 18:
+        return 1
+    elif abs(j-i) >= 18 and abs(j-i) < 45:
+        return 2
+    elif not same_chain or abs(j-i) >= 45:
+        return 3
+    else:
+        return 0
+
+LAMBDA_TABLE = [
+    #class1, class2, class3, class4
+    [0.00,   1.37,   1.36,   1.17], # lambda_0
+    [0.00,   3.89,   3.50,   3.52], # lambda_1
+    [0.00,   0.00,   3.47,   3.62], # lambda_2
+]
+
 def get_lambda_by_index(i, j, lambda_i, chain_starts, chain_ends):
+    beta_cls = get_beta_class(i, j, lambda_i, chain_starts, chain_ends)
+    return LAMBDA_TABLE[lambda_i][beta_cls]
 
+ALPHA_TABLE = [
+    #class1, class2, class3, class4
+    [0.00,   1.30,   1.30,   1.30],  # alpha_0
+    [0.00,   1.32,   1.32,   1.32],  # alpha_1
+    [0.00,   1.22,   1.22,   1.22],  # alpha_2
+    [0.00,   0.00,   0.33,   0.33],  # alpha_3
+    [0.00,   0.00,   1.01,   1.01],  # alpha_4
+]
 
-    lambda_table = [[1.37, 1.36, 1.17],
-                    [3.89, 3.50, 3.52],
-                    [0.00, 3.47, 3.62]]
-    same_chain = inSameChain(i,j,chain_starts,chain_ends)
-    # treat residues from different chains as intrachain residues of the largest sequence separation class
-    if same_chain==False:
-        return lambda_table[lambda_i][2]
-    # for intrachain pairs, proceed as before
-    if abs(j-i) >= 4 and abs(j-i) < 18:
-        return lambda_table[lambda_i][0]
-    elif abs(j-i) >= 18 and abs(j-i) < 45:
-        return lambda_table[lambda_i][1]
-    elif abs(j-i) >= 45:
-        return lambda_table[lambda_i][2]
-    else:
-        return 0
-
-def get_alpha_by_index(i, j, alpha_i, chain_starts,chain_ends):
-    alpha_table = [[1.30, 1.30, 1.30],
-                    [1.32, 1.32, 1.32],
-                    [1.22, 1.22, 1.22],
-                    [0.00, 0.33, 0.33],
-                    [0.00, 1.01, 1.01]]
-    same_chain = inSameChain(i,j,chain_starts,chain_ends)
-    # treat residues from different chains as intrachain residues of the largest sequence separation class
-    if same_chain==False:
-        return alpha_table[alpha_i][2]
-    # for intrachain pairs, proceed as before
-    if abs(j-i) >= 4 and abs(j-i) < 18:
-        return alpha_table[alpha_i][0]
-    elif abs(j-i) >= 18 and abs(j-i) < 45:
-        return alpha_table[alpha_i][1]
-    elif abs(j-i) >= 45:
-        return alpha_table[alpha_i][2]
-    else:
-        return 0
+def get_alpha_by_index(i, j, alpha_i, chain_starts, chain_ends):
+    beta_cls = get_beta_class(i, j, alpha_i, chain_starts, chain_ends)
+    return ALPHA_TABLE[alpha_i][beta_cls]
 
 def get_pap_gamma_APH(donor_idx, acceptor_idx, chain_i, chain_j, gamma_APH):
     # if chain_i == chain_j and abs(j-i) < 13 or abs(j-i) > 16:
