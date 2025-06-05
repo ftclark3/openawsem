@@ -49,6 +49,32 @@ def isChainEdge(residueId, chain_starts, chain_ends, n=2):
     #         atEnd = True
     # return (atBegin or atEnd)
 
+def inSameChain(i,j,chain_starts,chain_ends):
+    # determine whether residues are in the same chain
+    #
+    # sometimes, one of the residues might not exist
+    # we'll treat not existing as being part of a different chain
+    # but it shouldn't really affect anything
+    if i<0 or j<0:
+        if i<0 and j<0:
+            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+        else:
+            return False
+    if i>chain_ends[-1] or j>chain_ends[-1]:
+        if i>chain_ends[-1] and j>chain_ends[-1]:
+            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+        else:
+            return False
+    # if we've made it this far, we know that both residues exist
+    wombat = [int(chain_start<=i and i<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(wombat) == 1, f"i: {i}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
+    chain_index_1 = wombat.index(1)
+    wombat = [int(chain_start<=j and j<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(wombat) == 1, f"j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
+    chain_index_2 = wombat.index(1)
+    same_chain = chain_index_1==chain_index_2
+    return same_chain
+
 def inWhichChain(residueId, chain_ends):
     chain_table = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     for i, end_of_chain_resId in enumerate(chain_ends):
@@ -96,6 +122,11 @@ def get_lambda_by_index(i, j, lambda_i):
     lambda_table = [[1.37, 1.36, 1.17],
                     [3.89, 3.50, 3.52],
                     [0.00, 3.47, 3.62]]
+    same_chain = inSameChain(i,j,chain_starts,chain_ends)
+    # treat residues from different chains as intrachain residues of the largest sequence separation class
+    if same_chain==False:
+        return lambda_table[lambda_i][2]
+    # for intrachain pairs, proceed as before
     if abs(j-i) >= 4 and abs(j-i) < 18:
         return lambda_table[lambda_i][0]
     elif abs(j-i) >= 18 and abs(j-i) < 45:
@@ -111,6 +142,11 @@ def get_alpha_by_index(i, j, alpha_i):
                     [1.22, 1.22, 1.22],
                     [0.00, 0.33, 0.33],
                     [0.00, 1.01, 1.01]]
+    same_chain = inSameChain(i,j,chain_starts,chain_ends)
+    # treat residues from different chains as intrachain residues of the largest sequence separation class
+    if same_chain==False:
+        return alpha_table[alpha_i][2]
+    # for intrachain pairs, proceed as before
     if abs(j-i) >= 4 and abs(j-i) < 18:
         return alpha_table[alpha_i][0]
     elif abs(j-i) >= 18 and abs(j-i) < 45:
@@ -151,19 +187,19 @@ def get_pap_gamma_P(donor_idx, acceptor_idx, chain_i, chain_j, gamma_P, ssweight
     else:
         return 0
 
-def get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a):
-    Lambda = get_lambda_by_index(i, j, 1)
-    Lambda += -0.5*get_alpha_by_index(i, j, 0)*p_antihb[a[i], a[j]][0]
-    Lambda += -0.25*get_alpha_by_index(i, j, 1)*(p_antinhb[a[i+1], a[j-1]][0] + p_antinhb[a[i-1], a[j+1]][0])
-    Lambda += -get_alpha_by_index(i, j, 2)*(p_anti[a[i]] + p_anti[a[j]])
+def get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
+    Lambda = get_lambda_by_index(i, j, 1, chain_starts, chain_ends)
+    Lambda += -0.5*get_alpha_by_index(i, j, 0, chain_starts, chain_ends)*p_antihb[a[i], a[j]][0]
+    Lambda += -0.25*get_alpha_by_index(i, j, 1, chain_starts, chain_ends)*(p_antinhb[a[i+1], a[j-1]][0] + p_antinhb[a[i-1], a[j+1]][0])
+    Lambda += -get_alpha_by_index(i, j, 2, chain_starts, chain_ends)*(p_anti[a[i]] + p_anti[a[j]])
     return Lambda
 
-def get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a):
-    Lambda = get_lambda_by_index(i, j, 2)
-    Lambda += -get_alpha_by_index(i, j, 3)*p_parhb[a[i+1], a[j]][0]
-    Lambda += -get_alpha_by_index(i, j, 4)*p_par[a[i+1]]
+def get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
+    Lambda = get_lambda_by_index(i, j, 2, chain_starts, chain_ends)
+    Lambda += -get_alpha_by_index(i, j, 3, chain_starts, chain_ends)*p_parhb[a[i+1], a[j]][0]
+    Lambda += -get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[i+1]]
     # Lambda += -get_alpha_by_index(i, j, 3)*p_par[a[j]]
-    Lambda += -get_alpha_by_index(i, j, 4)*p_par[a[j]] # Fix typo for https://github.com/npschafer/openawsem/issues/19
+    Lambda += -get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[j]] # Fix typo for https://github.com/npschafer/openawsem/issues/19
     return Lambda
 
 
@@ -819,7 +855,7 @@ def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24):
             #if not res_type[j] == "IPR":
             #    beta_1.addBond([o[i], n[j], h[j], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [i, j])
             if not res_type[i] == "IPR" and not res_type[j] == "IPR":
-                beta_2.addBond([o[i], n[j], h[j], o[j], n[i], h[i], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a)])
+                beta_2.addBond([o[i], n[j], h[j], o[j], n[i], h[i], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)])
             #if not res_type[i+2] == "IPR" and not res_type[j] == "IPR":
             #    beta_3.addBond([o[i], n[j], h[j], o[j], n[i+2], h[i+2], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [i, j])
 
@@ -894,7 +930,7 @@ def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25):
             #if not res_type[i] == "IPR" and not res_type[j] == "IPR":
             #    beta_2.addBond([o[i], n[j], h[j], o[j], n[i], h[i], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [i, j])
             if not res_type[i+2] == "IPR" and not res_type[j] == "IPR":
-                beta_3.addBond([o[i], n[j], h[j], o[j], n[i+2], h[i+2], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a)])
+                beta_3.addBond([o[i], n[j], h[j], o[j], n[i+2], h[i+2], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)])
 
 
     #beta_1.setForceGroup(23)
