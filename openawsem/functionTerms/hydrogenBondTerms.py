@@ -49,31 +49,41 @@ def isChainEdge(residueId, chain_starts, chain_ends, n=2):
     #         atEnd = True
     # return (atBegin or atEnd)
 
-def inSameChain(i,j,chain_starts,chain_ends):
-    # determine whether residues are in the same chain
-    #
-    # sometimes, one of the residues might not exist
-    # we'll treat not existing as being part of a different chain
-    # but it shouldn't really affect anything
-    if i<0 or j<0:
-        if i<0 and j<0:
-            raise AssertionError(f"Residues i and j are not within chain boundaries i: {i}, j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}")
-        else:
-            return False
-    if i>chain_ends[-1] or j>chain_ends[-1]:
-        if i>chain_ends[-1] and j>chain_ends[-1]:
-            raise AssertionError(f"Residues i and j are not within chain boundaries i: {i}, j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}")
-        else:
-            return False
+def find_chain_index(res: int, chain_starts, chain_ends) -> int:
+    """
+    Find the index of the chain that contains the residue with index `res`.
+    """
+
+    chain_index = [int(chain_start<=res and res<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(chain_index) == 1, f"res: {res}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {chain_index}"
+    return chain_index.index(1)
+
+def inSameChain(res_i: int,res_j: int,chain_starts,chain_ends) -> bool:
+    """
+    Return True if residues i and j lie in the same chain; False if exactly one of them 
+    is out of any chain. If both are out of chain bounds, raise an AssertionError.
+    
+    chain_starts and chain_ends are parallel lists of the same length, where each pair
+    (chain_starts[k], chain_ends[k]) defines the inclusive index range of chain k.
+    """
+
+    max_index = chain_ends[-1]
+    def is_out_of_bounds(res: int) -> bool:
+        return res < 0 or res > max_index
+
+    if is_out_of_bounds(res_i) and is_out_of_bounds(res_j):
+        raise AssertionError(
+            f"Both residues are outside chain boundaries: i={res_i}, j={res_j}, "
+            f"allowed range=[0…{max_index}]"
+        )
+    
+    if is_out_of_bounds(res_i) or is_out_of_bounds(res_j):
+        # If only one of the residues is out of bounds we'll treat them 
+        # as if they were in a different chain but it shouldn't really affect anything
+        return False
+    
     # if we've made it this far, we know that both residues exist
-    wombat = [int(chain_start<=i and i<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
-    assert sum(wombat) == 1, f"i: {i}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
-    chain_index_1 = wombat.index(1)
-    wombat = [int(chain_start<=j and j<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
-    assert sum(wombat) == 1, f"j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
-    chain_index_2 = wombat.index(1)
-    same_chain = chain_index_1==chain_index_2
-    return same_chain
+    return find_chain_index(res_i, chain_starts, chain_ends) == find_chain_index(res_j, chain_starts, chain_ends)
 
 def inWhichChain(residueId, chain_ends):
     chain_table = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
