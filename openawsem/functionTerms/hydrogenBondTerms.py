@@ -766,13 +766,7 @@ def _beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta):
     number_atoms = [7,10,10] # number of atoms participating in each interaction type (beta1, beta2, beta3)
     #
     # load ssweight
-    rama_biases = []
-    with open(ssweight,'r') as f:
-        for line in f:
-            if line.strip() == "0.0 1.0":
-                rama_biases.append('beta')
-            else:
-                rama_biases.append("not beta")
+    rama_biases = load_ssweight(ssweight)
     #
     # load parameters
     p_par, p_anti, p_antihb, p_antinhb, p_parhb = read_beta_parameters()
@@ -830,6 +824,8 @@ def _beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta):
     #
     # total energy function
     #    we make k_beta a global parameter so we can pass it in as an openmm unit object
+    #        also, global parameters can be modified during a simulation, but I don't think we want to do that
+    #        so just leaving k_beta as a global parameter for back compatibility basically
     #    note that Lambda is a per bond parameter
     beta_term = f"-k_beta*Lambda*{theta[term_number-1]}*{adjusted_nu}*{distance_truncation};{distance_definitions[term_number-1]}"
     print(f"beta_term: {beta_term}")
@@ -954,44 +950,71 @@ def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='sswei
 
 def _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap):
     print("pap term ON")
+    # define constants
     nres, ca = oa.nres, oa.ca
-    # r0 = 2.0 # nm
     r0 = 0.8 # nm
     eta_pap = 70 # nm^-1
     gamma_aph = 1.0
     gamma_ap = 0.4
     gamma_p = 0.4
-    pap_function = f"-k_pap*gamma*0.5*(1+tanh({eta_pap}*({r0}-distance(p1,p2))))*0.5*(1+tanh({eta_pap}*({r0}-distance(p3,p4))))"
-    pap = CustomCompoundBondForce(4, pap_function)
-    pap.addGlobalParameter("k_pap", k_pap)
-    pap.addPerBondParameter("gamma")
-    #count = 0;
+    k_beta_pred_p_ap = 1.5
+    rama_biases = load_ssweight(ssweight)
+    # define energy term
+    nu_ij = f"0.5*(1+tanh({eta_pap}*({r0}-distance(p1,p2))))" # distance(p1,p2) is r_CAi_Caj
+    other_nu = f"0.5*(1+tanh({eta_pap}*({r0}-distance(p3,p4))))"# distance(p3,p4) is r_CAi+4_CAj+4 (parallel) or r_CAi+4_CAj-4 (antiparallel)
+    nu_product = f"{nu_ij}*{other_nu}" # either (nu_ij * nu_i+4,j+4) or (nu_ij * nu_i+4,j-4)
+    pap_energy = f"-{k_pap}*K*{nu_product}"
+    # initialize Force
+    pap = CustomCompoundBondForce(4, pap_energy)
+    pap.addPerBondParameter("K")
+    # add Bonds to Force and set per-bond parameters (coefficients)
     for i in range(nres):
-        for j in range(nres):
-            # anti-parallel hairpin for i from 1 to N-13 and j from i+13 to min(i+16,N)
-            # CAi CAj CAi+4 CAj-4
-            # 1   2   3     4
-            if i <= nres-13 and j >= i+13 and j <= min(i+16,nres):
-                pap.addBond([ca[i], ca[j], ca[i+4], ca[j-4]], [gamma_aph])
-                #count = count + 1
-                #print([ca[i], ca[j], ca[i+4], ca[j-4]], [gamma_aph])
-            # anti-parallel for i from 1 to N-17 and j from i+17 to N
-            # CAi CAj CAi+4 CAj-4
-            # 1   2   3     4
-            if i <= nres-17 and j >= i+17 and j <= nres:
-                pap.addBond([ca[i], ca[j], ca[i+4], ca[j-4]], [gamma_ap])
-                #count = count + 1;
-                #print([ca[i], ca[j], ca[i+4], ca[j-4]], [gamma_ap])
-            # parallel for i from 1 to N-13 and j from i+9 to N-4
-            # CAi CAj CAi+4 CAj+4
-            # 1   2   3     4
-            if i <= nres-13 and j >= i+9 and j < nres-4:
-                #print([i, j, i+4, j+4])
-                #print([i, j, i+4, j+4, ca[i], ca[j], ca[i+4], ca[j+4]], [gamma_p])
-                pap.addBond([ca[i], ca[j], ca[i+4], ca[j+4]], [gamma_p])
-                #count = count + 1;
-
-    # print(count)
+        for j in range(nres): # unlike the beta terms, P_AP has the symmetry P_AP(i,j)==P_AP(j,i), so we only need to loop over each pair once
+                                  # WAIT, IT DOESN'T! THIS IS TRUE FOR THE PARALLEL PORTION OF P_AP BUT NOT FOR THE ANTIPARALLEL
+                                  # THE ANTIPARALLEL NU 
+            
+            # check if we may be able to add an antiparallel hydrogen bond
+            if inSameChain(i,i+4,oa.chain_starts,oa.chain_ends) and inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
+                # determine whether this bond should be hairpin or long-range antiparallel
+                if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
+                    # bond must be the long-range type for interchain interactions
+                    if rama_biases[i]=="beta" and rama_biases[j]=="beta":
+                        K = gamma_ap*k_beta_pred_p_ap
+                    else:
+                        K = gamma_ap
+                    pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
+                else:
+                    # bond may be either hairpin, long-range, or impossible
+                    if j-i<13:
+                        pass
+                    elif 13<=j-i<17:
+                        K = gamma_aph # we don't rescale potential by k_beta_pred_p_ap for hairpin
+                        pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
+                    elif 17<=j-i:
+                        if rama_biases[i]=='beta' and rama_biases[j]=='beta':
+                            K = gamma_ap*k_beta_pred_p_ap
+                        else:
+                            K = gamma_ap
+                        pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
+                    else:
+                        raise AssertionError("unexpected else block")
+            
+            # check if we may be able to add a parallel hydrogen bond
+            if inSameChain(i,i+4,oa.chain_starts,oa.chain_ends) and inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
+                # we can assign the same K regardless of whether we're in the same chain or not
+                if rama_biases[i]=="beta" and rama_biases[j]=="beta":
+                    K = gamma_p*k_beta_pred_p_ap
+                else:
+                    K = gamma_p
+                if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
+                    # we can add the bond regardless of sequence separation
+                    pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
+                else:
+                    if j-i < 9:
+                        pass
+                    else:
+                        pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
+            
     pap.setForceGroup(forceGroup)
     return pap
 
