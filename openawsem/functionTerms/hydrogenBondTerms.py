@@ -120,6 +120,27 @@ def get_alpha_by_index(i, j, alpha_i):
     else:
         return 0
 
+def get_weight_and_p_by_index(i,j,chain_starts,chain_ends,alpha_label,p_array):
+    # function to get the overall weight and probability parameter to multiply by alpha
+    # i and j are of course our residue indices
+    # alpha_label is an int from 1 to 5 depending on which alpha term we're getting the weight and probability for
+    # p_array has two elements and we choose the correct one based on sequence separation
+    weights = [0.5,0.25,1,1,1]
+    weight = weights[alpha_label-1] # alpha_label is 1-indexed
+    # determine whether residues are in the same chain
+    same_chain = inSameChain(i,j,chain_starts,chain_ends)
+    # treat residues from different chains as intrachain residues of the largest sequence separation class
+    if same_chain==False:
+        return weight*p_array[1]
+    if abs(j-i) >= 4 and abs(j-i) < 18:
+        return weight*p_array[0]
+    elif abs(j-i) >= 18 and abs(j-i) < 45:
+        return weight*p_array[1]
+    elif abs(j-i) >= 45:
+        return weight*p_array[1]
+    else:
+        return 0 
+
 def get_pap_gamma_APH(donor_idx, acceptor_idx, chain_i, chain_j, gamma_APH):
     # if chain_i == chain_j and abs(j-i) < 13 or abs(j-i) > 16:
     # if abs(j-i) < 13 or abs(j-i) > 16:
@@ -151,19 +172,18 @@ def get_pap_gamma_P(donor_idx, acceptor_idx, chain_i, chain_j, gamma_P, ssweight
     else:
         return 0
 
-def get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a):
-    Lambda = get_lambda_by_index(i, j, 1)
-    Lambda += -0.5*get_alpha_by_index(i, j, 0)*p_antihb[a[i], a[j]][0]
-    Lambda += -0.25*get_alpha_by_index(i, j, 1)*(p_antinhb[a[i+1], a[j-1]][0] + p_antinhb[a[i-1], a[j+1]][0])
-    Lambda += -get_alpha_by_index(i, j, 2)*(p_anti[a[i]] + p_anti[a[j]])
+def get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
+    Lambda = get_lambda_by_index(i, j, 1, chain_starts, chain_ends)
+    Lambda += get_alpha_by_index(i, j, 0, chain_starts, chain_ends)*get_weight_and_p_by_index(i,j,chain_starts,chain_ends,1,p_antihb[a[i],a[j]])
+    Lambda += get_alpha_by_index(i, j, 1, chain_starts, chain_ends)*get_weight_and_p_by_index(i,j,chain_starts,chain_ends,2,p_antinhb[a[i+1],a[j-1]]+p_antinhb[a[i-1],a[j+1]])
+    Lambda += get_alpha_by_index(i, j, 2, chain_starts, chain_ends)*(p_anti[a[i]] + p_anti[a[j]])*1 # weight of 1
     return Lambda
 
-def get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a):
-    Lambda = get_lambda_by_index(i, j, 2)
-    Lambda += -get_alpha_by_index(i, j, 3)*p_parhb[a[i+1], a[j]][0]
-    Lambda += -get_alpha_by_index(i, j, 4)*p_par[a[i+1]]
-    # Lambda += -get_alpha_by_index(i, j, 3)*p_par[a[j]]
-    Lambda += -get_alpha_by_index(i, j, 4)*p_par[a[j]] # Fix typo for https://github.com/npschafer/openawsem/issues/19
+def get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
+    Lambda = get_lambda_by_index(i, j, 2, chain_starts, chain_ends)
+    Lambda += get_alpha_by_index(i, j, 3, chain_starts, chain_ends)*get_weight_and_p_by_index(i,j,chain_starts,chain_ends,4,p_parhb[a[i+1],a[j]])
+    Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[i+1]]*1 # weight of 1
+    Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[j]]*1 # weight of 1
     return Lambda
 
 
