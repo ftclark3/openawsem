@@ -116,7 +116,7 @@ def read_beta_parameters(parametersLocation=None):
     return p_par, p_anti, p_antihb, p_antinhb, p_parhb
 
 
-def get_lambda_by_index(i, j, lambda_i):
+def get_lambda_by_index(i, j, lambda_i, chain_starts, chain_ends):
 
 
     lambda_table = [[1.37, 1.36, 1.17],
@@ -136,7 +136,7 @@ def get_lambda_by_index(i, j, lambda_i):
     else:
         return 0
 
-def get_alpha_by_index(i, j, alpha_i):
+def get_alpha_by_index(i, j, alpha_i, chain_starts,chain_ends):
     alpha_table = [[1.30, 1.30, 1.30],
                     [1.32, 1.32, 1.32],
                     [1.22, 1.22, 1.22],
