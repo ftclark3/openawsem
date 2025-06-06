@@ -267,7 +267,7 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
     lambda_1 = np.zeros((nres, nres))
     for i in range(nres):
         for j in range(nres):
-            lambda_1[i][j] = get_lambda_by_index(i, j, 0)
+            lambda_1[i][j] = get_lambda_by_index(i, j, 0, oa.chain_starts, oa.chain_ends)
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     mu_1 = 10  # nm^-1
     # mu_2 = 5   # nm^-1
@@ -332,7 +332,7 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
                     isChainEdge(j, oa.chain_starts, oa.chain_ends, n=1):
                 continue
-            lambda_2[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a)
+            lambda_2[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     theta_ji = f"exp(-(r_Oj_Ni-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hi-{r_OH})^2/(2*{sigma_HO}^2))"
     beta_string_2 = f"-{k_beta}*lambda_2(res_i,res_j)*theta_ij*theta_ji;\
@@ -392,7 +392,7 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
                     isChainEdge(j, oa.chain_starts, oa.chain_ends, n=1):
                 continue
-            lambda_3[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a)
+            lambda_3[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
 
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     theta_jip2 = f"exp(-(r_Oj_Nip2-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hip2-{r_OH})^2/(2*{sigma_HO}^2))"
