@@ -1,13 +1,12 @@
 #!/bin/bash
 source ~/.bashrc
-for PDBID in "6rb9_AB_barrel"; do
-    n=148 # 6klw_AB_barrel
-    #n=374 # 2ohx_A
+for PDBID in "2ohx_A"; do
+    n=374 # 2ohx_A
     #n=145 # 8j47_IGECA 
-    n=120 # 6rb9_AB_barrel
+    #n=120 # 6rb9_AB_barrel # NOT WORKING BECAUSE AWSEM_CREATE INCORRECTLY REMOVES CHAIN B HAD TO MANUALLY COPY LAMMPS_MOVIE.PDB OVER TO 6RB9_AB_BARREL-OPENMMAWSEM.PDB
     cd "make_test_for_${PDBID}"
     conda activate openawsem310                                                                  # openawsem installation required                           
-    awsem_create $PDBID.pdb
+    awsem_create $PDBID.pdb --chain A # needed for 2ohx_A
     for ((i=0; i<$n; i++)); do
         echo "0.0 1.0" >> ssweight
     done
