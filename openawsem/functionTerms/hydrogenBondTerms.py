@@ -156,31 +156,31 @@ def get_alpha_by_index(i, j, alpha_i, chain_starts, chain_ends):
     else:
         return 0
 
-def get_pap_gamma_APH(donor_idx, acceptor_idx, chain_i, chain_j, gamma_APH):
+def get_pap_gamma_APH(donor_idx, acceptor_idx, res_i, res_j, gamma_APH, chain_starts, chain_ends):
     # if chain_i == chain_j and abs(j-i) < 13 or abs(j-i) > 16:
     # if abs(j-i) < 13 or abs(j-i) > 16:
     # if i-j < 13 or i-j > 16:
     # if (donor_idx - acceptor_idx >= 13 and donor_idx - acceptor_idx <= 16) or chain_i != chain_j:
-    if (donor_idx - acceptor_idx >= 13 and donor_idx - acceptor_idx <= 16) and chain_i == chain_j:
+    if (donor_idx - acceptor_idx >= 13 and donor_idx - acceptor_idx <= 16) and inSameChain(res_i, res_j, chain_starts, chain_ends):
         return gamma_APH
     else:
         return 0
 
-def get_pap_gamma_AP(donor_idx, acceptor_idx, chain_i, chain_j, gamma_AP, ssweight):
+def get_pap_gamma_AP(donor_idx, acceptor_idx, res_i, res_j, gamma_AP, ssweight, chain_starts, chain_ends):
     # geometric mean of donor and acceptor ssweight gives additional_scale==1.5 when both equal to 1
     # but allows us to try values other than 0 or 1 in the ssweight file
     additional_scale = 1 + 0.5*sqrt(ssweight[donor_idx][1]*ssweight[acceptor_idx][1])
     # if (donor_idx - acceptor_idx >= 17):
-    if (donor_idx - acceptor_idx >= 17) or chain_i != chain_j:
+    if (donor_idx - acceptor_idx >= 17) or not inSameChain(res_i, res_j, chain_starts, chain_ends):
         return additional_scale * gamma_AP
     else:
         return 0
 
-def get_pap_gamma_P(donor_idx, acceptor_idx, chain_i, chain_j, gamma_P, ssweight):
+def get_pap_gamma_P(donor_idx, acceptor_idx, res_i, res_j, gamma_P, ssweight, chain_starts, chain_ends):
     # geometric mean of donor and acceptor ssweight gives additional_scale==1.5 when both equal to 1
     # but allows us to try values other than 0 or 1 in the ssweight file
     additional_scale = 1 + 0.5*sqrt(ssweight[donor_idx][1]*ssweight[acceptor_idx][1])
-    if (donor_idx - acceptor_idx >= 9) or chain_i != chain_j:
+    if (donor_idx - acceptor_idx >= 9) or not inSameChain(res_i, res_j, chain_starts, chain_ends):
         return additional_scale * gamma_P
     else:
         return 0
@@ -459,11 +459,9 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     for i in range(nres):
         for j in range(nres):
             resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
             resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            gamma_1[i][j] = get_pap_gamma_APH(i, j, chain1, chain2, gamma_aph)
-            gamma_2[i][j] = get_pap_gamma_AP(i, j, chain1, chain2, gamma_ap, ssweight)
+            gamma_1[i][j] = get_pap_gamma_APH(i, j, resId1, resId2, gamma_aph, oa.chain_starts, oa.chain_ends)
+            gamma_2[i][j] = get_pap_gamma_AP(i, j, resId1, resId2, gamma_ap, ssweight, oa.chain_starts, oa.chain_ends)
 
     constraint_i_and_i4 = f"0.5*(1+tanh({eta_pap}*(distance(a1,a2)-{dis_i_to_i4})))"
 
@@ -528,10 +526,8 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     for i in range(nres):
         for j in range(nres):
             resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
             resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            gamma_3[i][j] = get_pap_gamma_P(i, j, chain1, chain2, gamma_p, ssweight)
+            gamma_3[i][j] = get_pap_gamma_P(i, j, resId1, resId2, gamma_p, ssweight, oa.chain_starts, oa.chain_ends)
 
 
     constraint_i_and_i4 = f"0.5*(1+tanh({eta_pap}*(distance(a1,a2)-{dis_i_to_i4})))"
