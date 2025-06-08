@@ -357,6 +357,16 @@ se_map_3_letter = {'ALA': 0,  'PRO': 1,  'LYS': 2,  'ASN': 3,  'ARG': 4,
                    'PHE': 5,  'ASP': 6,  'GLN': 7,  'GLU': 8,  'GLY': 9,
                    'ILE': 10, 'HIS': 11, 'LEU': 12, 'CYS': 13, 'MET': 14,
                    'SER': 15, 'THR': 16, 'TYR': 17, 'VAL': 18, 'TRP': 19}
+def identify_terminal_residues(pdb_filename):
+    # identify terminal residues
+    parser = PDBParser()
+    structure = parser.get_structure('X', pdb_filename)
+    terminal_residues = {}
+    for model in structure:
+        for chain in model:
+            residues = list(chain.get_residues())
+            terminal_residues[chain.id] = (residues[0].id[1], residues[-1].id[1])
+        return terminal_residues
 
 def line_number():
     return sys._getframe(1).f_lineno
