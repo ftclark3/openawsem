@@ -15,15 +15,13 @@ se_map_1_letter = {'A': 0,  'R': 1,  'N': 2,  'D': 3,  'C': 4,
                    'L': 10, 'K': 11, 'M': 12, 'F': 13, 'P': 14,
                    'S': 15, 'T': 16, 'W': 17, 'Y': 18, 'V': 19}
 
-def load_ssweight(ssweight):
-    rama_biases = []
-    with open(ssweight,'r') as f:
-        for line in f:
-            if line.strip() == "0.0 1.0":
-                rama_biases.append('beta')
-            else:
-                rama_biases.append("not beta")
-    return rama_biases
+def load_ssweight(ssweightFileName):
+    if not os.path.exists(ssweightFileName):
+        print("No ssweight given, assume all zero")
+        ssweight = np.zeros((nres, 2))
+    else:
+        ssweight = np.loadtxt(ssweightFileName)    
+    return ssweight
 
 def isChainStart(residueId, chain_starts, n=2):
     # return true if residue is near chain starts.
@@ -408,11 +406,7 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     gamma_ap = 0.4
     gamma_p = 0.4
 
-    if not os.path.exists(ssweightFileName):
-        print("No ssweight given, assume all zero")
-        ssweight = np.zeros((nres, 2))
-    else:
-        ssweight = np.loadtxt(ssweightFileName)
+    ssweight = load_ssweight(ssweightFileName)
 
     gamma_1 = np.zeros((nres, nres))
     gamma_2 = np.zeros((nres, nres))
@@ -478,11 +472,8 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     gamma_aph = 1.0
     gamma_ap = 0.4
     gamma_p = 0.4
-    if not os.path.exists(ssweightFileName):
-        print("No ssweight given, assume all zero")
-        ssweight = np.zeros((nres, 2))
-    else:
-        ssweight = np.loadtxt(ssweightFileName)
+    
+    ssweight = load_ssweight(ssweightFileName)
 
     gamma_3 = np.zeros((nres, nres))
     for i in range(nres):
@@ -744,7 +735,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='sswe
     beta_1.addPerBondParameter("lambda_1")
     # beta_2.addTabulatedFunction("lambda_2", Discrete2DFunction(nres, nres, lambda_2))
     # beta_3.addTabulatedFunction("lambda_3", Discrete2DFunction(nres, nres, lambda_3))
-    rama_biases = get_rama_biases(ssweight)
+    rama_biases = load_ssweight(ssweight)
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=2) or \
@@ -823,7 +814,7 @@ def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight='sswe
     for ii in range(oa.nres):
         a.append(se_map_1_letter[oa.seq[ii]])
 
-    rama_biases = get_rama_bias(ssweight)
+    rama_biases = load_ssweight(ssweight)
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=2) or \
@@ -898,7 +889,7 @@ def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25, ssweight='sswe
     a = []
     for ii in range(oa.nres):
         a.append(se_map_1_letter[oa.seq[ii]])
-    rama_biases = get_rama_bias(ssweight)
+    rama_biases = load_ssweight(ssweight)
     for i in range(nres):
         for j in range(nres):
             if abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i]=="not beta" or rama_biases[j]=="not beta"):
