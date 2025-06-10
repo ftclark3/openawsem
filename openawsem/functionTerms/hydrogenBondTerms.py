@@ -217,7 +217,7 @@ def convert_units(k):
         print(f"Unknown input, {k}, {type(k)}")
     return k
 
-def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
+def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName='ssweight'):
     print("beta_1 term ON")
     k_beta = convert_units(k) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -228,9 +228,13 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
     sigma_HO = .076
 
     lambda_1 = np.zeros((nres, nres))
+    rama_biases = load_ssweight(ssweightFileName): # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
-            lambda_1[i][j] = get_lambda_by_index(i, j, 0)
+            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
+                lambda_1[i][j] = 0
+            else:
+                lambda_1[i][j] = get_lambda_by_index(i, j, 0)
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     mu_1 = 10  # nm^-1
     # mu_2 = 5   # nm^-1
@@ -269,7 +273,7 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
     # beta_3.setForceGroup(25)
     return beta_1
 
-def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
+def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName='ssweight'):
     print("beta_2 term ON")
     k_beta = convert_units(k) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -290,12 +294,16 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
         a.append(se_map_1_letter[oa.seq[ii]])
 
     lambda_2 = np.zeros((nres, nres))
+    rama_biases = load_ssweight(ssweightFileName): # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
                     isChainEdge(j, oa.chain_starts, oa.chain_ends, n=1):
                 continue
-            lambda_2[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a)
+            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
+                lambda_2[i][j] = 0
+            else:
+                lambda_2[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a)
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     theta_ji = f"exp(-(r_Oj_Ni-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hi-{r_OH})^2/(2*{sigma_HO}^2))"
     beta_string_2 = f"-{k_beta}*lambda_2(res_i,res_j)*theta_ij*theta_ji;\
@@ -350,12 +358,16 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
         a.append(se_map_1_letter[oa.seq[ii]])
 
     lambda_3 = np.zeros((nres, nres))
+    rama_biases = load_ssweight(ssweightFileName): # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
                     isChainEdge(j, oa.chain_starts, oa.chain_ends, n=1):
                 continue
-            lambda_3[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a)
+            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
+                lambda_3[i][j] = 0
+            else:
+                lambda_3[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a)
 
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     theta_jip2 = f"exp(-(r_Oj_Nip2-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hip2-{r_OH})^2/(2*{sigma_HO}^2))"
