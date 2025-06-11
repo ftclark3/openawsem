@@ -207,9 +207,9 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     contact.addPerParticleParameter("resName")
     contact.addPerParticleParameter("resId")
     contact.addPerParticleParameter("isCb")
-    contact.addPerParticleParameter("zeroBitDirect")
-    contact.addPerParticleParameter("zeroBitWater")
-    contact.addPerParticleParameter("zeroBitProtein")
+    contact.addPerParticleParameter("directBit")
+    contact.addPerParticleParameter("waterBit")
+    contact.addPerParticleParameter("proteinBit")
 
     contact.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
     #contact.addComputedValue("rho_test",f"isCb1*isCb2*step(abs(resId1-resId2)-2)", CustomGBForce.ParticlePair)
