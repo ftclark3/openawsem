@@ -66,7 +66,25 @@ def inSameChain(i,j,chain_starts,chain_ends):
     return same_chain
 
 def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0*angstrom, k_relative_mem=1.0, periodic=False, parametersLocation=None, burialPartOn=True, withExclusion=False, forceGroup=22,
-                gammaName="gamma.dat", burialGammaName="burial_gamma.dat", membraneGammaName="membrane_gamma.dat", r_min=0.45,min_sequence_separation=10,min_sequence_separation_mem=10):
+                gammaName="gamma.dat", burialGammaName="burial_gamma.dat", membraneGammaName="membrane_gamma.dat", r_min=0.45,min_sequence_separation=10,min_sequence_separation_mem=10,
+                zero_bits_direct=None, zero_bits_water=None, zero_bits_protein=None):
+    # zero out some interactions in the contact term
+    if zero_bits_direct is None:
+        zero_bits_direct = [1 for _ in range(oa.nres)]
+    elif len(zero_bits_direct) != oa.nres:
+        raise ValueError(f"zero_bits_direct must be of length {oa.nres}, but got {len(zero_bits_direct)}")
+    zero_bits_direct = iter(zero_bits_direct)
+    if zero_bits_water is None:
+        zero_bits_water = [1 for _ in range(oa.nres)]
+    elif len(zero_bits_water) != oa.nres:
+        raise ValueError(f"zero_bits_water must be of length {oa.nres}, but got {len(zero_bits_water)}")
+    zero_bits_water = iter(zero_bits_water)
+    if zero_bits_protein is None:
+        zero_bits_protein = [1 for _ in range(oa.nres)]
+    elif len(zero_bits_protein) != oa.nres:
+        raise ValueError(f"zero_bits_protein must be of length {oa.nres}, but got {len(zero_bits_protein)}")
+    zero_bits_protein = iter(zero_bits_protein)
+    # set up the rest of the parameters  
     if parametersLocation is None:
         parametersLocation=openawsem.data_path.parameters
     if isinstance(k_contact, float) or isinstance(k_contact, int):
@@ -189,6 +207,9 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     contact.addPerParticleParameter("resName")
     contact.addPerParticleParameter("resId")
     contact.addPerParticleParameter("isCb")
+    contact.addPerParticleParameter("zeroBitDirect")
+    contact.addPerParticleParameter("zeroBitWater")
+    contact.addPerParticleParameter("zeroBitProtein")
 
     contact.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
     #contact.addComputedValue("rho_test",f"isCb1*isCb2*step(abs(resId1-resId2)-2)", CustomGBForce.ParticlePair)
@@ -203,9 +224,13 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     # replace cb with ca for GLY
     cb_fixed = [x if x > 0 else y for x,y in zip(oa.cb,oa.ca)]
     none_cb_fixed = [i for i in range(oa.natoms) if i not in cb_fixed]
+    assert len(cb_fixed) == oa.nres, f"Number of atoms in cb_fixed (non-GLY CB and GLY CA atoms), {len(cb_fixed)}, does not match number of residues {oa.nres}."
     # print(oa.natoms, len(oa.resi), oa.resi, seq)
     for i in range(oa.natoms):
-        contact.addParticle([gamma_se_map_1_letter[seq[oa.resi[i]]], oa.resi[i], int(i in cb_fixed)])
+        direct_bit =  next(zero_bits_direct) if int(i in cb_fixed) else 1 # doesn't matter for non-CB
+        water_bit =  next(zero_bits_water) if int(i in cb_fixed) else 1 # doesn't matter for non-CB
+        protein_bit =  next(zero_bits_protein) if int(i in cb_fixed) else 1 # doesn't matter for non-CB
+        contact.addParticle([gamma_se_map_1_letter[seq[oa.resi[i]]], oa.resi[i], int(i in cb_fixed), direct_bit, water_bit, protein_bit]) 
 
 
     if z_dependent:
@@ -218,11 +243,11 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
         # mediated and direct term (write separately may lead to bug)
         contact.addEnergyTerm(f"isCb1*isCb2*((1-alphaMembrane1*alphaMembrane2)*water_part+alphaMembrane1*alphaMembrane2*membrane_part);\
                                 water_part=-res_table(0, resId1, resId2)*{k_contact}*\
-                                (gamma_ijm(0, resName1, resName2)*theta+thetaII*(sigma_water*water_gamma_ijm(0, resName1, resName2)+\
-                                sigma_protein*protein_gamma_ijm(0, resName1, resName2)));\
+                                (gamma_ijm(0, resName1, resName2)*theta*max(directBit1,directBit2)+thetaII*(sigma_water*water_gamma_ijm(0, resName1, resName2)*max(waterBit1,waterBit2)+\
+                                max(proteinBit1,proteinBit2)*sigma_protein*protein_gamma_ijm(0, resName1, resName2)));\
                                 membrane_part=-res_table(1, resId1, resId2)*{k_contact}*\
-                                (gamma_ijm(1, resName1, resName2)*theta+thetaII*(sigma_water*water_gamma_ijm(1, resName1, resName2)+\
-                                sigma_protein*protein_gamma_ijm(1, resName1, resName2)));\
+                                (gamma_ijm(1, resName1, resName2)*theta*max(directBit1,directBit2)+thetaII*(sigma_water*water_gamma_ijm(1, resName1, resName2)*max(waterBit1,waterBit2)+\
+                                max(proteinBit1,proteinBit2)*sigma_protein*protein_gamma_ijm(1, resName1, resName2)));\
                                 sigma_protein=1-sigma_water;\
                                 theta=0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)));\
                                 thetaII=0.25*(1+tanh({eta}*(r-{r_minII})))*(1+tanh({eta}*({r_maxII}-r)));\
@@ -254,8 +279,8 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     else:
         # mediated and direct term (write separately may lead to bug)
         contact.addEnergyTerm(f"-isCb1*isCb2*res_table({inMembrane}, resId1, resId2)*{k_contact}*\
-                                (gamma_ijm({inMembrane}, resName1, resName2)*theta+thetaII*(sigma_water*water_gamma_ijm({inMembrane}, resName1, resName2)+\
-                                sigma_protein*protein_gamma_ijm({inMembrane}, resName1, resName2)));\
+                                (max(directBit1,directBit2)*gamma_ijm({inMembrane}, resName1, resName2)*theta+thetaII*(sigma_water*water_gamma_ijm({inMembrane}, resName1, resName2)*max(waterBit1,waterBit2)+\
+                                sigma_protein*protein_gamma_ijm({inMembrane}, resName1, resName2)*max(proteinBit1,proteinBit2)));\
                                 sigma_protein=1-sigma_water;\
                                 theta=0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)));\
                                 thetaII=0.25*(1+tanh({eta}*(r-{r_minII})))*(1+tanh({eta}*({r_maxII}-r)));\
