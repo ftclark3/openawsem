@@ -134,7 +134,7 @@ def read_beta_parameters(parametersLocation=None):
     return p_par, p_anti, p_antihb, p_antinhb, p_parhb
 
 
-def get_beta_class(i,j,lambda_i, chain_starts, chain_ends):
+def get_beta_class(i,j,chain_starts, chain_ends):
     """
     Return the beta class of the pair (i, j) based on the sequence separation and chain information.
     """
@@ -158,7 +158,7 @@ LAMBDA_TABLE = [
 ]
 
 def get_lambda_by_index(i, j, lambda_i, chain_starts, chain_ends):
-    beta_cls = get_beta_class(i, j, lambda_i, chain_starts, chain_ends)
+    beta_cls = get_beta_class(i, j, chain_starts, chain_ends)
     return LAMBDA_TABLE[lambda_i][beta_cls]
 
 ALPHA_TABLE = [
@@ -171,7 +171,7 @@ ALPHA_TABLE = [
 ]
 
 def get_alpha_by_index(i, j, alpha_i, chain_starts, chain_ends):
-    beta_cls = get_beta_class(i, j, alpha_i, chain_starts, chain_ends)
+    beta_cls = get_beta_class(i, j, chain_starts, chain_ends)
     return ALPHA_TABLE[alpha_i][beta_cls]
 
 def get_pap_gamma_APH(donor_idx, acceptor_idx, chain_i, chain_j, gamma_APH):
@@ -206,18 +206,27 @@ def get_pap_gamma_P(donor_idx, acceptor_idx, chain_i, chain_j, gamma_P, ssweight
         return 0
 
 def get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
+    beta_class = get_beta_class(i, j, chain_starts, chain_ends)
+    if beta_class >= 2:
+        layer=1
+    else:
+        layer=0
     Lambda = get_lambda_by_index(i, j, 1, chain_starts, chain_ends)
-    Lambda += 0.5*get_alpha_by_index(i, j, 0, chain_starts, chain_ends)*p_antihb[a[i], a[j]][0]
-    Lambda += 0.25*get_alpha_by_index(i, j, 1, chain_starts, chain_ends)*(p_antinhb[a[i+1], a[j-1]][0] + p_antinhb[a[i-1], a[j+1]][0])
+    Lambda += 0.5*get_alpha_by_index(i, j, 0, chain_starts, chain_ends)*p_antihb[a[i], a[j]][layer]
+    Lambda += 0.25*get_alpha_by_index(i, j, 1, chain_starts, chain_ends)*(p_antinhb[a[i+1], a[j-1]][layer] + p_antinhb[a[i-1], a[j+1]][layer])
     Lambda += get_alpha_by_index(i, j, 2, chain_starts, chain_ends)*(p_anti[a[i]] + p_anti[a[j]])
     return Lambda
 
 def get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends):
+    beta_class = get_beta_class(i, j, chain_starts, chain_ends)
+    if beta_class >= 2:
+        layer=1
+    else:
+        layer=0
     Lambda = get_lambda_by_index(i, j, 2, chain_starts, chain_ends)
-    Lambda += get_alpha_by_index(i, j, 3, chain_starts, chain_ends)*p_parhb[a[i+1], a[j]][0]
+    Lambda += get_alpha_by_index(i, j, 3, chain_starts, chain_ends)*p_parhb[a[i+1], a[j]][layer]
     Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[i+1]]
-    # Lambda += get_alpha_by_index(i, j, 3)*p_par[a[j]]
-    Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[j]] # Fix typo for https://github.com/npschafer/openawsem/issues/19
+    Lambda += get_alpha_by_index(i, j, 4, chain_starts, chain_ends)*p_par[a[j]]
     return Lambda
 
 
