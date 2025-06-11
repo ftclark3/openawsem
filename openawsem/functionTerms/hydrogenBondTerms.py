@@ -15,12 +15,12 @@ se_map_1_letter = {'A': 0,  'R': 1,  'N': 2,  'D': 3,  'C': 4,
                    'L': 10, 'K': 11, 'M': 12, 'F': 13, 'P': 14,
                    'S': 15, 'T': 16, 'W': 17, 'Y': 18, 'V': 19}
 
-def load_ssweight(ssweightFileName, nres=None):
-    if not os.path.exists(ssweightFileName):
+def load_ssweight(ssweight_filename, nres=None):
+    if not os.path.exists(ssweight_filename):
         print("No ssweight given, assume all zero")
         ssweight = np.zeros((nres, 2))
     else:
-        ssweight = np.loadtxt(ssweightFileName)    
+        ssweight = np.loadtxt(ssweight_filename)    
     return ssweight
 
 def isChainStart(residueId, chain_starts, n=2):
@@ -263,7 +263,7 @@ def convert_units(k):
         print(f"Unknown input, {k}, {type(k)}")
     return k
 
-def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName='ssweight'):
+def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filename='ssweight'):
     print("beta_1 term ON")
     k_beta = convert_units(k) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -274,7 +274,7 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName
     sigma_HO = .076
 
     lambda_1 = np.zeros((nres, nres))
-    rama_biases = load_ssweight(ssweightFileName, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
+    rama_biases = load_ssweight(ssweight_filename, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
             if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
@@ -319,7 +319,7 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName
     # beta_3.setForceGroup(25)
     return beta_1
 
-def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName='ssweight'):
+def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filename='ssweight'):
     print("beta_2 term ON")
     k_beta = convert_units(k) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -340,7 +340,7 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName
         a.append(se_map_1_letter[oa.seq[ii]])
 
     lambda_2 = np.zeros((nres, nres))
-    rama_biases = load_ssweight(ssweightFileName, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
+    rama_biases = load_ssweight(ssweight_filename, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
@@ -383,7 +383,7 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName
     return beta_2
 
 
-def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName='ssweight'):
+def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filename='ssweight'):
     print("beta_3 term ON")
     k_beta = convert_units(k) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -404,7 +404,7 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName
         a.append(se_map_1_letter[oa.seq[ii]])
 
     lambda_3 = np.zeros((nres, nres))
-    rama_biases = load_ssweight(ssweightFileName, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
+    rama_biases = load_ssweight(ssweight_filename, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
@@ -452,7 +452,7 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName
     return beta_3
 
 
-def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweightFileName="ssweight"):
+def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight"):
     print("pap_1 term ON")
     k_pap = convert_units(k) * oa.k_awsem
     # dis_i_to_i4 should be in nm, it disfavor hydrogen bond when ca_i and ca_i+4 are 1.2 nm apart away.
@@ -464,7 +464,7 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     gamma_ap = 0.4
     gamma_p = 0.4
 
-    ssweight = load_ssweight(ssweightFileName, oa.nres)
+    ssweight = load_ssweight(ssweight_filename, oa.nres)
 
     gamma_1 = np.zeros((nres, nres))
     gamma_2 = np.zeros((nres, nres))
@@ -520,7 +520,7 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     pap.setForceGroup(forceGroup)
     return pap
 
-def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweightFileName="ssweight"):
+def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight"):
     print("pap_2 term ON")
     k_pap = convert_units(k) * oa.k_awsem
     nres, ca = oa.nres, oa.ca
@@ -531,7 +531,7 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     gamma_ap = 0.4
     gamma_p = 0.4
     
-    ssweight = load_ssweight(ssweightFileName, oa.nres)
+    ssweight = load_ssweight(ssweight_filename, oa.nres)
 
     gamma_3 = np.zeros((nres, nres))
     for i in range(nres):
@@ -753,7 +753,7 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     return pap
 
 
-def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='ssweight'):
+def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight_filename='ssweight'):
 
     print("beta_1 term ON")
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -793,7 +793,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='sswe
     beta_1.addPerBondParameter("lambda_1")
     # beta_2.addTabulatedFunction("lambda_2", Discrete2DFunction(nres, nres, lambda_2))
     # beta_3.addTabulatedFunction("lambda_3", Discrete2DFunction(nres, nres, lambda_3))
-    rama_biases = load_ssweight(ssweight, oa.nres)
+    rama_biases = load_ssweight(ssweight_filename, oa.nres)
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=2) or \
@@ -814,7 +814,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='sswe
     beta_1.setForceGroup(forceGroup)
     return beta_1
 
-def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight='ssweight'):
+def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight_filename='ssweight'):
     print("beta_2 term ON");
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
     # add beta potential
@@ -872,7 +872,7 @@ def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight='sswe
     for ii in range(oa.nres):
         a.append(se_map_1_letter[oa.seq[ii]])
 
-    rama_biases = load_ssweight(ssweight, oa.nres)
+    rama_biases = load_ssweight(ssweight_filename, oa.nres)
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=2) or \
@@ -893,7 +893,7 @@ def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight='sswe
     #beta_3.setForceGroup(25)
     return beta_2
 
-def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25, ssweight='ssweight'):
+def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25, ssweight_filename='ssweight'):
     print("beta_3 term ON")
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
     # add beta potential
@@ -947,7 +947,7 @@ def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25, ssweight='sswe
     a = []
     for ii in range(oa.nres):
         a.append(se_map_1_letter[oa.seq[ii]])
-    rama_biases = load_ssweight(ssweight, oa.nres)
+    rama_biases = load_ssweight(ssweight_filename, oa.nres)
     for i in range(nres):
         for j in range(nres):
             if abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i]=="not beta" or rama_biases[j]=="not beta"):
