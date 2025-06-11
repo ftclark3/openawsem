@@ -15,6 +15,14 @@ se_map_1_letter = {'A': 0,  'R': 1,  'N': 2,  'D': 3,  'C': 4,
                    'L': 10, 'K': 11, 'M': 12, 'F': 13, 'P': 14,
                    'S': 15, 'T': 16, 'W': 17, 'Y': 18, 'V': 19}
 
+def load_ssweight(ssweightFileName, nres=None):
+    if not os.path.exists(ssweightFileName):
+        print("No ssweight given, assume all zero")
+        ssweight = np.zeros((nres, 2))
+    else:
+        ssweight = np.loadtxt(ssweightFileName)    
+    return ssweight
+
 def isChainStart(residueId, chain_starts, n=2):
     # return true if residue is near chain starts.
     # n=0 means always return False
@@ -255,7 +263,7 @@ def convert_units(k):
         print(f"Unknown input, {k}, {type(k)}")
     return k
 
-def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
+def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName='ssweight'):
     print("beta_1 term ON")
     k_beta = convert_units(k) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -266,9 +274,13 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
     sigma_HO = .076
 
     lambda_1 = np.zeros((nres, nres))
+    rama_biases = load_ssweight(ssweightFileName, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
-            lambda_1[i][j] = get_lambda_by_index(i, j, 0, oa.chain_starts, oa.chain_ends)
+            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
+                lambda_1[i][j] = 0
+            else:
+                lambda_1[i][j] = get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends)
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     mu_1 = 10  # nm^-1
     # mu_2 = 5   # nm^-1
@@ -307,7 +319,7 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
     # beta_3.setForceGroup(25)
     return beta_1
 
-def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
+def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName='ssweight'):
     print("beta_2 term ON")
     k_beta = convert_units(k) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -328,12 +340,16 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
         a.append(se_map_1_letter[oa.seq[ii]])
 
     lambda_2 = np.zeros((nres, nres))
+    rama_biases = load_ssweight(ssweightFileName, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
                     isChainEdge(j, oa.chain_starts, oa.chain_ends, n=1):
                 continue
-            lambda_2[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
+            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
+                lambda_2[i][j] = 0
+            else:
+                lambda_2[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     theta_ji = f"exp(-(r_Oj_Ni-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hi-{r_OH})^2/(2*{sigma_HO}^2))"
     beta_string_2 = f"-{k_beta}*lambda_2(res_i,res_j)*theta_ij*theta_ji;\
@@ -367,7 +383,7 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
     return beta_2
 
 
-def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
+def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweightFileName='ssweight'):
     print("beta_3 term ON")
     k_beta = convert_units(k) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -388,12 +404,16 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27):
         a.append(se_map_1_letter[oa.seq[ii]])
 
     lambda_3 = np.zeros((nres, nres))
+    rama_biases = load_ssweight(ssweightFileName, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
                     isChainEdge(j, oa.chain_starts, oa.chain_ends, n=1):
                 continue
-            lambda_3[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
+            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
+                lambda_3[i][j] = 0
+            else:
+                lambda_3[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
 
     theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
     theta_jip2 = f"exp(-(r_Oj_Nip2-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hip2-{r_OH})^2/(2*{sigma_HO}^2))"
@@ -444,11 +464,7 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     gamma_ap = 0.4
     gamma_p = 0.4
 
-    if not os.path.exists(ssweightFileName):
-        print("No ssweight given, assume all zero")
-        ssweight = np.zeros((nres, 2))
-    else:
-        ssweight = np.loadtxt(ssweightFileName)
+    ssweight = load_ssweight(ssweightFileName, oa.nres)
 
     gamma_1 = np.zeros((nres, nres))
     gamma_2 = np.zeros((nres, nres))
@@ -514,11 +530,8 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     gamma_aph = 1.0
     gamma_ap = 0.4
     gamma_p = 0.4
-    if not os.path.exists(ssweightFileName):
-        print("No ssweight given, assume all zero")
-        ssweight = np.zeros((nres, 2))
-    else:
-        ssweight = np.loadtxt(ssweightFileName)
+    
+    ssweight = load_ssweight(ssweightFileName, oa.nres)
 
     gamma_3 = np.zeros((nres, nres))
     for i in range(nres):
@@ -740,7 +753,7 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     return pap
 
 
-def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
+def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23, ssweight='ssweight'):
 
     print("beta_1 term ON")
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -780,11 +793,13 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
     beta_1.addPerBondParameter("lambda_1")
     # beta_2.addTabulatedFunction("lambda_2", Discrete2DFunction(nres, nres, lambda_2))
     # beta_3.addTabulatedFunction("lambda_3", Discrete2DFunction(nres, nres, lambda_3))
-
+    rama_biases = load_ssweight(ssweight, oa.nres)
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=2) or \
                 isChainEdge(j, oa.chain_starts, oa.chain_ends, n=2):
+                continue
+            if abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i]=="not beta" or rama_biases[j]=="not beta"):
                 continue
             if not res_type[j] == "IPR":
                 beta_1.addBond([o[i], n[j], h[j], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [get_lambda_by_index(i, j, 0)])
@@ -799,7 +814,7 @@ def beta_term_1_old(oa, k_beta=4.184, debug=False, forceGroup=23):
     beta_1.setForceGroup(forceGroup)
     return beta_1
 
-def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24):
+def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24, ssweight='ssweight'):
     print("beta_2 term ON");
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
     # add beta potential
@@ -857,10 +872,13 @@ def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24):
     for ii in range(oa.nres):
         a.append(se_map_1_letter[oa.seq[ii]])
 
+    rama_biases = load_ssweight(ssweight, oa.nres)
     for i in range(nres):
         for j in range(nres):
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=2) or \
                 isChainEdge(j, oa.chain_starts, oa.chain_ends, n=2):
+                continue
+            if abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i]=="not beta" or rama_biases[j]=="not beta"):
                 continue
             #if not res_type[j] == "IPR":
             #    beta_1.addBond([o[i], n[j], h[j], ca[i-2], ca[i+2], ca[j-2], ca[j+2]], [i, j])
@@ -875,7 +893,7 @@ def beta_term_2_old(oa, k_beta=4.184, debug=False, forceGroup=24):
     #beta_3.setForceGroup(25)
     return beta_2
 
-def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25):
+def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25, ssweight='ssweight'):
     print("beta_3 term ON")
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
     # add beta potential
@@ -929,9 +947,11 @@ def beta_term_3_old(oa, k_beta=4.184, debug=False, forceGroup=25):
     a = []
     for ii in range(oa.nres):
         a.append(se_map_1_letter[oa.seq[ii]])
-
+    rama_biases = load_ssweight(ssweight, oa.nres)
     for i in range(nres):
         for j in range(nres):
+            if abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i]=="not beta" or rama_biases[j]=="not beta"):
+                continue
             if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=2) or \
                 isChainEdge(j, oa.chain_starts, oa.chain_ends, n=2):
                 continue
