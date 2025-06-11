@@ -131,12 +131,13 @@ def get_beta_class(i,j,lambda_i, chain_starts, chain_ends):
     Return the beta class of the pair (i, j) based on the sequence separation and chain information.
     """
     same_chain = inSameChain(i,j,chain_starts,chain_ends)
-    # for intrachain pairs, proceed as before
+    if not same_chain:
+        return 3
     if abs(j-i) >= 4 and abs(j-i) < 18:
         return 1
     elif abs(j-i) >= 18 and abs(j-i) < 45:
         return 2
-    elif not same_chain or abs(j-i) >= 45:
+    elif abs(j-i) >= 45:
         return 3
     else:
         return 0
