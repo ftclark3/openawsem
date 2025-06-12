@@ -314,12 +314,14 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filenam
     # print(lambda_1)
     # print(len(oa.o), nres)
     for i in range(nres):
-        if oa.o[i]!= -1:
-            ca_i_minus_2 = oa.ca[0] if i <= 2 else oa.ca[i-2]
-            ca_i_plus_2 = oa.ca[-1] if i+2 >= nres else oa.ca[i+2]
-            # beta_1.addAcceptor(oa.o[i], ca_i_minus_2, ca_i_plus_2, [i])
+        # note that both conditionals may be true (in fact, we typically expect this)
+        #
+        # see if we can add this amino acid as an acceptor group (acts as the "i" residue)
+        if oa.o[i] != -1 and not isChainEnd(i,oa.chain_ends,n=1):
             beta_1.addAcceptor(oa.o[i], -1, -1, [i])
+        # see if we can add this amino acid as a donor group (acts as the "j" residue)
         if oa.n[i]!=-1 and oa.h[i]!=-1:
+            assert not isChainStart(i,oa.chain_ends,n=1) # n[i] and h[i] shouldn't exist for a start residue
             beta_1.addDonor(oa.n[i], oa.h[i], -1, [i])
     # beta_1.setNonbondedMethod(CustomHbondForce.CutoffNonPeriodic)
     beta_1.setCutoffDistance(1.0)
@@ -352,9 +354,6 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filenam
     rama_biases = load_ssweight(ssweight_filename, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
-            if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
-                    isChainEdge(j, oa.chain_starts, oa.chain_ends, n=1):
-                continue
             if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
                 lambda_2[i][j] = 0
             else:
@@ -380,7 +379,9 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filenam
     # print(lambda_1)
     # print(len(oa.o), nres)
     for i in range(nres):
-        if o[i]!= -1 and n[i]!=-1 and h[i]!=-1:
+        if isChainEdge(i,oa.chain_starts,oa,chain_ends,n=1):
+            continue
+        if o[i]!= -1 and n[i]!=-1 and h[i]!=-1: 
             beta_2.addAcceptor(o[i], n[i], h[i], [i])
             beta_2.addDonor(n[i], h[i], o[i], [i])
     # beta_2.setNonbondedMethod(CustomHbondForce.CutoffNonPeriodic)
@@ -416,9 +417,6 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filenam
     rama_biases = load_ssweight(ssweight_filename, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
     for i in range(nres):
         for j in range(nres):
-            if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=1) or \
-                    isChainEdge(j, oa.chain_starts, oa.chain_ends, n=1):
-                continue
             if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
                 lambda_3[i][j] = 0
             else:
@@ -446,12 +444,16 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filenam
     # print(lambda_1)
     # print(len(oa.o), nres)
     for i in range(nres):
-        if isChainEdge(i, oa.chain_starts, oa.chain_ends, n=2):
-            continue
-        if o[i] != -1 and n[i+2] !=-1 and h[i+2] !=-1:
-            beta_3.addAcceptor(o[i], n[i+2], h[i+2], [i])
-        if o[i] != -1 and n[i] !=-1 and h[i] !=-1:
-            beta_3.addDonor(n[i], h[i], o[i], [i])
+        # note that both conditionals may be true (in fact, we typically expect this)
+        #
+        # see if we can add this amino acid and its neighbor as an acceptor group (the "i and i+2" residues)
+        if not isChainEnd(i, oa.chain_ends, n=2):
+            if o[i] != -1 and n[i+2] !=-1 and h[i+2] !=-1:
+                beta_3.addAcceptor(o[i], n[i+2], h[i+2], [i])
+        # see if we can add this amino acid as a donor group (the "j" residue)
+        if not isChainEnd(i, oa.chain_ends, n=1):
+            if o[i] != -1 and n[i] !=-1 and h[i] !=-1:
+                beta_3.addDonor(n[i], h[i], o[i], [i])
     # beta_3.setNonbondedMethod(CustomHbondForce.CutoffNonPeriodic)
     beta_3.setCutoffDistance(1.0)
     # beta_1.setForceGroup(23)
