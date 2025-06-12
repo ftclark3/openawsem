@@ -799,25 +799,25 @@ def beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta=4.184):
     #   (the CA i-2 or i+2 does not exist) and we set nu to 1
     #   we do this by constructing a conditional expression for each chain, equal to 1 when we're not either one of the first two or last two residues
     #   and equal to 0 otherwise.
-    #   Then, we take the max of all these expressions to tell us if we're in the middle (not first or last 2 residues) of ANY chain.
+    #   Then, we take the min of 1 and the sum of all these expressions to tell us if we're in the middle (not first or last 2 residues) of ANY chain.
     #   If 1, then the answer is YES; if 0, the answer is NO.
     #   these are then incorporated algebraically into our nu expression to apply the proper computation method
     #      nu_i
-    nu_1_bit_list = [f"step(res_index_i-{start_res_index}-1)*step(res_index_i-{start_res_index}-1-1)*step({end_res_index}-res_index_i-1)*step({end_res_index}-1-res_index_i-1),"\
+    nu_1_bit_list = [f"step(res_index_i-{start_res_index}-1)*step(res_index_i-{start_res_index}-1-1)*step({end_res_index}-res_index_i-1)*step({end_res_index}-1-res_index_i-1)+"\
             for start_res_index,end_res_index in zip(oa.chain_starts,oa.chain_ends)]
-    nu_1_bit = "max("
+    nu_1_bit = "min(1,"
     for condition in nu_1_bit_list:
         nu_1_bit += condition
-    nu_1_bit = nu_1_bit[:-1] # get rid of trailing ,
+    nu_1_bit = nu_1_bit[:-1] # get rid of trailing +
     nu_1_bit += ")" # add ) to close the max( opened at the beginning of the statement
     nu_i = f"(0.5*(1+tanh({eta_beta_1}*(r_CAim2_CAip2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit}))"
     #      nu_j
-    nu_1_bit_list = [f"step(res_index_j-{start_res_index}-1)*step(res_index_j-{start_res_index}-1-1)*step({end_res_index}-res_index_j-1)*step({end_res_index}-1-res_index_j-1),"\
+    nu_1_bit_list = [f"step(res_index_j-{start_res_index}-1)*step(res_index_j-{start_res_index}-1-1)*step({end_res_index}-res_index_j-1)*step({end_res_index}-1-res_index_j-1)+"\
             for start_res_index,end_res_index in zip(oa.chain_starts,oa.chain_ends)]
-    nu_1_bit = "max("
+    nu_1_bit = "min(1,"
     for condition in nu_1_bit_list:
         nu_1_bit += condition
-    nu_1_bit = nu_1_bit[:-1] # get rid of trailing ,
+    nu_1_bit = nu_1_bit[:-1] # get rid of trailing +
     nu_1_bit += ")" # add ) to close the max( opened at the beginning of the statement
     nu_j = f"(0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit}))"
     #      adjusted nu_i*nu_j
@@ -848,7 +848,7 @@ def beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta=4.184):
             assert(len(same_chain_end)) == 1, f"same_chain_end: {same_chain_end}, oa.chain_ends: {oa.chain_ends}, i: {i}, inSameChain(i,chain_end,oa.chain_starts,oa.chain_ends):{inSameChain(1,299,oa.chain_starts,oa.chain_ends)}"
             same_chain_end = same_chain_end[0]
             # the conditionals that guard the entire compute_dssp_hdrgn function in the lammps code
-            #    these might have changed over time. try the commented lines if trying to reproduce an earlier lammps commit
+            #    these might have changed over time
             if isChainEnd(i,oa.chain_ends,n=1) or isChainStart(j,oa.chain_starts,n=1) or res_type[j] == "IPR":
                 continue
             elif abs(i-j) < 4 and inSameChain(i, j, oa.chain_starts, oa.chain_ends): 
@@ -862,8 +862,8 @@ def beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta=4.184):
             # the lammps code excludes certain pairs of residues from Beta2 but not the others
             elif term_number==2 and (isChainStart(i,oa.chain_starts,n=1) or isChainEnd(j,oa.chain_ends,n=1) or res_type[i]=='IPR'):
                 continue 
-            elif term_number==3 and (i>=same_chain_end-2 or isChainEnd(j,oa.chain_ends,n=1) or res_type[i+2]=="IPR"):
-                # res_type[i+2] may not exist, but only if i>=same_chain_end-2 is True, so the conditional passes without needing to compute res_type[i+2]
+            elif term_number==3 and (i>same_chain_end-2 or isChainEnd(j,oa.chain_ends,n=1) or res_type[i+2]=="IPR"):
+                # res_type[i+2] may not exist, but only if i>same_chain_end-2 is True, so the conditional passes without needing to compute res_type[i+2]
                 continue
             # if we've made it this far, we can now set up Bonds
             else:
