@@ -1,0 +1,341 @@
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain A --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain A --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain A --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain A --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain A --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain A --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x_A-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain A --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t disagreement_frame.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
+mm_analyze.py 2l8x-openmmawsem.pdb -t lammps_movie.pdb -f forces_setup.py --chain AB --fromOpenMMPDB -o total_info_2.dat
