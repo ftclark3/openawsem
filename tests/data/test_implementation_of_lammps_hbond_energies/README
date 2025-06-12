@@ -1,0 +1,11 @@
+This test compares hydrogen bond energies calculated by OpenAWSEM under the "old" method, meant to mimic LAMMPS AWSEM-MD commit cea754f (https://github.com/adavtyan/awsemmd), to the energies computed by a LAMMPS binary compiled from the source at commit cea754f.
+
+As for the other energy tests, we need for each protein *_energies.csv  *-openmmawsem.pdb, *-crystal_structure.pdb, *-crystal_structure.fasta,
+*-movie.dcd, and *-ssweight. 
+
+Since we are not checking associative memory or Debye-Huckel energies, we do not need *-single_frags.mem, *-single_frags.npy, *.gro, or *-charge.txt.
+
+The make_test_for_* directories contain the files needed to generate the test input files: LAMMPS input files;, LAMMPS trajectories, trajectories reformatted using BuildAllAtomsFromLammps_openAWSEM.py, OpenAWSEM projects giving the required crystal_structure.pdb and crystal_structure.fasta files, and LAMMPS output files (energy.log being the important one)
+
+
+
