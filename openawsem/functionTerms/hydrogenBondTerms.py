@@ -742,8 +742,14 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k
                 if term_number == 1:
                     lambda_term_number[i][j] = get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends)
                 elif term_number == 2:
+                    if isChainEdge(i,oa.chain_starts,oa.chain_ends,n=1) or isChainEdge(j,oa.chain_starts,oa.chain_ends,n=1):
+                        continue # i+1 or i-1 or j+1 or j-1 don't exist so we won't be able to get a[i-1] and/or a[i+1] and/or a[j-1] and/or a[j+1]
+                                 # such groups end up not being added to the potential anyway (see below), but this is needed to get the code to run
                     lambda_term_number[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
                 elif term_number == 3:
+                    if isChainEnd(i,oa.chain_ends,n=1):
+                        continue # i+1 doesn't exist so we won't be able to get a[i+1]
+                                 # such groups end up not being added to the potential anyway (see below), but this is needed to get the code to run
                     lambda_term_number[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
                 else:
                     raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
