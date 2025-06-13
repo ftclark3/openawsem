@@ -169,7 +169,7 @@ def get_beta_class(i,j,chain_starts, chain_ends):
 LAMBDA_TABLE = [
     #class1, class2, class3, class4
     [0.00,   1.37,   1.36,   1.17], # lambda_0
-    [0.00,   3.89,   3.50,   3.52], # lambda_1
+    [0.00,   3.49,   3.50,   3.52], # lambda_1
     [0.00,   0.00,   3.47,   3.62], # lambda_2
 ]
 
