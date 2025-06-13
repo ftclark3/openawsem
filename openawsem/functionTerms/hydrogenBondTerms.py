@@ -789,7 +789,7 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k
                 Beta.addAcceptor(oa.o[i], -1, -1, [i])
             # see if we can add this amino acid as a donor group (acts as the "j" residue)
             if oa.n[i]!=-1 and oa.h[i]!=-1:
-                assert not isChainStart(i,oa.chain_ends,n=1) # n[i] and h[i] shouldn't exist for a start residue
+                assert not isChainStart(i,oa.chain_starts,n=1) # n[i] and h[i] shouldn't exist for a start residue
                 Beta.addDonor(oa.n[i], oa.h[i], -1, [i])            
         elif term_number==2:
             # to participate in beta2, an amino acid must have both donor and acceptor groups
