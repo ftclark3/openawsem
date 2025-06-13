@@ -853,7 +853,7 @@ def _beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta):
                 continue
             # if sequence separation is less than 18, i and j are in the same chain, and both are not designated as beta in ssweight,
             #     then we alway set the energy to 0, so we can just exclude the Bond from the Force
-            elif abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i]=="not beta" or rama_biases[j]=="not beta"):
+            elif abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i][1]==0 or rama_biases[j][1]==0):
                 continue
             # the lammps code excludes certain pairs of residues from Beta2 but not the others
             elif term_number==2 and (isChainStart(i,oa.chain_starts,n=1) or isChainEnd(j,oa.chain_ends,n=1) or res_type[i]=='IPR'):
@@ -978,7 +978,7 @@ def _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap):
                 # determine whether this bond should be hairpin or long-range antiparallel
                 if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
                     # bond must be the long-range type for interchain interactions
-                    if rama_biases[i]=="beta" and rama_biases[j]=="beta":
+                    if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                         K = gamma_ap*k_beta_pred_p_ap
                     else:
                         K = gamma_ap
@@ -991,7 +991,7 @@ def _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap):
                         K = gamma_aph # we don't rescale potential by k_beta_pred_p_ap for hairpin
                         pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
                     elif 17<=j-i:
-                        if rama_biases[i]=='beta' and rama_biases[j]=='beta':
+                        if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                             K = gamma_ap*k_beta_pred_p_ap
                         else:
                             K = gamma_ap
@@ -1002,7 +1002,7 @@ def _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap):
             # check if we may be able to add a parallel hydrogen bond
             if inSameChain(i,i+4,oa.chain_starts,oa.chain_ends) and inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
                 # we can assign the same K regardless of whether we're in the same chain or not
-                if rama_biases[i]=="beta" and rama_biases[j]=="beta":
+                if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                     K = gamma_p*k_beta_pred_p_ap
                 else:
                     K = gamma_p
