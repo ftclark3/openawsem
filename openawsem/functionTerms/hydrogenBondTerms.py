@@ -10,10 +10,31 @@ import numpy as np
 from pathlib import Path
 import openawsem
 
+# GLOBALS
+
 se_map_1_letter = {'A': 0,  'R': 1,  'N': 2,  'D': 3,  'C': 4,
                    'Q': 5,  'E': 6,  'G': 7,  'H': 8,  'I': 9,
                    'L': 10, 'K': 11, 'M': 12, 'F': 13, 'P': 14,
                    'S': 15, 'T': 16, 'W': 17, 'Y': 18, 'V': 19}
+
+LAMBDA_TABLE = [
+    #class1, class2, class3, class4
+    [0.00,   1.37,   1.36,   1.17], # lambda_0
+    [0.00,   3.49,   3.50,   3.52], # lambda_1
+    [0.00,   0.00,   3.47,   3.62], # lambda_2
+]
+
+ALPHA_TABLE = [
+    #class1, class2, class3, class4
+    [0.00,   1.30,   1.30,   1.30],  # alpha_0
+    [0.00,   1.32,   1.32,   1.32],  # alpha_1
+    [0.00,   1.22,   1.22,   1.22],  # alpha_2
+    [0.00,   0.00,   0.33,   0.33],  # alpha_3
+    [0.00,   0.00,   1.01,   1.01],  # alpha_4
+]
+
+
+# HELPER FUNCTIONS
 
 def load_ssweight(ssweight_filename, nres=None):
     if not os.path.exists(ssweight_filename):
@@ -44,6 +65,7 @@ def isChainEnd(residueId, chain_ends, n=2):
         if (residueId+i) in chain_ends:
             atEnd = True
     return atEnd
+
 def isChainEdge(residueId, chain_starts, chain_ends, n=2):
     # n is how far away from the two ends count as in chain edge.
     return (isChainStart(residueId, chain_starts, n) or isChainEnd(residueId, chain_ends, n))
@@ -92,6 +114,32 @@ def inWhichChain(residueId, chain_ends):
         else:
             return chain_table[i]
 
+def inSameChain(i,j,chain_starts,chain_ends):
+    # determine whether residues are in the same chain
+    #
+    # sometimes, one of the residues might not exist
+    # we'll treat not existing as being part of a different chain
+    # but it shouldn't really affect anything
+    if i<0 or j<0:
+        if i<0 and j<0:
+            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+        else:
+            return False
+    if i>chain_ends[-1] or j>chain_ends[-1]:
+        if i>chain_ends[-1] and j>chain_ends[-1]:
+            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+        else:
+            return False
+    # if we've made it this far, we know that both residues exist
+    wombat = [int(chain_start<=i and i<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(wombat) == 1, f"i: {i}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
+    chain_index_1 = wombat.index(1)
+    wombat = [int(chain_start<=j and j<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(wombat) == 1, f"j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
+    chain_index_2 = wombat.index(1)
+    same_chain = chain_index_1==chain_index_2
+    return same_chain
+
 def read_beta_parameters(parametersLocation=None):
     if parametersLocation is None:
         parametersLocation=openawsem.data_path.parameters
@@ -124,32 +172,6 @@ def read_beta_parameters(parametersLocation=None):
             p_parhb[i][j][1] = float(in_para_HB[i+21].strip().split()[j])
     return p_par, p_anti, p_antihb, p_antinhb, p_parhb
 
-def inSameChain(i,j,chain_starts,chain_ends):
-    # determine whether residues are in the same chain
-    #
-    # sometimes, one of the residues might not exist
-    # we'll treat not existing as being part of a different chain
-    # but it shouldn't really affect anything
-    if i<0 or j<0:
-        if i<0 and j<0:
-            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
-        else:
-            return False
-    if i>chain_ends[-1] or j>chain_ends[-1]:
-        if i>chain_ends[-1] and j>chain_ends[-1]:
-            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
-        else:
-            return False
-    # if we've made it this far, we know that both residues exist
-    wombat = [int(chain_start<=i and i<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
-    assert sum(wombat) == 1, f"i: {i}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
-    chain_index_1 = wombat.index(1)
-    wombat = [int(chain_start<=j and j<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
-    assert sum(wombat) == 1, f"j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
-    chain_index_2 = wombat.index(1)
-    same_chain = chain_index_1==chain_index_2
-    return same_chain
-
 def get_beta_class(i,j,chain_starts, chain_ends):
     """
     Return the beta class of the pair (i, j) based on the sequence separation and chain information.
@@ -166,25 +188,9 @@ def get_beta_class(i,j,chain_starts, chain_ends):
     else:
         return 0 # need to do this for the regular hydrogen bond terms, while the lammps ones won't reach this else block
 
-LAMBDA_TABLE = [
-    #class1, class2, class3, class4
-    [0.00,   1.37,   1.36,   1.17], # lambda_0
-    [0.00,   3.49,   3.50,   3.52], # lambda_1
-    [0.00,   0.00,   3.47,   3.62], # lambda_2
-]
-
 def get_lambda_by_index(i, j, lambda_i, chain_starts, chain_ends):
     beta_cls = get_beta_class(i, j, chain_starts, chain_ends)
     return LAMBDA_TABLE[lambda_i][beta_cls]
-
-ALPHA_TABLE = [
-    #class1, class2, class3, class4
-    [0.00,   1.30,   1.30,   1.30],  # alpha_0
-    [0.00,   1.32,   1.32,   1.32],  # alpha_1
-    [0.00,   1.22,   1.22,   1.22],  # alpha_2
-    [0.00,   0.00,   0.33,   0.33],  # alpha_3
-    [0.00,   0.00,   1.01,   1.01],  # alpha_4
-]
 
 def get_alpha_by_index(i, j, alpha_i, chain_starts, chain_ends):
     beta_cls = get_beta_class(i, j, chain_starts, chain_ends)
@@ -254,321 +260,6 @@ def convert_units(k):
         print(f"Unknown input, {k}, {type(k)}")
     return k
 
-def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filename='ssweight'):
-    print("beta_1 term ON")
-    k_beta = convert_units(k) * oa.k_awsem
-    nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
-    # print(lambda_1)
-    r_ON = .298
-    sigma_NO = .068
-    r_OH = .206
-    sigma_HO = .076
-
-    lambda_1 = np.zeros((nres, nres))
-    rama_biases = load_ssweight(ssweight_filename, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
-    for i in range(nres):
-        for j in range(nres):
-            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
-                lambda_1[i][j] = 0
-            else:
-                lambda_1[i][j] = get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends)
-    theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
-    mu_1 = 10  # nm^-1
-    # mu_2 = 5   # nm^-1
-    rcHB = 1.2  # in nm
-    # v1i ensures the hydrogen bonding does not occur when five residue segment is shorter than 12 A
-    # v1i = f"0.5*(1+tanh({mu_1}*(distance(a2,a3)-{rcHB})))"
-    v1i = "1"
-    beta_string_1 = f"-{k_beta}*lambda_1(res_i,res_j)*theta_ij*v1i;theta_ij={theta_ij};v1i={v1i};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);"
-    beta_1 = CustomHbondForce(beta_string_1)
-
-    # Set PBC. 02082024 Rebekah Added. --- Start
-    if oa.periodic:
-        beta_1.setNonbondedMethod(beta_1.CutoffPeriodic)
-        print('\nbeta_term_1 is in PBC')
-    else:
-        beta_1.setNonbondedMethod(beta_1.CutoffNonPeriodic)
-    # Set PBC. 02082024 Rebekah Added. --- End
-
-    beta_1.addPerDonorParameter("res_i")
-    beta_1.addPerAcceptorParameter("res_j")
-    beta_1.addTabulatedFunction("lambda_1", Discrete2DFunction(nres, nres, lambda_1.T.flatten()))
-    # print(lambda_1)
-    # print(len(oa.o), nres)
-    for i in range(nres):
-        # note that both conditionals may be true (in fact, we typically expect this)
-        #
-        # see if we can add this amino acid as an acceptor group (acts as the "i" residue)
-        if oa.o[i] != -1 and not isChainEnd(i,oa.chain_ends,n=1):
-            beta_1.addAcceptor(oa.o[i], -1, -1, [i])
-        # see if we can add this amino acid as a donor group (acts as the "j" residue)
-        if oa.n[i]!=-1 and oa.h[i]!=-1:
-            assert not isChainStart(i,oa.chain_ends,n=1) # n[i] and h[i] shouldn't exist for a start residue
-            beta_1.addDonor(oa.n[i], oa.h[i], -1, [i])
-    # beta_1.setNonbondedMethod(CustomHbondForce.CutoffNonPeriodic)
-    beta_1.setCutoffDistance(1.0)
-    beta_1.setForceGroup(forceGroup)
-    # beta_2.setForceGroup(24)
-    # beta_3.setForceGroup(25)
-    return beta_1
-
-def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filename='ssweight'):
-    print("beta_2 term ON")
-    k_beta = convert_units(k) * oa.k_awsem
-    nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
-    # print(lambda_1)
-    r_ON = .298
-    sigma_NO = .068
-    r_OH = .206
-    sigma_HO = .076
-    eta_beta_1 = 10.0
-    eta_beta_2 = 5.0
-    # r_HB_c = 0.4
-    r_HB_c = 1.2
-    p_par, p_anti, p_antihb, p_antinhb, p_parhb = read_beta_parameters()
-
-    # for lookup table.
-    a = []
-    for ii in range(oa.nres):
-        a.append(se_map_1_letter[oa.seq[ii]])
-
-    lambda_2 = np.zeros((nres, nres))
-    rama_biases = load_ssweight(ssweight_filename, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
-    for i in range(nres):
-        for j in range(nres):
-            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
-                lambda_2[i][j] = 0
-            else:
-                lambda_2[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
-    theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
-    theta_ji = f"exp(-(r_Oj_Ni-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hi-{r_OH})^2/(2*{sigma_HO}^2))"
-    beta_string_2 = f"-{k_beta}*lambda_2(res_i,res_j)*theta_ij*theta_ji;\
-                        theta_ij={theta_ij};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);\
-                        theta_ji={theta_ji};r_Oj_Ni=distance(d3,a2);r_Oj_Hi=distance(d3,a3);"
-    beta_2 = CustomHbondForce(beta_string_2)
-
-    # Set PBC. 02082024 Rebekah Added. --- Start
-    if oa.periodic:
-        beta_2.setNonbondedMethod(beta_2.CutoffPeriodic)
-        print('\nbeta_term_2 is in PBC')
-    else:
-        beta_2.setNonbondedMethod(beta_2.CutoffNonPeriodic)
-    # Set PBC. 02082024 Rebekah Added. --- End
-
-    beta_2.addPerDonorParameter("res_i")
-    beta_2.addPerAcceptorParameter("res_j")
-    beta_2.addTabulatedFunction("lambda_2", Discrete2DFunction(nres, nres, lambda_2.T.flatten()))
-    # print(lambda_1)
-    # print(len(oa.o), nres)
-    for i in range(nres):
-        if isChainEdge(i,oa.chain_starts,oa,chain_ends,n=1):
-            continue
-        if o[i]!= -1 and n[i]!=-1 and h[i]!=-1: 
-            beta_2.addAcceptor(o[i], n[i], h[i], [i])
-            beta_2.addDonor(n[i], h[i], o[i], [i])
-    # beta_2.setNonbondedMethod(CustomHbondForce.CutoffNonPeriodic)
-    beta_2.setCutoffDistance(1.0)
-    # beta_1.setForceGroup(23)
-    beta_2.setForceGroup(forceGroup)
-    # beta_3.setForceGroup(25)
-
-    return beta_2
-
-
-def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_filename='ssweight'):
-    print("beta_3 term ON")
-    k_beta = convert_units(k) * oa.k_awsem
-    nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
-    # print(lambda_1)
-    r_ON = .298
-    sigma_NO = .068
-    r_OH = .206
-    sigma_HO = .076
-    eta_beta_1 = 10.0
-    eta_beta_2 = 5.0
-    # r_HB_c = 0.4
-    r_HB_c = 1.2
-    p_par, p_anti, p_antihb, p_antinhb, p_parhb = read_beta_parameters()
-
-    # for lookup table.
-    a = []
-    for ii in range(oa.nres):
-        a.append(se_map_1_letter[oa.seq[ii]])
-
-    lambda_3 = np.zeros((nres, nres))
-    rama_biases = load_ssweight(ssweight_filename, oa.nres) # shape num_residues, 2, where rama_biases[i,1] indicates whether or not residue i is predicted to be in a beta strand
-    for i in range(nres):
-        for j in range(nres):
-            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
-                lambda_3[i][j] = 0
-            else:
-                lambda_3[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
-
-    theta_ij = f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
-    theta_jip2 = f"exp(-(r_Oj_Nip2-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hip2-{r_OH})^2/(2*{sigma_HO}^2))"
-
-    beta_string_3 = f"-{k_beta}*lambda_3(res_i,res_j)*theta_ij*theta_jip2;\
-                        theta_ij={theta_ij};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);\
-                        theta_jip2={theta_jip2};r_Oj_Nip2=distance(d3,a2);r_Oj_Hip2=distance(d3,a3);"
-    beta_3 = CustomHbondForce(beta_string_3)
-
-    # Set PBC. 02082024 Rebekah Added. --- Start
-    if oa.periodic:
-        beta_3.setNonbondedMethod(beta_3.CutoffPeriodic)
-        print('\nbeta_term_3 is in PBC')
-    else:
-        beta_3.setNonbondedMethod(beta_3.CutoffNonPeriodic)
-    # Set PBC. 02082024 Rebekah Added. --- End
-        
-    beta_3.addPerDonorParameter("res_i")
-    beta_3.addPerAcceptorParameter("res_j")
-    beta_3.addTabulatedFunction("lambda_3", Discrete2DFunction(nres, nres, lambda_3.T.flatten()))
-    # print(lambda_1)
-    # print(len(oa.o), nres)
-    for i in range(nres):
-        # note that both conditionals may be true (in fact, we typically expect this)
-        #
-        # see if we can add this amino acid and its neighbor as an acceptor group (the "i and i+2" residues)
-        if not isChainEnd(i, oa.chain_ends, n=2):
-            if o[i] != -1 and n[i+2] !=-1 and h[i+2] !=-1:
-                beta_3.addAcceptor(o[i], n[i+2], h[i+2], [i])
-        # see if we can add this amino acid as a donor group (the "j" residue)
-        if not isChainEnd(i, oa.chain_ends, n=1):
-            if o[i] != -1 and n[i] !=-1 and h[i] !=-1:
-                beta_3.addDonor(n[i], h[i], o[i], [i])
-    # beta_3.setNonbondedMethod(CustomHbondForce.CutoffNonPeriodic)
-    beta_3.setCutoffDistance(1.0)
-    # beta_1.setForceGroup(23)
-    # beta_2.setForceGroup(24)
-    beta_3.setForceGroup(forceGroup)
-
-    return beta_3
-
-
-def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight"):
-    print("pap_1 term ON")
-    k_pap = convert_units(k) * oa.k_awsem
-    # dis_i_to_i4 should be in nm, it disfavor hydrogen bond when ca_i and ca_i+4 are 1.2 nm apart away.
-    nres, ca = oa.nres, oa.ca
-    # r0 = 2.0 # nm
-    r0 = 0.8  # nm
-    eta_pap = 70  # nm^-1
-    gamma_aph = 1.0
-    gamma_ap = 0.4
-    gamma_p = 0.4
-
-    ssweight = load_ssweight(ssweight_filename, oa.nres)
-
-    gamma_1 = np.zeros((nres, nres))
-    gamma_2 = np.zeros((nres, nres))
-    for i in range(nres):
-        for j in range(nres):
-            resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
-            resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            gamma_1[i][j] = get_pap_gamma_APH(i, j, chain1, chain2, gamma_aph)
-            gamma_2[i][j] = get_pap_gamma_AP(i, j, chain1, chain2, gamma_ap, ssweight)
-
-    constraint_i_and_i4 = f"0.5*(1+tanh({eta_pap}*(distance(a1,a2)-{dis_i_to_i4})))"
-
-    pap_function = f"-{k_pap}*(gamma_1(donor_idx,acceptor_idx)+gamma_2(donor_idx,acceptor_idx))\
-                        *0.5*(1+tanh({eta_pap}*({r0}-distance(a1,d1))))\
-                        *0.5*(1+tanh({eta_pap}*({r0}-distance(a2,d2))))\
-                        *{constraint_i_and_i4}"
-
-    # pap_function = f"-{k_pap}*(gamma_1(donor_idx,acceptor_idx))\
-    #                     *0.5*(1+tanh({eta_pap}*({r0}-distance(a1,d1))))\
-    #                     *0.5*(1+tanh({eta_pap}*({r0}-distance(a2,d2))))"
-
-    # pap_function = f"-{k_pap}*distance(a1,d1)"
-    pap = CustomHbondForce(pap_function)
-    
-    # Set PBC. 02082024 Rebekah Added. --- Start
-    if oa.periodic:
-        pap.setNonbondedMethod(pap.CutoffPeriodic)
-        print('\npap_1 is in PBC')
-    else:
-        pap.setNonbondedMethod(pap.CutoffNonPeriodic)
-    # Set PBC. 02082024 Rebekah Added. --- End
-    pap.addPerDonorParameter("donor_idx")
-    pap.addPerAcceptorParameter("acceptor_idx")
-    pap.addTabulatedFunction("gamma_1", Discrete2DFunction(nres, nres, gamma_1.T.flatten()))
-    pap.addTabulatedFunction("gamma_2", Discrete2DFunction(nres, nres, gamma_2.T.flatten()))
-    # print(ca)
-    # count = 0;
-    i = 0
-
-    for i in range(nres):
-        if not isChainEnd(i, oa.chain_ends, n=4):
-            pap.addAcceptor(ca[i], ca[i+4], -1, [i])
-
-        if not isChainStart(i, oa.chain_starts, n=4):
-            if oa.n[i] != -1 and oa.n[i-4] != -1:
-                pap.addDonor(oa.n[i], oa.n[i-4], -1, [i])
-
-    # pap.setNonbondedMethod(CustomHbondForce.CutoffNonPeriodic)
-    pap.setCutoffDistance(1.0)
-    # print(count)
-    pap.setForceGroup(forceGroup)
-    return pap
-
-def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight"):
-    print("pap_2 term ON")
-    k_pap = convert_units(k) * oa.k_awsem
-    nres, ca = oa.nres, oa.ca
-    # r0 = 2.0 # nm
-    r0 = 0.8  # nm
-    eta_pap = 70  # nm^-1
-    gamma_aph = 1.0
-    gamma_ap = 0.4
-    gamma_p = 0.4
-    
-    ssweight = load_ssweight(ssweight_filename, oa.nres)
-
-    gamma_3 = np.zeros((nres, nres))
-    for i in range(nres):
-        for j in range(nres):
-            resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
-            resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            gamma_3[i][j] = get_pap_gamma_P(i, j, chain1, chain2, gamma_p, ssweight)
-
-
-    constraint_i_and_i4 = f"0.5*(1+tanh({eta_pap}*(distance(a1,a2)-{dis_i_to_i4})))"
-    pap_function = f"-{k_pap}*gamma_3(donor_idx,acceptor_idx)\
-                        *0.5*(1+tanh({eta_pap}*({r0}-distance(a1,d1))))\
-                        *0.5*(1+tanh({eta_pap}*({r0}-distance(a2,d2))))\
-                        *{constraint_i_and_i4}"
-    pap = CustomHbondForce(pap_function)
-
-    # Set PBC. 02082024 Rebekah Added. --- Start
-    if oa.periodic:
-        pap.setNonbondedMethod(pap.CutoffPeriodic)
-        print('\npap_2 is in PBC')
-    else:
-        pap.setNonbondedMethod(pap.CutoffNonPeriodic)
-    # Set PBC. 02082024 Rebekah Added. --- End
-        
-    pap.addPerDonorParameter("donor_idx")
-    pap.addPerAcceptorParameter("acceptor_idx")
-    pap.addTabulatedFunction("gamma_3", Discrete2DFunction(nres, nres, gamma_3.T.flatten()))
-    # print(oa.n)
-    # count = 0;
-    for i in range(nres):
-        if not isChainEnd(i, oa.chain_ends, n=4):
-            pap.addAcceptor(ca[i], ca[i+4], -1, [i])
-            # pap.addDonor(ca[i], ca[i+4], -1, [i])
-            if oa.n[i] != -1 and oa.n[i+4] != -1:
-                pap.addDonor(oa.n[i], oa.n[i+4], -1, [i])
-
-    # pap.setNonbondedMethod(CustomHbondForce.CutoffNonPeriodic)
-    pap.setCutoffDistance(1.0)
-    # print(count)
-    pap.setForceGroup(forceGroup)
-    return pap
-
 def get_helical_f(oneLetterCode, inMembrane=False):
     if inMembrane:
         table = {"A": 0.79, "R": 0.62, "N": 0.49, "D": 0.44, "C": 0.76, "Q": 0.61, "E": 0.57, "G": 0.57, "H": 0.63, "I": 0.81,
@@ -577,6 +268,200 @@ def get_helical_f(oneLetterCode, inMembrane=False):
         table = {"A": 0.77, "R": 0.68, "N": 0.07, "D": 0.15, "C": 0.23, "Q": 0.33, "E": 0.27, "G": 0.0, "H": 0.06, "I": 0.23,
             "L": 0.62, "K": 0.65, "M": 0.5, "F": 0.41, "P": 0.4, "S": 0.35, "T": 0.11, "W": 0.45, "Y": 0.17, "V": 0.14}
     return table[oneLetterCode]
+
+
+# MAIN API
+def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweight', version='efficiency_optimized'):
+    """
+    Main API for the pairwise beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
+    potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
+    This function strives to be as similar as possible to the lammps implementation, except that the nu_i*nu_j term is removed, 
+    as mentioned in the SI of the OpenAWSEM paper. There may be other slight differences arising from the constraints imposed 
+    on the functional form by the CustomHbondForce class, but I am not aware of any at the moment. 
+
+    Alternatively, we can use the "lammps_awsemmd" version, which implements the potential from a particular LAMMPS AWSEM-MD commit,
+    https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb, within a tolerance of 0.01 kcal/mol 
+    on all tested systems and computational Platforms. It should be noted that not all LAMMPS AWSEM-MD versions are identical.
+
+    The OpenAWSEM paper:
+    Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
+        Davtyan, A.; de Pablo, J. J.; Wolynes, P. G. OpenAWSEM with Open3SPN2: 
+        A fast, flexible, and accessible framework for large-scale coarse-grained biomolecular simulations.
+        PLoS Comput. Biol. 2021, 17, 2, e1008308.
+    
+    The LAMMPS AWSEM-MD paper:
+    Davtyan, A.; Schafer, N. P.; Zheng, W.; Clementi, C.; Wolynes, P. G.; Papoian, G. A. 
+        AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
+        J. Phys. Chem. B 2012, 116, 29, 8494-8503.
+    """
+    print(f"beta_term_1 ({version} version) on")
+    if version == 'lammps_awsemmd':
+        return _beta_lammps_awsemmd(oa, 1, ssweight, forceGroup, k)
+    elif version == 'efficiency_optimized':
+        return _beta_efficiency_optimized(oa, 1, ssweight, forceGroup, k)
+    else:
+        raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
+
+def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweight', version='efficiency_optimized'):
+    """
+    Main API for the antiparallel cooperative beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
+    potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
+    This function strives to be as similar as possible to the lammps implementation, except that the nu_i*nu_j term is removed, 
+    as mentioned in the SI of the OpenAWSEM paper. There may be other slight differences arising from the constraints imposed 
+    on the functional form by the CustomHbondForce class, but I am not aware of any at the moment. 
+
+    Alternatively, we can use the "lammps_awsemmd" version, which implements the potential from a particular LAMMPS AWSEM-MD commit,
+    https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb, within a tolerance of 0.01 kcal/mol 
+    on all tested systems and computational Platforms. It should be noted that not all LAMMPS AWSEM-MD versions are identical.
+
+    The OpenAWSEM paper:
+    Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
+        Davtyan, A.; de Pablo, J. J.; Wolynes, P. G. OpenAWSEM with Open3SPN2: 
+        A fast, flexible, and accessible framework for large-scale coarse-grained biomolecular simulations.
+        PLoS Comput. Biol. 2021, 17, 2, e1008308.
+    
+    The LAMMPS AWSEM-MD paper:
+    Davtyan, A.; Schafer, N. P.; Zheng, W.; Clementi, C.; Wolynes, P. G.; Papoian, G. A. 
+        AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
+        J. Phys. Chem. B 2012, 116, 29, 8494-8503.
+    """
+    print(f"beta_term_2 ({version} version) on")
+    if version == 'lammps_awsemmd':
+        return _beta_lammps_awsemmd(oa, 2, ssweight, forceGroup, k)
+    elif version == 'efficiency_optimized':
+        return _beta_efficiency_optimized(oa, 2, ssweight, forceGroup, k)
+    else:
+        raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
+
+def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweight', version='efficiency_optimized'):
+    """
+    Main API for the parallel cooperative beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
+    potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
+    This function strives to be as similar as possible to the lammps implementation, except that the nu_i*nu_j term is removed, 
+    as mentioned in the SI of the OpenAWSEM paper. There may be other slight differences arising from the constraints imposed 
+    on the functional form by the CustomHbondForce class, but I am not aware of any at the moment. 
+
+    Alternatively, we can use the "lammps_awsemmd" version, which implements the potential from a particular LAMMPS AWSEM-MD commit,
+    https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb, within a tolerance of 0.01 kcal/mol 
+    on all tested systems and computational Platforms. It should be noted that not all LAMMPS AWSEM-MD versions are identical.
+
+    The OpenAWSEM paper:
+    Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
+        Davtyan, A.; de Pablo, J. J.; Wolynes, P. G. OpenAWSEM with Open3SPN2: 
+        A fast, flexible, and accessible framework for large-scale coarse-grained biomolecular simulations.
+        PLoS Comput. Biol. 2021, 17, 2, e1008308.
+    
+    The LAMMPS AWSEM-MD paper:
+    Davtyan, A.; Schafer, N. P.; Zheng, W.; Clementi, C.; Wolynes, P. G.; Papoian, G. A. 
+        AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
+        J. Phys. Chem. B 2012, 116, 29, 8494-8503.
+    """
+    print(f"beta_term_3 ({version} version) on")
+    if version == 'lammps_awsemmd':
+        return _beta_lammps_awsemmd(oa, 3, ssweight, forceGroup, k)
+    elif version == 'efficiency_optimized':
+        return _beta_efficiency_optimized(oa, 3, ssweight, forceGroup, k)
+    else:
+        raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
+
+def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight='ssweight'):
+    """
+    Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
+    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
+    """
+    return beta_term_1(oa, k_beta, forceGroup, ssweight, 'lammps_awsemmd')
+
+def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight='ssweight'):
+    """
+    Wrapper that allows us to call hydrogenBondTerms.beta_term_2_old() in forces_setup.py as before.
+    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
+    """
+    return beta_term_2(oa, k_beta, forceGroup, ssweight, 'lammps_awsemmd')
+
+def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='ssweight'):
+    """
+    Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
+    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
+    """
+    return beta_term_3(oa, k_beta, forceGroup, ssweight, 'lammps_awsemmd')
+
+def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight", ssweightFileName="ssweight",
+                   version='efficiency_optimized'):
+    """
+    Main API for the antiparallel cooperative liquid crystal beta-sheet (P_AP) hydrogen bonding term. 
+    Defaults to the "efficiency_optimized" version, meaning the potential described in the OpenAWSEM paper,
+    although I think that the code does not actually do what the paper says it should (see https://github.com/cabb99/openawsem/issues/60).
+    In the absence of an efficient solution (https://github.com/openmm/openmm/issues/2565 not yet implemented), we leave it as is.
+
+    Alternatively, we can use the "lammps_awsemmd" version, which implements the potential from a particular LAMMPS AWSEM-MD commit,
+    https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb, within a tolerance of 0.01 kcal/mol 
+    on all tested systems and computational Platforms. It should be noted that not all LAMMPS AWSEM-MD versions are identical.
+
+    However, the LAMMPS AWSEM-MD potential is implemented as a single term that should be accessed using pap_term_old.
+
+    The OpenAWSEM paper:
+    Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
+        Davtyan, A.; de Pablo, J. J.; Wolynes, P. G. OpenAWSEM with Open3SPN2: 
+        A fast, flexible, and accessible framework for large-scale coarse-grained biomolecular simulations.
+        PLoS Comput. Biol. 2021, 17, 2, e1008308.
+    
+    The LAMMPS AWSEM-MD paper:
+    Davtyan, A.; Schafer, N. P.; Zheng, W.; Clementi, C.; Wolynes, P. G.; Papoian, G. A. 
+        AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
+        J. Phys. Chem. B 2012, 116, 29, 8494-8503.
+    """
+    if ssweight_filename != "ssweight":
+        ssweight_filename = ssweightFileName # in case the user used the old name (for backward compatibility)
+    if version == 'lammps_awsemmd':
+        raise NotImplementedError("The LAMMPS version of the liquid crystal (P_AP) potential combines the parallel and antiparllel terms. \
+            You should call it using pap_term_old() instead.")
+    elif version == 'efficiency_optimized':
+        print(f"pap_term_1 ({version} version) on")
+        return _pap_efficiency_optimized(oa, 1, ssweight_filename, forceGroup, k, dis_i_to_i4)
+    else:
+        raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
+
+def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight", ssweightFileName="ssweight",
+                   version='efficiency_optimized'):
+    """
+    Main API for the parallel cooperative liquid crystal beta-sheet (P_AP) hydrogen bonding term. 
+    Defaults to the "efficiency_optimized" version, meaning the potential described in the OpenAWSEM paper,
+    although I think that the code does not actually do what the paper says it should (see https://github.com/cabb99/openawsem/issues/60).
+    In the absence of an efficient solution (https://github.com/openmm/openmm/issues/2565 not yet implemented), we leave it as is.
+
+    Alternatively, we can use the "lammps_awsemmd" version, which implements the potential from a particular LAMMPS AWSEM-MD commit,
+    https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb, within a tolerance of 0.01 kcal/mol 
+    on all tested systems and computational Platforms. It should be noted that not all LAMMPS AWSEM-MD versions are identical.
+
+    However, the LAMMPS AWSEM-MD potential is implemented as a single term that should be accessed using pap_term_old.
+
+    The OpenAWSEM paper:
+    Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
+        Davtyan, A.; de Pablo, J. J.; Wolynes, P. G. OpenAWSEM with Open3SPN2: 
+        A fast, flexible, and accessible framework for large-scale coarse-grained biomolecular simulations.
+        PLoS Comput. Biol. 2021, 17, 2, e1008308.
+    
+    The LAMMPS AWSEM-MD paper:
+    Davtyan, A.; Schafer, N. P.; Zheng, W.; Clementi, C.; Wolynes, P. G.; Papoian, G. A. 
+        AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
+        J. Phys. Chem. B 2012, 116, 29, 8494-8503.
+    """
+    if ssweight_filename != "ssweight":
+        ssweight_filename = ssweightFileName # in case the user used the old name (for backward compatibility)
+    if version == 'lammps_awsemmd':
+        raise NotImplementedError("The LAMMPS version of the liquid crystal (P_AP) potential combines the parallel and antiparllel terms. \
+            You should call it using pap_term_old() instead.")
+    elif version == 'efficiency_optimized':
+        print(f"pap_term_2 ({version} version) on")
+        return _pap_efficiency_optimized(oa, 2, ssweight_filename, forceGroup, k, dis_i_to_i4)
+    else:
+        raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")  
+
+def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_filename="ssweight"):
+    """
+    Wrapper that allows us to call hydrogenBondTerms.pap_term_old() in forces_setup.py as before.
+    """
+    return _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap)
 
 def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
     # without density dependency.
@@ -635,7 +520,12 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
     helical.setForceGroup(forceGroup)
     return helical
 
-def _beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta):
+
+# MAIN LOGIC FOR THE BETA SHEET AND LIQUID CRYSTAL (P_AP) TERMS
+#     For clarity and backwards compatibility, the user must be allowed to access these terms in multiple ways,
+#     So we provide those interfaces in the main API, then they all call one of these functions
+
+def _beta_lammps_awsemmd(oa, term_number, ssweight, forceGroup, k_beta):
     """ 
     Function to compute either beta 1, beta 2, or beta 3, as implemented in a particular LAMMPS AWSEM-MD commit,
     https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb
@@ -656,13 +546,13 @@ def _beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta):
     number_atoms = [7,10,10] # number of atoms participating in each interaction type (beta1, beta2, beta3)
     #
     # load ssweight
-    rama_biases = load_ssweight(ssweight)
+    rama_biases = load_ssweight(ssweight_filename, nres)
     #
     # load parameters
-    p_par, p_anti, p_antihb, p_antinhb, p_parhb = read_beta_parameters()
     a = [] # list to help us to convert from amino acid type to the appropriate row/column indices in p_par, p_anti, etc.
     for ii in range(oa.nres):
         a.append(se_map_1_letter[oa.seq[ii]])
+    p_par, p_anti, p_antihb, p_antinhb, p_parhb = read_beta_parameters()
     #
     # define energy functions
     #   hydrogen bond geometry
@@ -722,6 +612,11 @@ def _beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta):
     #
     # set up openmm Force
     Beta = CustomCompoundBondForce(number_atoms[term_number-1],beta_term)
+    if oa.periodic:
+        Beta.setNonbondedMethod(Beta.CutoffPeriodic)
+        print(f'\nbeta_term_{term_number} is in PBC')
+    else:
+        Beta.setNonbondedMethod(Beta.CutoffNonPeriodic) 
     Beta.addGlobalParameter("k_beta", k_beta)
     Beta.addPerBondParameter("Lambda")
     Beta.addPerBondParameter("res_index_i")
@@ -816,29 +711,111 @@ def _beta_lammps_awsemmd(oa,term_number,ssweight,forceGroup,k_beta):
     Beta.setForceGroup(forceGroup)
     return Beta
 
-def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight='ssweight'):
-    """
-    Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
-    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
-    """
-    return _beta_lammps_awsemmd(oa, 1, ssweight, forceGroup, k_beta)
+def _beta_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k_beta):
+    # set constants
+    k_beta = convert_units(k_beta) * oa.k_awsem
+    nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
+    r_ON = .298
+    sigma_NO = .068
+    r_OH = .206
+    sigma_HO = .076
+    eta_beta_1 = 10.0
+    eta_beta_2 = 5.0
+    r_HB_c = 1.2
+    #
+    # load ssweight
+    rama_biases = load_ssweight(ssweight_filename, nres)
+    #
+    # load parameters
+    a = [] # list to help us to convert from amino acid type to the appropriate row/column indices in p_par, p_anti, etc.
+    for ii in range(oa.nres):
+        a.append(se_map_1_letter[oa.seq[ii]])
+    p_par, p_anti, p_antihb, p_antinhb, p_parhb = read_beta_parameters()
+    #
+    # calculate Lambda function depending on term number and zero out for short intrachain sequence separation if not both beta
+    lambda_term_number = np.zeros((nres, nres))
+    for i in range(nres):
+        for j in range(nres):
+            if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
+                lambda_term_number[i][j] = 0
+            else:
+                if term_number == 1:
+                    lambda_term_number[i][j] = get_lambda_by_index(i, j, 0, oa.chain_starts,oa.chain_ends)
+                elif term_number == 2:
+                    lambda_term_number[i][j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
+                elif term_number == 3:
+                    lambda_term_number[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
+                else:
+                    raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
+    #
+    # define energy functions
+    theta_ij =   f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
+    theta_ji =   f"exp(-(r_Oj_Ni-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hi-{r_OH})^2/(2*{sigma_HO}^2))"
+    theta_jip2 = f"exp(-(r_Oj_Nip2-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hip2-{r_OH})^2/(2*{sigma_HO}^2))"
+    if term_number == 1:
+        beta_string = f"-{k_beta}*lambda_1(res_i,res_j)*theta_ij;\
+                            theta_ij={theta_ij};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);"
+    elif term_number == 2:
+        beta_string_2 = f"-{k_beta}*lambda_2(res_i,res_j)*theta_ij*theta_ji;\
+                        theta_ij={theta_ij};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);\
+                        theta_ji={theta_ji};r_Oj_Ni=distance(d3,a2);r_Oj_Hi=distance(d3,a3);"
+    elif term_number == 3:
+        beta_string_3 = f"-{k_beta}*lambda_3(res_i,res_j)*theta_ij*theta_jip2;\
+                        theta_ij={theta_ij};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);\
+                        theta_jip2={theta_jip2};r_Oj_Nip2=distance(d3,a2);r_Oj_Hip2=distance(d3,a3);"
+    else:
+        raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
+    #
+    # set up OpenMM Force
+    Beta = CustomHbondForce(beta_string)
+    if oa.periodic:
+        Beta.setNonbondedMethod(Beta.CutoffPeriodic)
+        print(f'\nbeta_term_{term_number} is in PBC')
+    else:
+        Beta.setNonbondedMethod(Beta.CutoffNonPeriodic)        
+    Beta.addPerDonorParameter("res_i")
+    Beta.addPerAcceptorParameter("res_j")
+    Beta.addTabulatedFunction("lambda_term_number", Discrete2DFunction(nres, nres, lambda_term_number.T.flatten()))
+    Beta.setCutoffDistance(1.0)
+    Beta.setForceGroup(forceGroup)
+    #
+    # loop to add donor and acceptor groups
+    for i in range(nres):
+        if term_number==1:
+            # note that both conditionals may be true (in fact, we typically expect this)
+            #
+            # see if we can add this amino acid as an acceptor group (acts as the "i" residue)
+            if oa.o[i] != -1 and not isChainEnd(i,oa.chain_ends,n=1):
+                Beta.addAcceptor(oa.o[i], -1, -1, [i])
+            # see if we can add this amino acid as a donor group (acts as the "j" residue)
+            if oa.n[i]!=-1 and oa.h[i]!=-1:
+                assert not isChainStart(i,oa.chain_ends,n=1) # n[i] and h[i] shouldn't exist for a start residue
+                Beta.addDonor(oa.n[i], oa.h[i], -1, [i])            
+        elif term_number==2:
+            # to participate in beta2, an amino acid must have both donor and acceptor groups
+            if isChainEdge(i,oa.chain_starts,oa.chain_ends,n=1):
+                pass
+            elif o[i]==-1 or n[i]==-1 or h[i]==-1: 
+                pass # we're dealing with a proline or have missing atoms for some reason
+            else: 
+                Beta.addAcceptor(o[i], n[i], h[i], [i])
+                Beta.addDonor(n[i], h[i], o[i], [i])
+        elif term_number==3:
+            # note that both conditionals may be true (in fact, we typically expect this)
+            #
+            # see if we can add this amino acid and its neighbor as an acceptor group (the "i and i+2" residues)
+            if not isChainEnd(i, oa.chain_ends, n=2):
+                if o[i] != -1 and n[i+2] !=-1 and h[i+2] !=-1:
+                    Beta.addAcceptor(o[i], n[i+2], h[i+2], [i])
+            # see if we can add this amino acid as a donor group (the "j" residue)
+            if not isChainEnd(i, oa.chain_ends, n=1):
+                if o[i] != -1 and n[i] !=-1 and h[i] !=-1:
+                    Beta.addDonor(n[i], h[i], o[i], [i])
+        else:
+            raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
+    return Beta
 
-def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight='ssweight'):
-    """
-    Wrapper that allows us to call hydrogenBondTerms.beta_term_2_old() in forces_setup.py as before.
-    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
-    """
-    return _beta_lammps_awsemmd(oa, 2, ssweight, forceGroup, k_beta)
-
-def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='ssweight'):
-    """
-    Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
-    Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
-    """
-    return _beta_lammps_awsemmd(oa, 3, ssweight, forceGroup, k_beta)
-
-
-def _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap):
+def _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap):
     print("pap term ON")
     # define constants
     nres, ca = oa.nres, oa.ca
@@ -848,7 +825,7 @@ def _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap):
     gamma_ap = 0.4
     gamma_p = 0.4
     k_beta_pred_p_ap = 1.5
-    rama_biases = load_ssweight(ssweight)
+    rama_biases = load_ssweight(ssweight_filename, nres)
     # define energy term
     nu_ij = f"0.5*(1+tanh({eta_pap}*({r0}-distance(p1,p2))))" # distance(p1,p2) is r_CAi_Caj
     other_nu = f"0.5*(1+tanh({eta_pap}*({r0}-distance(p3,p4))))"# distance(p3,p4) is r_CAi+4_CAj+4 (parallel) or r_CAi+4_CAj-4 (antiparallel)
@@ -908,8 +885,78 @@ def _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap):
     pap.setForceGroup(forceGroup)
     return pap
 
-def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight="ssweight"):
-    """
-    Wrapper that allows us to call hydrogenBondTerms.pap_term_old() in forces_setup.py as before.
-    """
-    return _pap_lammps_awsemmd(oa, ssweight, forceGroup, k_pap)
+def _pap_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k_pap, dis_i_to_i4):
+    # set constants
+    k_pap = convert_units(k) * oa.k_awsem
+    nres, ca = oa.nres, oa.ca
+    r0 = 0.8  # nm
+    eta_pap = 70  # nm^-1
+    gamma_aph = 1.0
+    gamma_ap = 0.4
+    gamma_p = 0.4
+    #
+    # load ssweight
+    ssweight = load_ssweight(ssweight_filename, nres)
+    #
+    # load parameters
+    gamma_1 = np.zeros((nres, nres))
+    gamma_2 = np.zeros((nres, nres))
+    gamma_3 = np.zeros((nres, nres))
+    for i in range(nres):
+        for j in range(nres):
+            resId1 = i
+            chain1 = inWhichChain(resId1, oa.chain_ends)
+            resId2 = j
+            chain2 = inWhichChain(resId2, oa.chain_ends)
+            gamma_1[i][j] = get_pap_gamma_APH(i, j, chain1, chain2, gamma_aph)
+            gamma_2[i][j] = get_pap_gamma_AP(i, j, chain1, chain2, gamma_ap, ssweight)
+            gamma_3[i][j] = get_pap_gamma_P(i, j, chain1, chain2, gamma_p, ssweight)
+    #
+    # define energy functions
+    constraint_i_and_i4 = f"0.5*(1+tanh({eta_pap}*(distance(a1,a2)-{dis_i_to_i4})))"
+    if term_number == 1:
+        gamma_string = "(gamma_1(donor_idx,acceptor_idx)+gamma_2(donor_idx,acceptor_idx))"
+    elif term_number == 2:
+        gamma_string = "gamma_3(donor_idx,acceptor_idx)"
+    else:
+        raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
+    pap_function = f"-{k_pap}*{gamma_string}\
+                        *0.5*(1+tanh({eta_pap}*({r0}-distance(a1,d1))))\
+                        *0.5*(1+tanh({eta_pap}*({r0}-distance(a2,d2))))\
+                        *{constraint_i_and_i4}"
+    #
+    # set up OpenMM Force
+    pap = CustomHbondForce(pap_function)
+    if oa.periodic:
+        pap.setNonbondedMethod(pap.CutoffPeriodic)
+        print(f'\npap_{term_number} is in PBC')
+    else:
+        pap.setNonbondedMethod(pap.CutoffNonPeriodic)
+    pap.addPerDonorParameter("donor_idx")
+    pap.addPerAcceptorParameter("acceptor_idx")
+    pap.setCutoffDistance(1.0)
+    pap.setForceGroup(forceGroup)
+    if term_number == 1:
+        pap.addTabulatedFunction("gamma_1", Discrete2DFunction(nres, nres, gamma_1.T.flatten()))
+        pap.addTabulatedFunction("gamma_2", Discrete2DFunction(nres, nres, gamma_2.T.flatten()))
+    elif term_number == 2:
+        pap.addTabulatedFunction("gamma_3", Discrete2DFunction(nres, nres, gamma_3.T.flatten()))
+    else:
+        raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
+    #
+    # add donor and acceptor groups
+    for i in range(nres):
+        if term_number == 1:
+            if not isChainEnd(i, oa.chain_ends, n=4):
+                pap.addAcceptor(ca[i], ca[i+4], -1, [i])
+            if not isChainStart(i, oa.chain_starts, n=4):
+                if oa.n[i] != -1 and oa.n[i-4] != -1:
+                    pap.addDonor(oa.n[i], oa.n[i-4], -1, [i])
+        elif term_number == 2:
+            if not isChainEnd(i, oa.chain_ends, n=4):
+                pap.addAcceptor(ca[i], ca[i+4], -1, [i])
+                if oa.n[i] != -1 and oa.n[i+4] != -1:
+                    pap.addDonor(oa.n[i], oa.n[i+4], -1, [i])           
+        else:
+            raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
+    return pap
