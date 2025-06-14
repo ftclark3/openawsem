@@ -525,7 +525,7 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     For clarity and backwards compatibility, the user must be allowed to access these terms in multiple ways,
 #     So we provide those interfaces in the main API, then they all call one of these functions
 
-def _beta_lammps_awsemmd(oa, term_number, ssweight, forceGroup, k_beta):
+def _beta_lammps_awsemmd(oa, term_number, ssweight_filename, forceGroup, k_beta):
     """ 
     Function to compute either beta 1, beta 2, or beta 3, as implemented in a particular LAMMPS AWSEM-MD commit,
     https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb
@@ -613,10 +613,10 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight, forceGroup, k_beta):
     # set up openmm Force
     Beta = CustomCompoundBondForce(number_atoms[term_number-1],beta_term)
     if oa.periodic:
-        Beta.setNonbondedMethod(Beta.CutoffPeriodic)
+        Beta.setUsesPeriodicBoundaryConditions(True)
         print(f'\nbeta_term_{term_number} is in PBC')
     else:
-        Beta.setNonbondedMethod(Beta.CutoffNonPeriodic) 
+        Beta.setUsesPeriodicBoundaryConditions(False)
     Beta.addGlobalParameter("k_beta", k_beta)
     Beta.addPerBondParameter("Lambda")
     Beta.addPerBondParameter("res_index_i")
@@ -759,14 +759,14 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k
     theta_ji =   f"exp(-(r_Oj_Ni-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hi-{r_OH})^2/(2*{sigma_HO}^2))"
     theta_jip2 = f"exp(-(r_Oj_Nip2-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oj_Hip2-{r_OH})^2/(2*{sigma_HO}^2))"
     if term_number == 1:
-        beta_string = f"-{k_beta}*lambda_1(res_i,res_j)*theta_ij;\
+        beta_string = f"-{k_beta}*lambda_term_number(res_i,res_j)*theta_ij;\
                             theta_ij={theta_ij};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);"
     elif term_number == 2:
-        beta_string_2 = f"-{k_beta}*lambda_2(res_i,res_j)*theta_ij*theta_ji;\
+        beta_string = f"-{k_beta}*lambda_term_number(res_i,res_j)*theta_ij*theta_ji;\
                         theta_ij={theta_ij};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);\
                         theta_ji={theta_ji};r_Oj_Ni=distance(d3,a2);r_Oj_Hi=distance(d3,a3);"
     elif term_number == 3:
-        beta_string_3 = f"-{k_beta}*lambda_3(res_i,res_j)*theta_ij*theta_jip2;\
+        beta_string = f"-{k_beta}*lambda_term_number(res_i,res_j)*theta_ij*theta_jip2;\
                         theta_ij={theta_ij};r_Oi_Nj=distance(a1,d1);r_Oi_Hj=distance(a1,d2);\
                         theta_jip2={theta_jip2};r_Oj_Nip2=distance(d3,a2);r_Oj_Hip2=distance(d3,a3);"
     else:
@@ -840,6 +840,11 @@ def _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap):
     # initialize Force
     pap = CustomCompoundBondForce(4, pap_energy)
     pap.addPerBondParameter("K")
+    if oa.periodic:
+        pap.setUsesPeriodicBoundaryConditions(True)
+        print(f'\npap_term_old is in PBC')
+    else:
+        pap.setUsesPeriodicBoundaryConditions(False)
     # add Bonds to Force and set per-bond parameters (coefficients)
     for i in range(nres):
         for j in range(nres): # unlike the beta terms, P_AP has the symmetry P_AP(i,j)==P_AP(j,i), so we only need to loop over each pair once
@@ -891,7 +896,7 @@ def _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap):
     pap.setForceGroup(forceGroup)
     return pap
 
-def _pap_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k_pap, dis_i_to_i4):
+def _pap_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k, dis_i_to_i4):
     # set constants
     k_pap = convert_units(k) * oa.k_awsem
     nres, ca = oa.nres, oa.ca
