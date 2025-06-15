@@ -464,6 +464,11 @@ def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_filename="ssweight"):
     return _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap)
 
 def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
+    """
+    Note that this term is not exactly the same as the LAMMPS AWSEM-MD helical term.
+    I think the only difference is the treatment of proline at the i+4 position.
+    Changing this to make it exactly like lammps would be difficult and possibly cost us some efficiency.
+    """
     # without density dependency.
     # without z dependency for now.
     k_helical *= oa.k_awsem
