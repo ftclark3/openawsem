@@ -469,9 +469,9 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         raise TypeError(f"pap_term_1() got unexpected keyword argument(s): {unexpected}")
     
     if version == 'lammps_awsemmd':
-        raise NotImplementedError("The LAMMPS version of the liquid crystal (P_AP) potential combines the parallel and antiparllel terms. \
-            You should call it using pap_term_old() instead.")
-    
+        print("WARNING: lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old().\
+               Calling pap_term_old() instead and assigning to forceGroup 26.")
+        return pap_term_old(oa, k_pap=k, ssweight_filename=ssweight_filename)
     elif version == 'efficiency_optimized':
         print(f"pap_term_1 ({version} version) on")
         return _pap_efficiency_optimized(oa, 1, ssweight_file, forceGroup, k, dis_i_to_i4)
@@ -519,8 +519,8 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     
 
     if version == 'lammps_awsemmd':
-        raise NotImplementedError("The LAMMPS version of the liquid crystal (P_AP) potential combines the parallel and antiparllel terms. \
-            You should call it using pap_term_old() instead.")
+        print("WARNING: lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old(). Returning dummy Force.")
+        return CustomExternalForce("0") # force has 0 energy and no particles
     elif version == 'efficiency_optimized':
         print(f"pap_term_2 ({version} version) on")
         return _pap_efficiency_optimized(oa, 2, ssweight_file, forceGroup, k, dis_i_to_i4)
