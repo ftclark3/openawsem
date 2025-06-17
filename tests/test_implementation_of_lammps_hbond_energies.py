@@ -112,6 +112,7 @@ def analyze(protein, simulation_platform):
         for term in COLUMNS:
             g = forceGroupTable[term]
             state = simulation.context.getState(getEnergy=True, groups=g)
+            # note that we use kcal/mol instead of kJ/mol because we're comparing to lammps, which uses kcal/mol
             termEnergy = state.getPotentialEnergy().value_in_unit(openawsem.unit_definitions.kilocalories_per_mole)
             e.append(termEnergy)
         termEnergies.loc[step] = [step] + e
