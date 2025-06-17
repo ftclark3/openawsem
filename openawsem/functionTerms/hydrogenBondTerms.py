@@ -469,7 +469,7 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         raise TypeError(f"pap_term_1() got unexpected keyword argument(s): {unexpected}")
     
     if version == 'lammps_awsemmd':
-        warnings.warn("WARNING: lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old().\
+        warnings.warn("lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old().\
                Calling pap_term_old() instead and assigning to forceGroup 26.",stacklevel=2)
         return pap_term_old(oa, k_pap=k, ssweight_filename=ssweight_filename)
     elif version == 'efficiency_optimized':
