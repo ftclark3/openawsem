@@ -67,7 +67,7 @@ def set_up_forces(oa, protein, force_name=None):
         "Beta2": lambda: openawsem.functionTerms.hydrogenBondTerms.beta_term_2_old(oa,k_beta=0.5*4.184,ssweight=data_path/f'{protein}-ssweight'), 
         "Beta3": lambda: openawsem.functionTerms.hydrogenBondTerms.beta_term_3_old(oa,k_beta=0.5*4.184,ssweight=data_path/f'{protein}-ssweight'), 
         "Helical": lambda: openawsem.functionTerms.hydrogenBondTerms.helical_term(oa,forceGroup=29),
-        "Pap": lambda: openawsem.functionTerms.hydrogenBondTerms.pap_term_old(oa,k_pap=0.5*4.184,ssweight_filename=data_path/f'{protein}-ssweight',forceGroup=28),
+        "Pap": lambda: openawsem.functionTerms.hydrogenBondTerms.pap_term_old(oa,k_pap=0.5*4.184,ssweight=data_path/f'{protein}-ssweight',forceGroup=28),
     }
 
     forces = []

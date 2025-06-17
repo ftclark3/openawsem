@@ -9,6 +9,7 @@ except ModuleNotFoundError:
 import numpy as np
 from pathlib import Path
 import openawsem
+import warnings
 
 # GLOBALS
 
@@ -385,8 +386,8 @@ def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='sswei
     """
     return beta_term_3(oa, k_beta, forceGroup, ssweight, 'lammps_awsemmd')
 
-def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight", ssweightFileName="ssweight",
-                   version='efficiency_optimized'):
+def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight="ssweight", 
+               version='efficiency_optimized', **kwargs):
     """
     Main API for the antiparallel cooperative liquid crystal beta-sheet (P_AP) hydrogen bonding term. 
     Defaults to the "efficiency_optimized" version, meaning the potential described in the OpenAWSEM paper,
@@ -410,19 +411,33 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
-    if ssweightFileName != "ssweight":
-        ssweight_filename = ssweightFileName # in case the user used the old name (for backward compatibility)
+
+    if "ssweightFileName" in kwargs:
+        warnings.warn(
+            "pap_term_1: `ssweightFileName` is deprecated; use "
+            "`ssweight` instead.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        ssweight = kwargs.pop("ssweightFileName")
+    
+    if kwargs:
+        # any other unexpected kwargs?
+        unexpected = ", ".join(kwargs)
+        raise TypeError(f"pap_term_1() got unexpected keyword argument(s): {unexpected}")
+    
     if version == 'lammps_awsemmd':
         raise NotImplementedError("The LAMMPS version of the liquid crystal (P_AP) potential combines the parallel and antiparllel terms. \
             You should call it using pap_term_old() instead.")
+    
     elif version == 'efficiency_optimized':
         print(f"pap_term_1 ({version} version) on")
-        return _pap_efficiency_optimized(oa, 1, ssweight_filename, forceGroup, k, dis_i_to_i4)
+        return _pap_efficiency_optimized(oa, 1, ssweight, forceGroup, k, dis_i_to_i4)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
-def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight", ssweightFileName="ssweight",
-                   version='efficiency_optimized'):
+def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight="ssweight", ssweightFileName="ssweight",
+                   version='efficiency_optimized', **kwargs):
     """
     Main API for the parallel cooperative liquid crystal beta-sheet (P_AP) hydrogen bonding term. 
     Defaults to the "efficiency_optimized" version, meaning the potential described in the OpenAWSEM paper,
@@ -446,14 +461,27 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
-    if ssweightFileName != "ssweight":
-        ssweight_filename = ssweightFileName # in case the user used the old name (for backward compatibility)
+    if "ssweightFileName" in kwargs:
+        warnings.warn(
+            "pap_term_1: `ssweightFileName` is deprecated; use "
+            "`ssweight` instead.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        ssweight = kwargs.pop("ssweightFileName")
+    
+    if kwargs:
+        # any other unexpected kwargs?
+        unexpected = ", ".join(kwargs)
+        raise TypeError(f"pap_term_2() got unexpected keyword argument(s): {unexpected}")
+    
+
     if version == 'lammps_awsemmd':
         raise NotImplementedError("The LAMMPS version of the liquid crystal (P_AP) potential combines the parallel and antiparllel terms. \
             You should call it using pap_term_old() instead.")
     elif version == 'efficiency_optimized':
         print(f"pap_term_2 ({version} version) on")
-        return _pap_efficiency_optimized(oa, 2, ssweight_filename, forceGroup, k, dis_i_to_i4)
+        return _pap_efficiency_optimized(oa, 2, ssweight, forceGroup, k, dis_i_to_i4)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")  
 
