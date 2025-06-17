@@ -469,8 +469,8 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         raise TypeError(f"pap_term_1() got unexpected keyword argument(s): {unexpected}")
     
     if version == 'lammps_awsemmd':
-        print("WARNING: lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old().\
-               Calling pap_term_old() instead and assigning to forceGroup 26.")
+        warnings.warn("WARNING: lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old().\
+               Calling pap_term_old() instead and assigning to forceGroup 26.",stacklevel=2)
         return pap_term_old(oa, k_pap=k, ssweight_filename=ssweight_filename)
     elif version == 'efficiency_optimized':
         print(f"pap_term_1 ({version} version) on")
@@ -504,7 +504,7 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
     if "ssweightFileName" in kwargs:
-        warnings.warn(
+        .warn(
             "pap_term_1: `ssweightFileName` is deprecated; use "
             "`ssweight_file` instead.",
             category=DeprecationWarning,
@@ -519,7 +519,7 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     
 
     if version == 'lammps_awsemmd':
-        print("WARNING: lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old(). Returning dummy Force.")
+        warnings.warn("lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old(). Returning dummy Force.",stacklevel=2)
         return CustomExternalForce("0") # force has 0 energy and no particles
     elif version == 'efficiency_optimized':
         print(f"pap_term_2 ({version} version) on")
