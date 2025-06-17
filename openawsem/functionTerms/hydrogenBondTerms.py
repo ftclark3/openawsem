@@ -410,7 +410,7 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
-    if ssweight_filename != "ssweight":
+    if ssweightFileName != "ssweight":
         ssweight_filename = ssweightFileName # in case the user used the old name (for backward compatibility)
     if version == 'lammps_awsemmd':
         raise NotImplementedError("The LAMMPS version of the liquid crystal (P_AP) potential combines the parallel and antiparllel terms. \
@@ -446,7 +446,7 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
-    if ssweight_filename != "ssweight":
+    if ssweightFileName != "ssweight":
         ssweight_filename = ssweightFileName # in case the user used the old name (for backward compatibility)
     if version == 'lammps_awsemmd':
         raise NotImplementedError("The LAMMPS version of the liquid crystal (P_AP) potential combines the parallel and antiparllel terms. \
