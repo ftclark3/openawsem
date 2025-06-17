@@ -36,6 +36,6 @@ cp lammps_movie.dcd ../$PDBID-movie.dcd
 TAKE THE INFORMATION FROM energy.log AND PUT IT IN ../PDBID_energies.csv, FOLLOWING THE FORMAT OF OTHER PDBID_energies.csv FILES
 DON'T FORGET TO ADD PDBID TO THE PROTEINS LIST IN THE TEST SCRIPT, test_implementation_of_lammps_hbond_energies.py
 
-
 See make_test.sh for an example
 
+2ohx_A has parallel intramolecular beta sheets in the 18-45 and 45+ sequence separation ranges
