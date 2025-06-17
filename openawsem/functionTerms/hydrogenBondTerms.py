@@ -9,6 +9,7 @@ except ModuleNotFoundError:
 import numpy as np
 from pathlib import Path
 import openawsem
+import warnings
 
 # GLOBALS
 
@@ -36,12 +37,12 @@ ALPHA_TABLE = [
 
 # HELPER FUNCTIONS
 
-def load_ssweight(ssweight_filename, nres=None):
-    if not os.path.exists(ssweight_filename):
+def load_ssweight(ssweight_file, nres=None):
+    if not os.path.exists(ssweight_file):
         print("No ssweight given, assume all zero")
         ssweight = np.zeros((nres, 2))
     else:
-        ssweight = np.loadtxt(ssweight_filename)    
+        ssweight = np.loadtxt(ssweight_file)    
     return ssweight
 
 def isChainStart(residueId, chain_starts, n=2):
@@ -206,8 +207,8 @@ def get_pap_gamma_APH(donor_idx, acceptor_idx, chain_i, chain_j, gamma_APH):
     else:
         return 0
 
-def get_pap_gamma_AP(donor_idx, acceptor_idx, chain_i, chain_j, gamma_AP, ssweight):
-    if ssweight[donor_idx][1] == 1 and ssweight[acceptor_idx][1] == 1:
+def get_pap_gamma_AP(donor_idx, acceptor_idx, chain_i, chain_j, gamma_AP, ssweight_file):
+    if ssweight_file[donor_idx][1] == 1 and ssweight_file[acceptor_idx][1] == 1:
         additional_scale = 1.5
     else:
         additional_scale = 1.0
@@ -217,8 +218,8 @@ def get_pap_gamma_AP(donor_idx, acceptor_idx, chain_i, chain_j, gamma_AP, ssweig
     else:
         return 0
 
-def get_pap_gamma_P(donor_idx, acceptor_idx, chain_i, chain_j, gamma_P, ssweight):
-    if ssweight[donor_idx][1] == 1 and ssweight[acceptor_idx][1] == 1:
+def get_pap_gamma_P(donor_idx, acceptor_idx, chain_i, chain_j, gamma_P, ssweight_file):
+    if ssweight_file[donor_idx][1] == 1 and ssweight_file[acceptor_idx][1] == 1:
         additional_scale = 1.5
     else:
         additional_scale = 1.0
@@ -271,7 +272,7 @@ def get_helical_f(oneLetterCode, inMembrane=False):
 
 
 # MAIN API
-def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweight', version='efficiency_optimized'):
+def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized',**kwargs):
     """
     Main API for the pairwise beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
     potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
@@ -294,15 +295,29 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweig
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
+    if "ssweight" in kwargs:
+        warnings.warn(
+            "beta_term_2: `ssweight` is deprecated; use "
+            "`ssweight_file` instead.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        ssweight_file = kwargs.pop("ssweight")
+    
+    if kwargs:
+        # any other unexpected kwargs?
+        unexpected = ", ".join(kwargs)
+        raise TypeError(f"beta_term_2() got unexpected keyword argument(s): {unexpected}")
+    
     print(f"beta_term_1 ({version} version) on")
     if version == 'lammps_awsemmd':
-        return _beta_lammps_awsemmd(oa, 1, ssweight, forceGroup, k)
+        return _beta_lammps_awsemmd(oa, 1, ssweight_file, forceGroup, k)
     elif version == 'efficiency_optimized':
-        return _beta_efficiency_optimized(oa, 1, ssweight, forceGroup, k)
+        return _beta_efficiency_optimized(oa, 1, ssweight_file, forceGroup, k)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
-def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweight', version='efficiency_optimized'):
+def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized',**kwargs):
     """
     Main API for the antiparallel cooperative beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
     potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
@@ -325,15 +340,29 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweig
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
+    if "ssweight" in kwargs:
+        warnings.warn(
+            "beta_term_2: `ssweight` is deprecated; use "
+            "`ssweight_file` instead.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        ssweight_file = kwargs.pop("ssweight")
+    
+    if kwargs:
+        # any other unexpected kwargs?
+        unexpected = ", ".join(kwargs)
+        raise TypeError(f"beta_term_2() got unexpected keyword argument(s): {unexpected}")
+    
     print(f"beta_term_2 ({version} version) on")
     if version == 'lammps_awsemmd':
-        return _beta_lammps_awsemmd(oa, 2, ssweight, forceGroup, k)
+        return _beta_lammps_awsemmd(oa, 2, ssweight_file, forceGroup, k)
     elif version == 'efficiency_optimized':
-        return _beta_efficiency_optimized(oa, 2, ssweight, forceGroup, k)
+        return _beta_efficiency_optimized(oa, 2, ssweight_file, forceGroup, k)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
-def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweight', version='efficiency_optimized'):
+def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized',**kwargs):
     """
     Main API for the parallel cooperative beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
     potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
@@ -356,37 +385,51 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight='ssweig
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
+    if "ssweight" in kwargs:
+        warnings.warn(
+            "beta_term_3: `ssweight` is deprecated; use "
+            "`ssweight_file` instead.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        ssweight_file = kwargs.pop("ssweight")
+    
+    if kwargs:
+        # any other unexpected kwargs?
+        unexpected = ", ".join(kwargs)
+        raise TypeError(f"beta_term_3() got unexpected keyword argument(s): {unexpected}")
+    
     print(f"beta_term_3 ({version} version) on")
     if version == 'lammps_awsemmd':
-        return _beta_lammps_awsemmd(oa, 3, ssweight, forceGroup, k)
+        return _beta_lammps_awsemmd(oa, 3, ssweight_file, forceGroup, k)
     elif version == 'efficiency_optimized':
-        return _beta_efficiency_optimized(oa, 3, ssweight, forceGroup, k)
+        return _beta_efficiency_optimized(oa, 3, ssweight_file, forceGroup, k)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
-def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight='ssweight'):
+def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight_file='ssweight'):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_term_1(oa, k_beta, forceGroup, ssweight, 'lammps_awsemmd')
+    return beta_term_1(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd')
 
-def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight='ssweight'):
+def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight_file='ssweight'):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_2_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_term_2(oa, k_beta, forceGroup, ssweight, 'lammps_awsemmd')
+    return beta_term_2(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd')
 
-def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight='ssweight'):
+def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight_file='ssweight'):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_term_3(oa, k_beta, forceGroup, ssweight, 'lammps_awsemmd')
+    return beta_term_3(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd')
 
-def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight", ssweightFileName="ssweight",
-                   version='efficiency_optimized'):
+def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_file="ssweight", 
+               version='efficiency_optimized', **kwargs):
     """
     Main API for the antiparallel cooperative liquid crystal beta-sheet (P_AP) hydrogen bonding term. 
     Defaults to the "efficiency_optimized" version, meaning the potential described in the OpenAWSEM paper,
@@ -410,20 +453,33 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
-    if ssweightFileName != "ssweight":
-        ssweight_filename = ssweightFileName # in case the user used the old name (for backward compatibility)
+
+    if "ssweightFileName" in kwargs:
+        warnings.warn(
+            "pap_term_1: `ssweightFileName` is deprecated; use "
+            "`ssweight_file` instead.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        ssweight_file = kwargs.pop("ssweightFileName")
+    
+    if kwargs:
+        # any other unexpected kwargs?
+        unexpected = ", ".join(kwargs)
+        raise TypeError(f"pap_term_1() got unexpected keyword argument(s): {unexpected}")
+    
     if version == 'lammps_awsemmd':
         print("WARNING: lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old().\
                Calling pap_term_old() instead and assigning to forceGroup 26.")
         return pap_term_old(oa, k_pap=k, ssweight_filename=ssweight_filename)
     elif version == 'efficiency_optimized':
         print(f"pap_term_1 ({version} version) on")
-        return _pap_efficiency_optimized(oa, 1, ssweight_filename, forceGroup, k, dis_i_to_i4)
+        return _pap_efficiency_optimized(oa, 1, ssweight_file, forceGroup, k, dis_i_to_i4)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
-def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_filename="ssweight", ssweightFileName="ssweight",
-                   version='efficiency_optimized'):
+def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_file="ssweight", ssweightFileName="ssweight",
+                   version='efficiency_optimized', **kwargs):
     """
     Main API for the parallel cooperative liquid crystal beta-sheet (P_AP) hydrogen bonding term. 
     Defaults to the "efficiency_optimized" version, meaning the potential described in the OpenAWSEM paper,
@@ -447,22 +503,35 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         AWSEM-MD: Protein Structure Prediction Using Coarse-Grained Physical Potentials and Bioinformatically Based Local Structure Biasing. 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
-    if ssweightFileName != "ssweight":
-        ssweight_filename = ssweightFileName # in case the user used the old name (for backward compatibility)
+    if "ssweightFileName" in kwargs:
+        warnings.warn(
+            "pap_term_1: `ssweightFileName` is deprecated; use "
+            "`ssweight_file` instead.",
+            category=DeprecationWarning,
+            stacklevel=2
+        )
+        ssweight_file = kwargs.pop("ssweightFileName")
+    
+    if kwargs:
+        # any other unexpected kwargs?
+        unexpected = ", ".join(kwargs)
+        raise TypeError(f"pap_term_2() got unexpected keyword argument(s): {unexpected}")
+    
+
     if version == 'lammps_awsemmd':
         print("WARNING: lammps_awsemmd implements both pap_term_1 and pap_term_2 as a single term, pap_term_old(). Returning dummy Force.")
         return CustomExternalForce("0") # force has 0 energy and no particles
     elif version == 'efficiency_optimized':
         print(f"pap_term_2 ({version} version) on")
-        return _pap_efficiency_optimized(oa, 2, ssweight_filename, forceGroup, k, dis_i_to_i4)
+        return _pap_efficiency_optimized(oa, 2, ssweight_file, forceGroup, k, dis_i_to_i4)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")  
 
-def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_filename="ssweight"):
+def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_file="ssweight"):
     """
     Wrapper that allows us to call hydrogenBondTerms.pap_term_old() in forces_setup.py as before.
     """
-    return _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap)
+    return _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap)
 
 def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
     """
@@ -531,7 +600,7 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     For clarity and backwards compatibility, the user must be allowed to access these terms in multiple ways,
 #     So we provide those interfaces in the main API, then they all call one of these functions
 
-def _beta_lammps_awsemmd(oa, term_number, ssweight_filename, forceGroup, k_beta):
+def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta):
     """ 
     Function to compute either beta 1, beta 2, or beta 3, as implemented in a particular LAMMPS AWSEM-MD commit,
     https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb
@@ -552,7 +621,7 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_filename, forceGroup, k_beta)
     number_atoms = [7,10,10] # number of atoms participating in each interaction type (beta1, beta2, beta3)
     #
     # load ssweight
-    rama_biases = load_ssweight(ssweight_filename, nres)
+    rama_biases = load_ssweight(ssweight_file, nres)
     #
     # load parameters
     a = [] # list to help us to convert from amino acid type to the appropriate row/column indices in p_par, p_anti, etc.
@@ -717,7 +786,7 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_filename, forceGroup, k_beta)
     Beta.setForceGroup(forceGroup)
     return Beta
 
-def _beta_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k_beta):
+def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_beta):
     # set constants
     k_beta = convert_units(k_beta) * oa.k_awsem
     nres, n, h, ca, o, res_type = oa.nres, oa.n, oa.h, oa.ca, oa.o, oa.res_type
@@ -730,7 +799,7 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k
     r_HB_c = 1.2
     #
     # load ssweight
-    rama_biases = load_ssweight(ssweight_filename, nres)
+    rama_biases = load_ssweight(ssweight_file, nres)
     #
     # load parameters
     a = [] # list to help us to convert from amino acid type to the appropriate row/column indices in p_par, p_anti, etc.
@@ -827,7 +896,7 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k
             raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
     return Beta
 
-def _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap):
+def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap):
     print("pap term ON")
     # define constants
     nres, ca = oa.nres, oa.ca
@@ -837,7 +906,7 @@ def _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap):
     gamma_ap = 0.4
     gamma_p = 0.4
     k_beta_pred_p_ap = 1.5
-    rama_biases = load_ssweight(ssweight_filename, nres)
+    rama_biases = load_ssweight(ssweight_file, nres)
     # define energy term
     nu_ij = f"0.5*(1+tanh({eta_pap}*({r0}-distance(p1,p2))))" # distance(p1,p2) is r_CAi_Caj
     other_nu = f"0.5*(1+tanh({eta_pap}*({r0}-distance(p3,p4))))"# distance(p3,p4) is r_CAi+4_CAj+4 (parallel) or r_CAi+4_CAj-4 (antiparallel)
@@ -902,7 +971,7 @@ def _pap_lammps_awsemmd(oa, ssweight_filename, forceGroup, k_pap):
     pap.setForceGroup(forceGroup)
     return pap
 
-def _pap_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k, dis_i_to_i4):
+def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis_i_to_i4):
     # set constants
     k_pap = convert_units(k) * oa.k_awsem
     nres, ca = oa.nres, oa.ca
@@ -913,7 +982,7 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_filename, forceGroup, k,
     gamma_p = 0.4
     #
     # load ssweight
-    ssweight = load_ssweight(ssweight_filename, nres)
+    ssweight = load_ssweight(ssweight_file, nres)
     #
     # load parameters
     gamma_1 = np.zeros((nres, nres))
