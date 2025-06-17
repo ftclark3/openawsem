@@ -504,7 +504,7 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         J. Phys. Chem. B 2012, 116, 29, 8494-8503.
     """
     if "ssweightFileName" in kwargs:
-        .warn(
+        warnings.warn(
             "pap_term_1: `ssweightFileName` is deprecated; use "
             "`ssweight_file` instead.",
             category=DeprecationWarning,

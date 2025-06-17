@@ -184,10 +184,7 @@ def analyzed_data():
 @pytest.mark.parametrize("platform", PLATFORMS)
 class TestEnergyTerms:
     def test_energy_term(self, platform, column, analyzed_data):
-        if column in ["Beta","Pap"]:
-            tolerance = 1e-2 # reference energies were printed out by openmm so we only have them to the hundredths place
-        else:
-            tolerance = 1e-5
+        tolerance = 1e-5
         for protein in PROTEINS:
             calculated_energies = analyzed_data(protein, platform)
             saved_energies = pd.read_csv(data_path/f'{protein}_energies.csv')
