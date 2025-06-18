@@ -203,7 +203,7 @@ def rama_term(oa, k_rama=8.368, num_rama_wells=3, w=[1.3149, 1.32016, 1.0264], s
         rama.addGlobalParameter(f"phi0{i}", phi_i[i])
         rama.addGlobalParameter(f"psi0{i}", psi_i[i])
     for i in range(oa.nres):
-        if i in oa.fixed_residue_indices:
+        if i in oa.fixed_residue_indices and i-1 in oa.fixed_residue_indices and i+1 in oa.fixed_residue_indices:
             continue
         if i not in oa.chain_starts and i not in oa.chain_ends and not oa.res_type[i] == "IGL" and not oa.res_type[i] == "IPR":
             rama.addBond([oa.c[i-1], oa.n[i], oa.ca[i], oa.c[i], oa.n[i+1]])
@@ -237,7 +237,7 @@ def rama_proline_term(oa, k_rama_proline=8.368, num_rama_proline_wells=2, w=[2.1
         rama.addGlobalParameter(f"phi0_P{i}", phi_i[i])
         rama.addGlobalParameter(f"psi0_P{i}", psi_i[i])
     for i in range(oa.nres):
-        if i in oa.fixed_residue_indices:
+        if i in oa.fixed_residue_indices and i-1 in oa.fixed_residue_indices and i+1 in oa.fixed_residue_indices:
             continue
         if i not in oa.chain_starts and i not in oa.chain_ends and oa.res_type[i] == "IPR":
             rama.addBond([oa.c[i-1], oa.n[i], oa.ca[i], oa.c[i], oa.n[i+1]])
@@ -273,7 +273,7 @@ def rama_ssweight_term(oa, k_rama_ssweight=8.368, num_rama_wells=2, w=[2.0, 2.0]
         ramaSS.addGlobalParameter(f"phi0SS{i}", phi_i[i])
         ramaSS.addGlobalParameter(f"psi0SS{i}", psi_i[i])
     for i in range(oa.nres):
-        if i in oa.fixed_residue_indices:
+        if i in oa.fixed_residue_indices and i-1 in oa.fixed_residue_indices and i+1 in oa.fixed_residue_indices:
             continue
         if i not in oa.chain_starts and i not in oa.chain_ends and not oa.res_type[i] == "IGL" and not oa.res_type == "IPR":
             ramaSS.addBond([oa.c[i-1], oa.n[i], oa.ca[i], oa.c[i], oa.n[i+1]], [i])
