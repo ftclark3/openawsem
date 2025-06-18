@@ -39,9 +39,49 @@ def inWhichChain(residueId, chain_ends):
         else:
             return chain_table[i]
 
+def inSameChain(i,j,chain_starts,chain_ends):
+    # determine whether residues are in the same chain
+    #
+    # sometimes, one of the residues might not exist
+    # we'll treat not existing as being part of a different chain
+    # but it shouldn't really affect anything
+    if i<0 or j<0:
+        if i<0 and j<0:
+            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+        else:
+            return False
+    if i>chain_ends[-1] or j>chain_ends[-1]:
+        if i>chain_ends[-1] and j>chain_ends[-1]:
+            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+        else:
+            return False
+    # if we've made it this far, we know that both residues exist
+    wombat = [int(chain_start<=i and i<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(wombat) == 1, f"i: {i}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
+    chain_index_1 = wombat.index(1)
+    wombat = [int(chain_start<=j and j<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(wombat) == 1, f"j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
+    chain_index_2 = wombat.index(1)
+    same_chain = chain_index_1==chain_index_2
+    return same_chain
 
 def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0*angstrom, k_relative_mem=1.0, periodic=False, parametersLocation=None, burialPartOn=True, withExclusion=False, forceGroup=22,
-                gammaName="gamma.dat", burialGammaName="burial_gamma.dat", membraneGammaName="membrane_gamma.dat", r_min=0.45,min_sequence_separation=10,min_sequence_separation_mem=10):
+                gammaName="gamma.dat", burialGammaName="burial_gamma.dat", membraneGammaName="membrane_gamma.dat", r_min=0.45,min_sequence_separation=10,min_sequence_separation_mem=10,
+                direct_mask_ij=None, water_mask_ij=None, protein_mask_ij=None):
+    # set up masks to reweight contacts
+    if direct_mask_ij is None:
+        direct_mask_ij = np.ones((oa.nres, oa.nres), dtype=np.float32)
+    if water_mask_ij is None:
+        water_mask_ij = np.ones((oa.nres, oa.nres), dtype=np.float32)
+    if protein_mask_ij is None:
+        protein_mask_ij = np.ones((oa.nres, oa.nres), dtype=np.float32)
+    if direct_mask_ij.shape != (oa.nres, oa.nres):
+        raise ValueError(f"direct_mask_ij should be of shape {(oa.nres, oa.nres)}, but got {direct_mask_ij.shape}")
+    if water_mask_ij.shape != (oa.nres, oa.nres):
+        raise ValueError(f"water_mask_ij should be of shape {(oa.nres, oa.nres)}, but got {water_mask_ij.shape}")
+    if protein_mask_ij.shape != (oa.nres, oa.nres):
+        raise ValueError(f"protein_mask_ij should be of shape {(oa.nres, oa.nres)}, but got {protein_mask_ij.shape}")
+    # set up the rest of the parameters  
     if parametersLocation is None:
         parametersLocation=openawsem.data_path.parameters
     if isinstance(k_contact, float) or isinstance(k_contact, int):
@@ -118,10 +158,8 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     for i in range(oa.nres):
         for j in range(oa.nres):
             resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
             resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            if abs(resId1-resId2)-min_sequence_separation >= 0 or chain1 != chain2:
+            if abs(resId1-resId2)-min_sequence_separation >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                 res_table[0][i][j] = 1
             else:
                 res_table[0][i][j] = 0
@@ -151,10 +189,8 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
         for i in range(oa.nres):
             for j in range(oa.nres):
                 resId1 = i
-                chain1 = inWhichChain(resId1, oa.chain_ends)
                 resId2 = j
-                chain2 = inWhichChain(resId2, oa.chain_ends)
-                if abs(resId1-resId2)-min_sequence_separation_mem >= 0 or chain1 != chain2:
+                if abs(resId1-resId2)-min_sequence_separation_mem >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                     res_table[m][i][j] = 1
                 else:
                     res_table[m][i][j] = 0
@@ -164,6 +200,10 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     contact.addTabulatedFunction("protein_gamma_ijm", Discrete3DFunction(nwell, 20, 20, protein_gamma_ijm.T.flatten()))
     contact.addTabulatedFunction("burial_gamma_ij", Discrete2DFunction(20, 3, burial_gamma.T.flatten()))
     contact.addTabulatedFunction("res_table", Discrete3DFunction(nwell, oa.nres, oa.nres, res_table.T.flatten()))
+    contact.addTabulatedFunction("inSameChain",Discrete2DFunction(oa.nres, oa.nres, np.array([[int(inSameChain(i,j,oa.chain_starts,oa.chain_ends)) for j in range(oa.nres)] for i in range(oa.nres)]).T.flatten()))
+    contact.addTabulatedFunction("direct_ij", Discrete2DFunction(oa.nres,oa.nres,direct_mask_ij.T.flatten()))
+    contact.addTabulatedFunction("protein_ij", Discrete2DFunction(oa.nres,oa.nres,protein_mask_ij.T.flatten()))
+    contact.addTabulatedFunction("water_ij", Discrete2DFunction(oa.nres,oa.nres,water_mask_ij.T.flatten()))
 
     contact.addPerParticleParameter("resName")
     contact.addPerParticleParameter("resId")
@@ -182,9 +222,10 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     # replace cb with ca for GLY
     cb_fixed = [x if x > 0 else y for x,y in zip(oa.cb,oa.ca)]
     none_cb_fixed = [i for i in range(oa.natoms) if i not in cb_fixed]
+    assert len(cb_fixed) == oa.nres, f"Number of atoms in cb_fixed (non-GLY CB and GLY CA atoms), {len(cb_fixed)}, does not match number of residues {oa.nres}."
     # print(oa.natoms, len(oa.resi), oa.resi, seq)
     for i in range(oa.natoms):
-        contact.addParticle([gamma_se_map_1_letter[seq[oa.resi[i]]], oa.resi[i], int(i in cb_fixed)])
+        contact.addParticle([gamma_se_map_1_letter[seq[oa.resi[i]]], oa.resi[i], int(i in cb_fixed),]) 
 
 
     if z_dependent:
@@ -193,15 +234,14 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
         # contact.addComputedValue("alphaMembrane", f"z", CustomGBForce.SingleParticle)
         # contact.addComputedValue("isInMembrane", f"z", CustomGBForce.SingleParticle)
         # contact.addComputedValue("isInMembrane", f"step({z_m}-abs(z))", CustomGBForce.SingleParticle)
-
         # mediated and direct term (write separately may lead to bug)
         contact.addEnergyTerm(f"isCb1*isCb2*((1-alphaMembrane1*alphaMembrane2)*water_part+alphaMembrane1*alphaMembrane2*membrane_part);\
                                 water_part=-res_table(0, resId1, resId2)*{k_contact}*\
-                                (gamma_ijm(0, resName1, resName2)*theta+thetaII*(sigma_water*water_gamma_ijm(0, resName1, resName2)+\
-                                sigma_protein*protein_gamma_ijm(0, resName1, resName2)));\
+                                (gamma_ijm(0, resName1, resName2)*theta*direct_ij(resId1, resId2)+thetaII*(sigma_water*water_gamma_ijm(0, resName1, resName2)*water_ij(resId1, resId2)+\
+                                protein_ij(resId1, resId2)*sigma_protein*protein_gamma_ijm(0, resName1, resName2)));\
                                 membrane_part=-res_table(1, resId1, resId2)*{k_contact}*\
-                                (gamma_ijm(1, resName1, resName2)*theta+thetaII*(sigma_water*water_gamma_ijm(1, resName1, resName2)+\
-                                sigma_protein*protein_gamma_ijm(1, resName1, resName2)));\
+                                (gamma_ijm(1, resName1, resName2)*theta*direct_ij(resId1, resId2)+thetaII*(sigma_water*water_gamma_ijm(1, resName1, resName2)*water_ij(resId1, resId2)+\
+                                protein_ij(resId1, resId2)*sigma_protein*protein_gamma_ijm(1, resName1, resName2)));\
                                 sigma_protein=1-sigma_water;\
                                 theta=0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)));\
                                 thetaII=0.25*(1+tanh({eta}*(r-{r_minII})))*(1+tanh({eta}*({r_maxII}-r)));\
@@ -233,8 +273,8 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     else:
         # mediated and direct term (write separately may lead to bug)
         contact.addEnergyTerm(f"-isCb1*isCb2*res_table({inMembrane}, resId1, resId2)*{k_contact}*\
-                                (gamma_ijm({inMembrane}, resName1, resName2)*theta+thetaII*(sigma_water*water_gamma_ijm({inMembrane}, resName1, resName2)+\
-                                sigma_protein*protein_gamma_ijm({inMembrane}, resName1, resName2)));\
+                                (direct_ij(resId1, resId2)*gamma_ijm({inMembrane}, resName1, resName2)*theta+thetaII*(sigma_water*water_gamma_ijm({inMembrane}, resName1, resName2)*water_ij(resId1, resId2)+\
+                                sigma_protein*protein_gamma_ijm({inMembrane}, resName1, resName2)*protein_ij(resId1, resId2)));\
                                 sigma_protein=1-sigma_water;\
                                 theta=0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)));\
                                 thetaII=0.25*(1+tanh({eta}*(r-{r_minII})))*(1+tanh({eta}*({r_maxII}-r)));\
@@ -360,10 +400,8 @@ def contact_term_reference(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMe
     for i in range(oa.nres):
         for j in range(oa.nres):
             resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
             resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            if abs(resId1-resId2)-min_sequence_separation >= 0 or chain1 != chain2:
+            if abs(resId1-resId2)-min_sequence_separation >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                 res_table[0][i][j] = 1
             else:
                 res_table[0][i][j] = 0
@@ -393,10 +431,8 @@ def contact_term_reference(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMe
         for i in range(oa.nres):
             for j in range(oa.nres):
                 resId1 = i
-                chain1 = inWhichChain(resId1, oa.chain_ends)
                 resId2 = j
-                chain2 = inWhichChain(resId2, oa.chain_ends)
-                if abs(resId1-resId2)-min_sequence_separation_mem >= 0 or chain1 != chain2:
+                if abs(resId1-resId2)-min_sequence_separation_mem >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                     res_table[m][i][j] = 1
                 else:
                     res_table[m][i][j] = 0
@@ -597,10 +633,8 @@ def index_based_contact_term(oa, gamma_folder="ff_contact", k_contact=4.184, z_d
     for i in range(oa.nres):
         for j in range(oa.nres):
             resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
             resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            if abs(resId1-resId2)-min_sequence_separation >= 0 or chain1 != chain2:
+            if abs(resId1-resId2)-min_sequence_separation >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                 res_table[m][i][j] = 1
             else:
                 res_table[m][i][j] = 0
@@ -617,10 +651,8 @@ def index_based_contact_term(oa, gamma_folder="ff_contact", k_contact=4.184, z_d
         for i in range(oa.nres):
             for j in range(oa.nres):
                 resId1 = i
-                chain1 = inWhichChain(resId1, oa.chain_ends)
                 resId2 = j
-                chain2 = inWhichChain(resId2, oa.chain_ends)
-                if abs(resId1-resId2)-min_sequence_separation_mem >= 0 or chain1 != chain2:
+                if abs(resId1-resId2)-min_sequence_separation_mem >= 0 or inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                     res_table[m][i][j] = 1
                 else:
                     res_table[m][i][j] = 0
@@ -765,10 +797,8 @@ def expand_contact_table_contact_term(oa, k_contact=4.184, periodic=False, pre=N
     for i in range(oa.nres):
         for j in range(oa.nres):
             resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
             resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            if abs(resId1-resId2)-min_sequence_separation >= 0 or chain1 != chain2:
+            if abs(resId1-resId2)-min_sequence_separation >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                 res_table[0][i][j] = 1
             else:
                 res_table[0][i][j] = 0
@@ -980,10 +1010,8 @@ def hybrid_contact_term(oa, k_contact=4.184, z_m=1.5, membrane_center=0*angstrom
         for i in range(oa.nres):
             for j in range(oa.nres):
                 resId1 = i
-                chain1 = inWhichChain(resId1, oa.chain_ends)
                 resId2 = j
-                chain2 = inWhichChain(resId2, oa.chain_ends)
-                if abs(resId1-resId2)-min_sequence_separation >= 0 or chain1 != chain2:
+                if abs(resId1-resId2)-min_sequence_separation >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                     res_table[m][i][j] = 1
                 else:
                     res_table[m][i][j] = 0
@@ -1230,10 +1258,8 @@ def contact_term_shift_well_center(oa, k_contact=4.184, z_dependent=False, z_m=1
     for i in range(oa.nres):
         for j in range(oa.nres):
             resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
             resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
-            if abs(resId1-resId2)-min_sequence_separation >= 0 or chain1 != chain2:
+            if abs(resId1-resId2)-min_sequence_separation >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                 res_table[0][i][j] = 1
             else:
                 res_table[0][i][j] = 0
@@ -1263,10 +1289,8 @@ def contact_term_shift_well_center(oa, k_contact=4.184, z_dependent=False, z_m=1
         for i in range(oa.nres):
             for j in range(oa.nres):
                 resId1 = i
-                chain1 = inWhichChain(resId1, oa.chain_ends)
                 resId2 = j
-                chain2 = inWhichChain(resId2, oa.chain_ends)
-                if abs(resId1-resId2)-min_sequence_separation_mem >= 0 or chain1 != chain2:
+                if abs(resId1-resId2)-min_sequence_separation_mem >= 0 or not inSameChain(resId1, resId2, oa.chain_starts, oa.chain_ends):
                     res_table[m][i][j] = 1
                 else:
                     res_table[m][i][j] = 0
