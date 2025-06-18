@@ -8,6 +8,7 @@ except ModuleNotFoundError:
     from simtk.unit import *
 import numpy as np
 from Bio.PDB.PDBParser import PDBParser
+from .templateTerms import read_reference_structure_for_q_calculation_4
 
 def read_reference_structure_for_q_calculation_3(oa, pdb_file, reference_chain_name="ALL", min_seq_sep=3, max_seq_sep=np.inf, contact_threshold=0.95*nanometers, Qflag=0, a=0.1, removeDNAchains=True):
     # default use all chains in pdb file.
@@ -103,6 +104,26 @@ def q_value(oa, reference_pdb_file, reference_chain_name="ALL", min_seq_sep=3, m
     # structure_interactions = oa.read_reference_structure_for_q_calculation(reference_pdb_file, reference_chain_name, min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep, contact_threshold=contact_threshold)
     structure_interactions = read_reference_structure_for_q_calculation_3(oa, reference_pdb_file, reference_chain_name=reference_chain_name,
         min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep, contact_threshold=contact_threshold, Qflag=0)
+    # print(len(structure_interactions))
+    # print(structure_interactions)
+    # create bond force for q calculation
+    normalization = len(structure_interactions)
+    qvalue = CustomBondForce(f"(1/{normalization})*gamma_ij*exp(-(r-r_ijN)^2/(2*sigma_ij^2))")
+    #qvalue = CustomBondForce(f"r")
+    qvalue.addPerBondParameter("gamma_ij")
+    qvalue.addPerBondParameter("r_ijN")
+    qvalue.addPerBondParameter("sigma_ij")
+
+    for structure_interaction in structure_interactions:
+        qvalue.addBond(*structure_interaction)
+    qvalue.setForceGroup(forceGroup)
+    return qvalue
+
+def custom_q_value(oa, rnative_dat, min_seq_sep=3, contact_threshold=0.2*nanometers, forceGroup=1):
+    # create bonds
+    # structure_interactions = oa.read_reference_structure_for_q_calculation(reference_pdb_file, reference_chain_name, min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep, contact_threshold=contact_threshold)
+    structure_interactions = read_reference_structure_for_q_calculation_4(oa, contact_threshold, rnative_dat, 
+        min_seq_sep=min_seq_sep, load_method=np.load)
     # print(len(structure_interactions))
     # print(structure_interactions)
     # create bond force for q calculation

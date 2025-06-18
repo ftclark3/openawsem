@@ -197,12 +197,12 @@ def get_alpha_by_index(i, j, alpha_i, chain_starts, chain_ends):
     beta_cls = get_beta_class(i, j, chain_starts, chain_ends)
     return ALPHA_TABLE[alpha_i][beta_cls]
 
-def get_pap_gamma_APH(donor_idx, acceptor_idx, chain_i, chain_j, gamma_APH):
+def get_pap_gamma_APH(donor_idx, acceptor_idx, res_i, res_j, gamma_APH, chain_starts, chain_ends):
     # if chain_i == chain_j and abs(j-i) < 13 or abs(j-i) > 16:
     # if abs(j-i) < 13 or abs(j-i) > 16:
     # if i-j < 13 or i-j > 16:
     # if (donor_idx - acceptor_idx >= 13 and donor_idx - acceptor_idx <= 16) or chain_i != chain_j:
-    if (donor_idx - acceptor_idx >= 13 and donor_idx - acceptor_idx <= 16) and chain_i == chain_j:
+    if (donor_idx - acceptor_idx >= 13 and donor_idx - acceptor_idx <= 16) and inSameChain(res_i, res_j, chain_starts, chain_ends):
         return gamma_APH
     else:
         return 0
@@ -213,7 +213,7 @@ def get_pap_gamma_AP(donor_idx, acceptor_idx, chain_i, chain_j, gamma_AP, ssweig
     else:
         additional_scale = 1.0
     # if (donor_idx - acceptor_idx >= 17):
-    if (donor_idx - acceptor_idx >= 17) or chain_i != chain_j:
+    if (donor_idx - acceptor_idx >= 17) or not inSameChain(res_i, res_j, chain_starts, chain_ends):
         return additional_scale * gamma_AP
     else:
         return 0
@@ -706,7 +706,7 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta):
     #        so just leaving k_beta as a global parameter for back compatibility basically
     #    note that Lambda is a per bond parameter
     beta_term = f"-k_beta*Lambda*{theta[term_number-1]}*{adjusted_nu}*{distance_truncation};{distance_definitions[term_number-1]}"
-    print(f"beta_term: {beta_term}")
+    #print(f"beta_term: {beta_term}")
     #
     # set up openmm Force
     Beta = CustomCompoundBondForce(number_atoms[term_number-1],beta_term)
