@@ -224,41 +224,49 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     for i in range(oa.natoms):
         contact.addParticle([gamma_se_map_1_letter[seq[oa.resi[i]]], oa.resi[i], int(i in cb_fixed),]) 
 
-
     # SET UP PAIRWISE FORCE
-    def environment_dependent_energy(inMembrane):
+    def base_contact_energy(inMembrane):
         # to avoid nested if statements, DIRECT_MASK, WATER_MASK, and PROTEIN_MASK
         # will be replaced later
-        direct_base = f"DIRECT_MASK*gamma_ijm({inMembrane}, resName1, resName2)"
-        water_base = f"WATER_MASK*sigma_water*water_gamma_ijm({inMembrane}, resName1, resName2)"
-        protein_base = f"PROTEIN_MASK*sigma_protein*protein_gamma_ijm({inMembrane}, resName1, resName2)"
+        direct_base = f"DIRECT_MASK gamma_ijm({inMembrane}, resName1, resName2)"
+        water_base = f"WATER_MASK sigma_water*water_gamma_ijm({inMembrane}, resName1, resName2)"
+        protein_base = f"PROTEIN_MASK sigma_protein*protein_gamma_ijm({inMembrane}, resName1, resName2)"
         return f"res_table({inMembrane},resId1,resId2)*({direct_base}*theta+thetaII*({water_base}+{protein_base}))"
-    if not z_dependent:
+
+    #Modify the contact force to include z-dependent membrane interaction
+    if z_dependent:
         contact.addComputedValue("alphaMembrane",
             f"0.5*tanh({eta_switching}*((z-{membrane_center})+{z_m}))+0.5*tanh({eta_switching}*({z_m}-(z-{membrane_center})))",
             CustomGBForce.SingleParticle)
-        base_energy_string = environment_dependent_energy(inMembrane)
+        base_energy_string = f"(1-alphaMembrane1*alphaMembrane2)*{base_contact_energy(0)}\
+                              +(alphaMembrane1*alphaMembrane2)*{base_contact_energy(1)};"
     else:
-        base_energy_string = f"(1-alphaMembrane1*alphaMembrane2)*{environment_dependent_energy(0)}\
-                              +(alphaMembrane1*alphaMembrane2)*{environment_dependent_energy(1)}"
+        base_energy_string = f"{base_contact_energy(inMembrane)};"
+
+    # Modify the base energy string to include weights for direct, water, and protein interactions
     if direct_mask_ij is not None:
-        base_energy_string = base_energy_string.replace("DIRECT_MASK", "direct_ij(resId1, resId2)")
+        base_energy_string = base_energy_string.replace("DIRECT_MASK ", "direct_ij(resId1, resId2)*")
     else:
-        base_energy_string = base_energy_string.replace("DIRECT_MASK", "1.0")
+        base_energy_string = base_energy_string.replace("DIRECT_MASK ", "")
     if protein_mask_ij is not None:
-        base_energy_string = base_energy_string.replace("PROTEIN_MASK", "protein_ij(resId1, resId2)")
+        base_energy_string = base_energy_string.replace("PROTEIN_MASK ", "protein_ij(resId1, resId2)*")
     else:
-        base_energy_string = base_energy_string.replace("PROTEIN_MASK", "1.0")
+        base_energy_string = base_energy_string.replace("PROTEIN_MASK", "")
     if water_mask_ij is not None:
-        base_energy_string = base_energy_string.replace("WATER_MASK", "water_ij(resId1, resId2)")
+        base_energy_string = base_energy_string.replace("WATER_MASK", "water_ij(resId1, resId2)*")
     else:
-        base_energy_string = base_energy_string.replace("WATER_MASK", "1.0")
+        base_energy_string = base_energy_string.replace("WATER_MASK", "")
+    
+    #Add other coefficients and definitions to the energy string
     coefficients = f"-isCb1*isCb2*{k_contact}*"
-    definitions = f";sigma_protein=1-sigma_water;\
+    definitions = f"sigma_protein=1-sigma_water;\
                     theta=0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)));\
                     thetaII=0.25*(1+tanh({eta}*(r-{r_minII})))*(1+tanh({eta}*({r_maxII}-r)));\
                     sigma_water=0.25*(1-tanh({eta_sigma}*(rho1-{rho_0})))*(1-tanh({eta_sigma}*(rho2-{rho_0})))"
+    
     energy_string = f"{coefficients}{base_energy_string}{definitions}"
+    #print("Contact energy string: ", energy_string)
+    
     # use energy expression to the ParticlePair interaction
     contact.addEnergyTerm(energy_string, CustomGBForce.ParticlePair)
 
