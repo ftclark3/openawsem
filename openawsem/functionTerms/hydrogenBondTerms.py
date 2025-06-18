@@ -564,6 +564,10 @@ def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
     return helical
 
 def sequence_independent_helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
+    """
+    Experimental sequence-independent helical term for folding designed sequences
+    """
+    
     # without density dependency.
     # without z dependency for now.
     k_helical *= oa.k_awsem
