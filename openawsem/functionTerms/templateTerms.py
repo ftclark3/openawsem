@@ -213,7 +213,7 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         df = pd.DataFrame(-k_fm * frag_table, columns=x_array, index=y_array) #Energy in kJ
         df.to_csv("frag_table_debug.csv")
     
-    if oa.periodic:
+    if oa.periodic_box:
         fm.setUsesPeriodicBoundaryConditions(True)
         print('\nfragment_memory_term is periodic')
 

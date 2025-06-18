@@ -296,7 +296,7 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
                 contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if periodic:
+    if oa.periodic:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
         print('\ncontact_term is periodic')
     else:
@@ -307,7 +307,7 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     return contact
 
 
-def contact_term_reference(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0*angstrom, k_relative_mem=1.0, periodic=False, parametersLocation=".", burialPartOn=True, withExclusion=True, forceGroup=22,
+def contact_term_reference(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0*angstrom, k_relative_mem=1.0, parametersLocation=".", burialPartOn=True, withExclusion=True, forceGroup=22,
                 gammaName="gamma.dat", burialGammaName="burial_gamma.dat", membraneGammaName="membrane_gamma.dat", r_min=0.45):
     import pandas
     if isinstance(k_contact, float) or isinstance(k_contact, int):
@@ -544,7 +544,7 @@ def contact_term_reference(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMe
                 contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if periodic:
+    if oa.periodic:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
     else:
         contact.setNonbondedMethod(contact.CutoffNonPeriodic)
@@ -554,7 +554,7 @@ def contact_term_reference(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMe
     return contact
 
 def index_based_contact_term(oa, gamma_folder="ff_contact", k_contact=4.184, z_dependent=False, z_m=1.5, inMembrane=False, 
-            membrane_center=0*angstrom, k_relative_mem=1.0, periodic=False, parametersLocation=".", burialPartOn=True, withExclusion=True, r_min=0.45, forceGroup=22):
+            membrane_center=0*angstrom, k_relative_mem=1.0, parametersLocation=".", burialPartOn=True, withExclusion=True, r_min=0.45, forceGroup=22):
     if isinstance(k_contact, float) or isinstance(k_contact, int):
         k_contact = k_contact * oa.k_awsem   # just for backward comptable
     elif isinstance(k_contact, Quantity):
@@ -715,7 +715,7 @@ def index_based_contact_term(oa, gamma_folder="ff_contact", k_contact=4.184, z_d
                 contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if periodic:
+    if oa.periodic:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
     else:
         contact.setNonbondedMethod(contact.CutoffNonPeriodic)
@@ -726,7 +726,7 @@ def index_based_contact_term(oa, gamma_folder="ff_contact", k_contact=4.184, z_d
 
 
 
-def expand_contact_table_contact_term(oa, k_contact=4.184, periodic=False, pre=None):
+def expand_contact_table_contact_term(oa, k_contact=4.184, pre=None):
     k_contact *= oa.k_awsem
     # combine direct, burial, mediated.
     # default membrane thickness 1.5 nm
@@ -858,7 +858,7 @@ def expand_contact_table_contact_term(oa, k_contact=4.184, periodic=False, pre=N
     #         contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if periodic:
+    if oa.periodic_box:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
     else:
         contact.setNonbondedMethod(contact.CutoffNonPeriodic)
@@ -921,7 +921,7 @@ def get_neighbor_res_type(res_pre, res_post):
     return int(table[r1][r2])
 
 
-def hybrid_contact_term(oa, k_contact=4.184, z_m=1.5, membrane_center=0*angstrom, periodic=False, hybrid_gamma_file="hybrid_contact_gamma.dat"):
+def hybrid_contact_term(oa, k_contact=4.184, z_m=1.5, membrane_center=0*angstrom, hybrid_gamma_file="hybrid_contact_gamma.dat"):
     k_contact *= oa.k_awsem
     membrane_center = membrane_center.value_in_unit(nanometer)   # convert to nm
     # combine direct, burial, mediated.
@@ -1093,7 +1093,7 @@ def hybrid_contact_term(oa, k_contact=4.184, z_m=1.5, membrane_center=0*angstrom
             contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if periodic:
+    if oa.periodic_box:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
     else:
         contact.setNonbondedMethod(contact.CutoffNonPeriodic)
@@ -1102,7 +1102,7 @@ def hybrid_contact_term(oa, k_contact=4.184, z_m=1.5, membrane_center=0*angstrom
     contact.setForceGroup(18)
     return contact
 
-def disulfide_bond_term(oa, k=1*kilocalorie_per_mole, cutoff=4.2*angstrom, k_bin=100, step_k_bin=20, rho_max=2.2, rho_near=0.2, periodic=False, withExclusion=True, forceGroup=31):
+def disulfide_bond_term(oa, k=1*kilocalorie_per_mole, cutoff=4.2*angstrom, k_bin=100, step_k_bin=20, rho_max=2.2, rho_near=0.2, withExclusion=True, forceGroup=31):
     print("Disulfide Bond term on")
     k = k.value_in_unit(kilojoule_per_mole)   # convert to kilojoule_per_mole, openMM default uses kilojoule_per_mole as energy.
     cutoff = cutoff.value_in_unit(nanometer)
@@ -1141,7 +1141,7 @@ def disulfide_bond_term(oa, k=1*kilocalorie_per_mole, cutoff=4.2*angstrom, k_bin
     #                             CustomGBForce.ParticlePair)
     # disulfide_bond.addEnergyTerm(f"{k_disulfide_bond}*isCb1*isCb2", CustomGBForce.ParticlePair)
     # disulfide_bond.addEnergyTerm(f"{k_disulfide_bond}*isCb1*isCb2*(rho1+rho2)", CustomGBForce.ParticlePair)
-    if periodic:
+    if oa.periodic_box:
         disulfide_bond.setNonbondedMethod(disulfide_bond.CutoffPeriodic)
     else:
         disulfide_bond.setNonbondedMethod(disulfide_bond.CutoffNonPeriodic)
@@ -1166,7 +1166,7 @@ def disulfide_bond_term(oa, k=1*kilocalorie_per_mole, cutoff=4.2*angstrom, k_bin
 
 
 
-def contact_term_shift_well_center(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0*angstrom, k_relative_mem=1.0, periodic=False, parametersLocation=".", burialPartOn=True, withExclusion=True, forceGroup=22,
+def contact_term_shift_well_center(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0*angstrom, k_relative_mem=1.0, parametersLocation=".", burialPartOn=True, withExclusion=True, forceGroup=22,
                 gammaName="gamma.dat", burialGammaName="burial_gamma.dat", membraneGammaName="membrane_gamma.dat", r_min=0.45, wellCenter=None):
     if isinstance(k_contact, float) or isinstance(k_contact, int):
         k_contact = k_contact * oa.k_awsem   # just for backward comptable
@@ -1482,7 +1482,7 @@ def contact_term_shift_well_center(oa, k_contact=4.184, z_dependent=False, z_m=1
                 contact.addExclusion(e1, e2)
 
     contact.setCutoffDistance(1.2)
-    if periodic:
+    if oa.periodic_box:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
     else:
         contact.setNonbondedMethod(contact.CutoffNonPeriodic)
@@ -1491,7 +1491,7 @@ def contact_term_shift_well_center(oa, k_contact=4.184, z_dependent=False, z_m=1
     contact.setForceGroup(forceGroup)
     return contact
 
-def burial_term(oa, k_burial=4.184, periodic=False, parametersLocation=None, burialGammaName="burial_gamma.dat", forceGroup=17):
+def burial_term(oa, k_burial=4.184, parametersLocation=None, burialGammaName="burial_gamma.dat", forceGroup=17):
     if parametersLocation is None:
         parametersLocation=openawsem.data_path.parameters
     k_burial *= oa.k_awsem
@@ -1549,7 +1549,7 @@ def burial_term(oa, k_burial=4.184, periodic=False, parametersLocation=None, bur
         for e2 in cb_fixed:
             burial.addExclusion(e1, e2)
 
-    if periodic:
+    if oa.periodic_box:
         burial.setNonbondedMethod(burial.CutoffPeriodic)
         print('\ncontact_term is periodic')
     else:
@@ -1996,7 +1996,7 @@ def mediated_term(oa, k_mediated=4.184*1.5):
 
 
 
-def index_based_contact_term(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0, k_relative_mem=1.0, periodic=False, pre=None):
+def index_based_contact_term(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0, k_relative_mem=1.0, pre=None):
     z_dependent = False
     inMembrane = False
     k_contact *= oa.k_awsem
@@ -2130,7 +2130,7 @@ def index_based_contact_term(oa, k_contact=4.184, z_dependent=False, z_m=1.5, in
     #         contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if periodic:
+    if oa.periodic_box:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
     else:
         contact.setNonbondedMethod(contact.CutoffNonPeriodic)
