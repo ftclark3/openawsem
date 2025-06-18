@@ -813,11 +813,21 @@ def download(pdb_id):
         os.rename("pdb%s.ent" % pdb_id, f"{pdb_id}.pdb")
 
 class OpenMMAWSEMSystem:
-    def __init__(self, pdb_filename, chains='A', xml_filename=xml, k_awsem=1.0, seqFromPdb=None, includeLigands=False, periodic=False):
+    def __init__(self, pdb_filename, chains='A', xml_filename=xml, k_awsem=1.0, seqFromPdb=None, includeLigands=False, 
+                 periodic_box=None, fixed_residue_indices=[]):
         # read PDB
         self.pdb = PDBFile(str(pdb_filename))
         self.forcefield = ForceField(str(xml_filename))
-        self.periodic = periodic
+        self.periodic_box = periodic_box 
+        self.fixed_residue_indices = fixed_residue_indices
+        if self.fixed_residue_indices:
+            self.fixed_atom_indices = []
+            for residue in self.pdb.topology.residues():
+                if residue.index in self.fixed_residue_indices:
+                    for atom in residue.atoms():
+                        self.fixed_atom_indices.append(atom.index)
+        else:
+            self.fixed_atom_indices = []
         if not includeLigands:
             self.system = self.forcefield.createSystem(self.pdb.topology)
             # define convenience variables
@@ -879,7 +889,12 @@ class OpenMMAWSEMSystem:
             self.natoms = self.pdb.topology.getNumAtoms()
             self.resi = [x.residue.index if x in protein_atom_list else -1 for x in atom_list]
             self.atom_lists,self.res_type=build_lists_of_atoms_2(self.nres, self.residues, protein_atom_list)
-
+        if self.periodic_box:
+            self.system.setDefaultPeriodicBoxVectors(Vec3(self.periodic_box[0],0,0),
+                                                     Vec3(0,self.periodic_box[1],0),
+                                                     Vec3(0,0,self.periodic_box[2]))
+        for atom_index in self.fixed_atom_indices:
+            self.system.setParticleMass(atom_index,0)
 
         # print(self.atom_lists,self.res_type)
         self.n =self.atom_lists['n']
