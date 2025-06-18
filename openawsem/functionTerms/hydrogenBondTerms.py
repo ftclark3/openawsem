@@ -687,7 +687,7 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta):
     #
     # set up openmm Force
     Beta = CustomCompoundBondForce(number_atoms[term_number-1],beta_term)
-    if oa.periodic:
+    if oa.periodic_box:
         Beta.setUsesPeriodicBoundaryConditions(True)
         print(f'\nbeta_term_{term_number} is in PBC')
     else:
@@ -849,7 +849,7 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
     #
     # set up OpenMM Force
     Beta = CustomHbondForce(beta_string)
-    if oa.periodic:
+    if oa.periodic_box:
         Beta.setNonbondedMethod(Beta.CutoffPeriodic)
         print(f'\nbeta_term_{term_number} is in PBC')
     else:
@@ -915,7 +915,7 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap):
     # initialize Force
     pap = CustomCompoundBondForce(4, pap_energy)
     pap.addPerBondParameter("K")
-    if oa.periodic:
+    if oa.periodic_box:
         pap.setUsesPeriodicBoundaryConditions(True)
         print(f'\npap_term_old is in PBC')
     else:
@@ -1013,7 +1013,7 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
     #
     # set up OpenMM Force
     pap = CustomHbondForce(pap_function)
-    if oa.periodic:
+    if oa.periodic_box:
         pap.setNonbondedMethod(pap.CutoffPeriodic)
         print(f'\npap_{term_number} is in PBC')
     else:

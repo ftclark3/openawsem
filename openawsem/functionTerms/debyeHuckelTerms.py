@@ -8,7 +8,7 @@ except ModuleNotFoundError:
     from simtk.unit import *
 import numpy as np
 
-def debye_huckel_term(self, k_dh=4.15*4.184, forceGroup=30, screening_length=1.0, chargeFile=None,periodic=False):
+def debye_huckel_term(self, k_dh=4.15*4.184, forceGroup=30, screening_length=1.0, chargeFile=None):
         # screening_length (in the unit of nanometers)
         print("Debye Huckel term is ON")
         k_dh *= self.k_awsem*0.1
@@ -20,7 +20,7 @@ def debye_huckel_term(self, k_dh=4.15*4.184, forceGroup=30, screening_length=1.0
         dh.addPerBondParameter("charge_j")
 
          # Add Periodic Boundary Condition. 02082024 Rebekah Added --- Start
-        if periodic:
+        if oa.periodic_box:
             dh.setUsesPeriodicBoundaryConditions(True)
             is_periodic=dh.usesPeriodicBoundaryConditions()
             print("\ndebye_huckel_term is in PBC",is_periodic)
@@ -76,7 +76,7 @@ def debye_huckel_term(self, k_dh=4.15*4.184, forceGroup=30, screening_length=1.0
 #         k_screening = 1.0
 #         dh = CustomNonbondedForce(f"{k_dh}*charge1*charge2/r*exp(-{k_screening}*r/{screening_length})")
 #         dh.addPerParticleParameter('charge')
-#         if oa.periodic:
+#         if oa.periodic_box:
 #             dh.setNonbondedMethod(dh.CutoffPeriodic)
 #         else:
 #             dh.setNonbondedMethod(dh.CutoffNonPeriodic)

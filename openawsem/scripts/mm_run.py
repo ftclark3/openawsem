@@ -98,7 +98,7 @@ def run(args):
 
 
     oa = OpenMMAWSEMSystem(input_pdb_filename, k_awsem=1.0, chains=chain, xml_filename=openawsem.xml, seqFromPdb=seq, 
-                           includeLigands=args.includeLigands, periodic=args.periodic, periodic_xyz_length=args.periodic_xyz_length,
+                           includeLigands=args.includeLigands, periodic_box=args.periodic_box,
                            fixed_residue_indices=fixed_residue_indices)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
     myForces = forces.set_up_forces(oa, submode=args.subMode, contactParameterLocation=parametersLocation,)
     # print(forces)
@@ -205,10 +205,8 @@ def run(args):
     additional_cmd = ""
     if args.includeLigands:
         additional_cmd += "--includeLigands "
-    if args.periodic:
-        additional_cmd += "--periodic "
-    if args.periodic_xyz_length:
-        additional_cmd += f"--periodic_xyz_length {args.periodic_xyz_length} "
+    if args.periodic_box:
+        additional_cmd += f"--periodic_box {' '.join(map(str, args.periodic_box))} "
     if args.fixed_residue_indices:
         additional_cmd += f"--fixed_residue_indices {fixed_residue_indices} "
     if args.fromOpenMMPDB:
@@ -250,8 +248,7 @@ def main(args=None):
     parser.add_argument('--device', default=0, help='OpenCL/CUDA device index')
     parser.add_argument('--removeCMMotionRemover', action="store_true", default=False, help='Removes CMMotionRemover. Recommended for periodic boundary conditions and membrane simulations')
     parser.add_argument('--fixed_residue_indices', type=str, default='', help='csv file with indices (not "ids" or "resnums") of residues whose positions should be fixed)')
-    parser.add_argument('--periodic',action="store_true",default=False,help='applies periodic boundary condition')
-    parser.add_argument('--periodic_xyz_length',type=float,default=10,help='periodic box size (nanometers) in x, y, and z dimensions')
+    parser.add_argument('--periodic_box', type=float, nargs=3, metavar=('X', 'Y', 'Z'), help='Enable periodic boundary conditions with box dimensions in x, y, z (nanometers)')
     parser.add_argument('--dryRun',action="store_true",default=False,help="Return the configuration and exit without running the simulation")
 
     if args is None:

@@ -92,7 +92,7 @@ def analyze(args):
         fixed_residue_indices = []
 
     oa = OpenMMAWSEMSystem(input_pdb_filename, chains=chain, k_awsem=1.0, xml_filename=openawsem.xml, seqFromPdb=seq, 
-                           fixed_residue_indices=fixed_residue_indices,periodic=args.periodic, periodic_xyz_length=args.periodic_xyz_length,
+                           fixed_residue_indices=fixed_residue_indices,periodic_box=args.periodic_box,
                            includeLigands=args.includeLigands)  # k_awsem is an overall scaling factor that will affect the relevant temperature scales
 
     print(f"using force setup file from {forceSetupFile}")
@@ -192,8 +192,7 @@ def main(args=None):
     parser.add_argument("--fromOpenMMPDB", action="store_true", default=False)
     parser.add_argument("--fasta", type=str, default="crystal_structure.fasta")
     parser.add_argument("--includeLigands", action="store_true", default=False)
-    parser.add_argument('--periodic',action="store_true",default=False,help='applies periodic boundary condition')
-    parser.add_argument('--periodic_xyz_length',type=float,default=10,help='periodic box size (nanometers) in x, y, and z dimensions')
+    parser.add_argument('--periodic_box', type=float, nargs=3, metavar=('X', 'Y', 'Z'), help='Enable periodic boundary conditions with box dimensions in x, y, z (nanometers)')
     parser.add_argument('--fixed_residue_indices', type=str, default='', help='csv file with indices (not "ids" or "resnums") of residues whose positions should be fixed)')
 
     if args is None:
