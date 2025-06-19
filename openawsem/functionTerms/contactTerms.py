@@ -296,7 +296,7 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
                 contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if oa.periodic:
+    if oa.periodic_box:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
         print('\ncontact_term is periodic')
     else:
@@ -544,7 +544,7 @@ def contact_term_reference(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMe
                 contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if oa.periodic:
+    if oa.periodic_box:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
     else:
         contact.setNonbondedMethod(contact.CutoffNonPeriodic)
@@ -715,7 +715,7 @@ def index_based_contact_term(oa, gamma_folder="ff_contact", k_contact=4.184, z_d
                 contact.addExclusion(e1, e2)
 
     # contact.setCutoffDistance(1.1)
-    if oa.periodic:
+    if oa.periodic_box:
         contact.setNonbondedMethod(contact.CutoffPeriodic)
     else:
         contact.setNonbondedMethod(contact.CutoffNonPeriodic)
