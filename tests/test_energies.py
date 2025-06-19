@@ -61,7 +61,7 @@ def set_up_forces(oa, protein, force_name=None):
         "Contact": lambda: openawsem.functionTerms.contactTerms.contact_term(oa),
         "Chain": lambda: openawsem.functionTerms.basicTerms.chain_term(oa),
         "Chi": lambda: openawsem.functionTerms.basicTerms.chi_term(oa),
-        "Excluded": lambda: openawsem.functionTerms.basicTerms.excl_term(oa, periodic=False),
+        "Excluded": lambda: openawsem.functionTerms.basicTerms.excl_term(oa),
         "RamaProline": lambda: openawsem.functionTerms.basicTerms.rama_proline_term(oa),
         "RamaSSWeight": lambda: openawsem.functionTerms.basicTerms.rama_ssweight_term(oa, k_rama_ssweight=2*8.368, ssweight_file=data_path/f'{protein}-ssweight'),
         "Beta1": lambda: openawsem.functionTerms.hydrogenBondTerms.beta_term_1(oa,ssweight_file=data_path/f'{protein}-ssweight'),
