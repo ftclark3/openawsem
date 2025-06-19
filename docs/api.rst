@@ -4,4 +4,6 @@ API Documentation
 .. autosummary::
    :toctree: autosummary
 
-   openawsem.canvas
+   openawsem.OpenMMAWSEMSystem
+   openawsem.Protein
+   
