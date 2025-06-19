@@ -18,12 +18,14 @@ import sys
 sys.path.insert(0, os.path.abspath('..'))
 
 import openawsem
+from sphinx.application import Sphinx
+from pathlib import Path
 
 
 # -- Project information -----------------------------------------------------
 
 project = 'OpenAWSEM'
-copyright = ("2025, Carlos Bueno. Project structure based on the "
+copyright = ("2020-2025, Wei Lu, Carlos Bueno. Project structure based on the "
              "Computational Molecular Science Python Cookiecutter version 1.11")
 author = 'Carlos Bueno'
 
@@ -175,3 +177,13 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+def make_signatures_relative(app: Sphinx, what, name, obj, options, signature, return_annotation):
+    if not signature:
+        return signature, return_annotation
+
+    # assume conf.py lives in <project>/docs/conf.py
+    project_root = Path(__file__).parents[1].as_posix() + os.sep
+    return (signature.replace(project_root, ''), return_annotation)
+
+def setup(app: Sphinx):
+    app.connect('autodoc-process-signature', make_signatures_relative)
