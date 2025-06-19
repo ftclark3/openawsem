@@ -162,7 +162,7 @@ For small proteins, the LAMMPS version may be faster than OpenAWSEM, especially 
 A quick check of the stability of a protein in AWSEM can be done using the frustratometer server http://frustratometer.qb.fcen.uba.ar/
 
 ## Acknowledgements
-This project is also supported by the Center for Theoretical Biological Physics (NSF Grants PHY-2019745 and PHY-1522550), with additional support from the D.R. Bullard Welch Chair at Rice University (Grant No. C-0016 to PGW).  We thank AMD (Advanced Micro Devices, Inc.) for the donation of high-performance computing hardware and HPC resources.  Carlos Bueno was supported by the MolSSI Software Fellowship.
+This project is also supported by the Center for Theoretical Biological Physics (NSF Grants PHY-2019745 and PHY-1522550), with additional support from the D.R. Bullard Welch Chair at Rice University (Grant No. C-0016 to PGW).  We thank AMD (Advanced Micro Devices, Inc.) for the donation of high-performance computing hardware and HPC resources.  Carlos Bueno was supported by the MolSSI Software Fellowship. The skeleton of this project is based on the [Computational Molecular Science Python Cookiecutter](https://github.com/molssi/cookiecutter-cms) version 1.11.
 
 
 ## Data availability
