@@ -47,14 +47,14 @@ To update the vendor files when the MolSSI cookiecutter makes changes:
 2. **Remove the old vendor files:**
 
    ```bash
-   git rm -r .
+   git rm -rf .
    ```
 
 3. **Copy the new versions of the cookiecutter files:**
    Replace the deleted files with their updated versions from the MolSSI cookiecutter output.
 
    ```bash
-   cp -r COOKIECUTTERFOLDER/openawsem/* .
+   rsync -av --progress COOKIECUTTER_FOLDER/openawsem/ . --exclude='.git'
    ```
 
 4. **Revert this README**
