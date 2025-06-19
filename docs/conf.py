@@ -25,8 +25,7 @@ from pathlib import Path
 # -- Project information -----------------------------------------------------
 
 project = 'OpenAWSEM'
-copyright = ("2020-2025, Wei Lu, Carlos Bueno. Project structure based on the "
-             "Computational Molecular Science Python Cookiecutter version 1.11")
+copyright = ("2020-2025, Wei Lu, Carlos Bueno")
 author = 'Carlos Bueno'
 
 # The short X.Y version
@@ -107,6 +106,12 @@ html_theme = 'pydata_sphinx_theme'
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
+
+# # Add custom CSS for the documentation
+# html_css_files = [
+#     'custom.css',
+# ]
+
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
