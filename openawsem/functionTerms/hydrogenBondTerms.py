@@ -272,7 +272,7 @@ def get_helical_f(oneLetterCode, inMembrane=False):
 
 
 # MAIN API
-def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized',**kwargs):
+def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized', beta_nu_on=True, **kwargs):
     """
     Main API for the pairwise beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
     potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
@@ -311,13 +311,13 @@ def beta_term_1(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='s
     
     print(f"beta_term_1 ({version} version) on")
     if version == 'lammps_awsemmd':
-        return _beta_lammps_awsemmd(oa, 1, ssweight_file, forceGroup, k)
+        return _beta_lammps_awsemmd(oa, 1, ssweight_file, forceGroup, k, beta_nu_on)
     elif version == 'efficiency_optimized':
         return _beta_efficiency_optimized(oa, 1, ssweight_file, forceGroup, k)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
-def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized',**kwargs):
+def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized', beta_nu_on=True, **kwargs):
     """
     Main API for the antiparallel cooperative beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
     potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
@@ -356,13 +356,13 @@ def beta_term_2(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='s
     
     print(f"beta_term_2 ({version} version) on")
     if version == 'lammps_awsemmd':
-        return _beta_lammps_awsemmd(oa, 2, ssweight_file, forceGroup, k)
+        return _beta_lammps_awsemmd(oa, 2, ssweight_file, forceGroup, k, beta_nu_on)
     elif version == 'efficiency_optimized':
         return _beta_efficiency_optimized(oa, 2, ssweight_file, forceGroup, k)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
-def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized',**kwargs):
+def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='ssweight', version='efficiency_optimized', beta_nu_on=True, **kwargs):
     """
     Main API for the parallel cooperative beta-sheet hydrogen bonding term. Defaults to the "efficiency_optimized" version, meaning the
     potential described in the OpenAWSEM paper SI, as corrected in June 2025 (see https://github.com/cabb99/openawsem/issues/52).
@@ -401,35 +401,35 @@ def beta_term_3(oa, k=0.5*kilocalories_per_mole, forceGroup=27, ssweight_file='s
     
     print(f"beta_term_3 ({version} version) on")
     if version == 'lammps_awsemmd':
-        return _beta_lammps_awsemmd(oa, 3, ssweight_file, forceGroup, k)
+        return _beta_lammps_awsemmd(oa, 3, ssweight_file, forceGroup, k, beta_nu_on)
     elif version == 'efficiency_optimized':
         return _beta_efficiency_optimized(oa, 3, ssweight_file, forceGroup, k)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
-def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight_file='ssweight'):
+def beta_term_1_old(oa, k_beta=4.184, debug=None, forceGroup=23, ssweight_file='ssweight', beta_nu_on=True):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_term_1(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd')
+    return beta_term_1(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd', beta_nu_on)
 
-def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight_file='ssweight'):
+def beta_term_2_old(oa, k_beta=4.184, debug=None, forceGroup=24, ssweight_file='ssweight', beta_nu_on=True):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_2_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_term_2(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd')
+    return beta_term_2(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd', beta_nu_on)
 
-def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight_file='ssweight'):
+def beta_term_3_old(oa, k_beta=4.184, debug=None, forceGroup=25, ssweight_file='ssweight', beta_nu_on=True):
     """
     Wrapper that allows us to call hydrogenBondTerms.beta_term_1_old() in forces_setup.py as before.
     Debug is no longer used but is kept as a parameter in the spirit of allowing old arguments
     """
-    return beta_term_3(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd')
+    return beta_term_3(oa, k_beta, forceGroup, ssweight_file, 'lammps_awsemmd', beta_nu_on)
 
 def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_file="ssweight", 
-               version='efficiency_optimized', **kwargs):
+               version='efficiency_optimized', pap_nu_on=True, **kwargs):
     """
     Main API for the antiparallel cooperative liquid crystal beta-sheet (P_AP) hydrogen bonding term. 
     Defaults to the "efficiency_optimized" version, meaning the potential described in the OpenAWSEM paper,
@@ -474,12 +474,12 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         return pap_term_old(oa, k_pap=k, ssweight_filename=ssweight_filename)
     elif version == 'efficiency_optimized':
         print(f"pap_term_1 ({version} version) on")
-        return _pap_efficiency_optimized(oa, 1, ssweight_file, forceGroup, k, dis_i_to_i4)
+        return _pap_efficiency_optimized(oa, 1, ssweight_file, forceGroup, k, dis_i_to_i4, pap_nu_on)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")
 
 def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, ssweight_file="ssweight", ssweightFileName="ssweight",
-                   version='efficiency_optimized', **kwargs):
+                   version='efficiency_optimized', pap_nu_on=True, **kwargs):
     """
     Main API for the parallel cooperative liquid crystal beta-sheet (P_AP) hydrogen bonding term. 
     Defaults to the "efficiency_optimized" version, meaning the potential described in the OpenAWSEM paper,
@@ -523,7 +523,7 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
         return CustomExternalForce("0") # force has 0 energy and no particles
     elif version == 'efficiency_optimized':
         print(f"pap_term_2 ({version} version) on")
-        return _pap_efficiency_optimized(oa, 2, ssweight_file, forceGroup, k, dis_i_to_i4)
+        return _pap_efficiency_optimized(oa, 2, ssweight_file, forceGroup, k, dis_i_to_i4, pap_nu_on)
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")  
 
@@ -623,7 +623,7 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     For clarity and backwards compatibility, the user must be allowed to access these terms in multiple ways,
 #     So we provide those interfaces in the main API, then they all call one of these functions
 
-def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta):
+def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta, beta_nu_on):
     """ 
     Function to compute either beta 1, beta 2, or beta 3, as implemented in a particular LAMMPS AWSEM-MD commit,
     https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb
@@ -682,7 +682,10 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta):
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing +
     nu_1_bit += ")" # add ) to close the max( opened at the beginning of the statement
-    nu_i = f"(0.5*(1+tanh({eta_beta_1}*(r_CAim2_CAip2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit}))"
+    if beta_nu_on:
+        nu_i = f"(0.5*(1+tanh({eta_beta_1}*(r_CAim2_CAip2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit}))"
+    else:
+        nu_i = "1"
     #      nu_j
     nu_1_bit_list = [f"step(res_index_j-{start_res_index}-1)*step(res_index_j-{start_res_index}-1-1)*step({end_res_index}-res_index_j-1)*step({end_res_index}-1-res_index_j-1)+"\
             for start_res_index,end_res_index in zip(oa.chain_starts,oa.chain_ends)]
@@ -691,7 +694,10 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta):
         nu_1_bit += condition
     nu_1_bit = nu_1_bit[:-1] # get rid of trailing +
     nu_1_bit += ")" # add ) to close the max( opened at the beginning of the statement
-    nu_j = f"(0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit}))"
+    if beta_nu_on:
+        nu_j = f"(0.5*(1+tanh({eta_beta_2}*(r_CAjm2_CAjp2-{r_HB_c})))*{nu_1_bit}+(1-{nu_1_bit}))"
+    else:
+        nu_j = "1"
     #      adjusted nu_i*nu_j
     seqsep_lessthan18 = "(1-step(abs(res_index_i-res_index_j)-18))" # useful conditional to check whether our sequence separation is strictly less than 18
     #         set nu_i*nu_j to 1 if sequence separation is less than 18 and i and j are in the same chain;
@@ -994,7 +1000,7 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap):
     pap.setForceGroup(forceGroup)
     return pap
 
-def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis_i_to_i4):
+def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis_i_to_i4, pap_nu_on=True):
     # set constants
     k_pap = convert_units(k) * oa.k_awsem
     nres, ca = oa.nres, oa.ca
@@ -1022,7 +1028,10 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
             gamma_3[i][j] = get_pap_gamma_P(i, j, chain1, chain2, gamma_p, ssweight)
     #
     # define energy functions
-    constraint_i_and_i4 = f"0.5*(1+tanh({eta_pap}*(distance(a1,a2)-{dis_i_to_i4})))"
+    if pap_nu_on:
+        constraint_i_and_i4 = f"0.5*(1+tanh({eta_pap}*(distance(a1,a2)-{dis_i_to_i4})))"
+    else:
+        constraint_i_and_i4 = "1"
     if term_number == 1:
         gamma_string = "(gamma_1(donor_idx,acceptor_idx)+gamma_2(donor_idx,acceptor_idx))"
     elif term_number == 2:
