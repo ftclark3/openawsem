@@ -885,7 +885,11 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
         Beta.setNonbondedMethod(Beta.CutoffNonPeriodic)        
     Beta.addPerDonorParameter("res_i")
     Beta.addPerAcceptorParameter("res_j")
-    Beta.addTabulatedFunction("lambda_term_number", Discrete2DFunction(nres, nres, lambda_term_number.T.flatten()))
+    # transpose to convert from our matrix-style indexing to OpenMM's cartesian-style indexing,
+    # then fortran (F) order flatteneing to match OpenMM's expectation.
+    # This is equivalent to lambda_term_number.T.T.flatten() and therefore also equivalent
+    # to lambda_term_number.flatten() (optionally adding the default argument order='C')
+    Beta.addTabulatedFunction("lambda_term_number", Discrete2DFunction(nres, nres, lambda_term_number.T.flatten(order='F')))
     Beta.setCutoffDistance(1.0)
     Beta.setForceGroup(forceGroup)
     #
