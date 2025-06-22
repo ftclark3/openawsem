@@ -505,7 +505,7 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     """
     if "ssweightFileName" in kwargs:
         warnings.warn(
-            "pap_term_1: `ssweightFileName` is deprecated; use "
+            "pap_term_2: `ssweightFileName` is deprecated; use "
             "`ssweight_file` instead.",
             category=DeprecationWarning,
             stacklevel=2
@@ -527,11 +527,11 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")  
 
-def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_file="ssweight"):
+def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_file="ssweight", one_only=False, two_only=False):
     """
     Wrapper that allows us to call hydrogenBondTerms.pap_term_old() in forces_setup.py as before.
     """
-    return _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap)
+    return _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only)
 
 def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
     """
@@ -929,7 +929,7 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
             raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
     return Beta
 
-def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap):
+def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only):
     print("pap term ON")
     # define constants
     nres, ca = oa.nres, oa.ca
@@ -958,48 +958,48 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap):
         for j in range(nres): # unlike the beta terms, P_AP has the symmetry P_AP(i,j)==P_AP(j,i), so we only need to loop over each pair once
                                   # WAIT, IT DOESN'T! THIS IS TRUE FOR THE PARALLEL PORTION OF P_AP BUT NOT FOR THE ANTIPARALLEL
                                   # THE ANTIPARALLEL NU 
-            
             # check if we may be able to add an antiparallel hydrogen bond
-            if inSameChain(i,i+4,oa.chain_starts,oa.chain_ends) and inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
-                # determine whether this bond should be hairpin or long-range antiparallel
-                if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
-                    # bond must be the long-range type for interchain interactions
-                    if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
-                        K = gamma_ap*k_beta_pred_p_ap
-                    else:
-                        K = gamma_ap
-                    pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
-                else:
-                    # bond may be either hairpin, long-range, or impossible
-                    if j-i<13:
-                        pass
-                    elif 13<=j-i<17:
-                        K = gamma_aph # we don't rescale potential by k_beta_pred_p_ap for hairpin
-                        pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
-                    elif 17<=j-i:
+            if not two_only:
+                if inSameChain(i,i+4,oa.chain_starts,oa.chain_ends) and inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
+                    # determine whether this bond should be hairpin or long-range antiparallel
+                    if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
+                        # bond must be the long-range type for interchain interactions
                         if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                             K = gamma_ap*k_beta_pred_p_ap
                         else:
                             K = gamma_ap
                         pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
                     else:
-                        raise AssertionError("unexpected else block")
-            
+                        # bond may be either hairpin, long-range, or impossible
+                        if j-i<13:
+                            pass
+                        elif 13<=j-i<17:
+                            K = gamma_aph # we don't rescale potential by k_beta_pred_p_ap for hairpin
+                            pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
+                        elif 17<=j-i:
+                            if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
+                                K = gamma_ap*k_beta_pred_p_ap
+                            else:
+                                K = gamma_ap
+                            pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
+                        else:
+                            raise AssertionError("unexpected else block")
             # check if we may be able to add a parallel hydrogen bond
-            if inSameChain(i,i+4,oa.chain_starts,oa.chain_ends) and inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
-                # we can assign the same K regardless of whether we're in the same chain or not
-                if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
-                    K = gamma_p*k_beta_pred_p_ap
-                else:
-                    K = gamma_p
-                if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
-                    # we can add the bond regardless of sequence separation
-                    pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
-                else:
-                    if j-i < 9:
-                        pass
+            if not one_only:
+                if inSameChain(i,i+4,oa.chain_starts,oa.chain_ends) and inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
+                    # we can assign the same K regardless of whether we're in the same chain or not
+                    if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
+                        K = gamma_p*k_beta_pred_p_ap
                     else:
+                        K = gamma_p
+                    if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
+                        # we can add the bond regardless of sequence separation
                         pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
+                    else:
+                        if j-i < 9:
+                            pass
+                        else:
+                            pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
             
     pap.setForceGroup(forceGroup)
     return pap
