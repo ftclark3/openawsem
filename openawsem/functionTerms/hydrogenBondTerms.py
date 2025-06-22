@@ -1058,11 +1058,14 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
     pap.addPerAcceptorParameter("acceptor_idx")
     pap.setCutoffDistance(1.0)
     pap.setForceGroup(forceGroup)
+    #     Residue i is the acceptor and residue j is the donor and we index our gammas with (donor_idx,acceptor_idx),
+    #     so this is actually the cartesian indexing (as opposed to the matrix indexing) that openmm expects.
+    #     However, we still need to flatten our matrix in column-major (Fortran) order
     if term_number == 1:
-        pap.addTabulatedFunction("gamma_1", Discrete2DFunction(nres, nres, gamma_1.T.flatten()))
-        pap.addTabulatedFunction("gamma_2", Discrete2DFunction(nres, nres, gamma_2.T.flatten()))
+        pap.addTabulatedFunction("gamma_1", Discrete2DFunction(nres, nres, gamma_1.flatten(order='F')))
+        pap.addTabulatedFunction("gamma_2", Discrete2DFunction(nres, nres, gamma_2.flatten(order='F')))
     elif term_number == 2:
-        pap.addTabulatedFunction("gamma_3", Discrete2DFunction(nres, nres, gamma_3.T.flatten()))
+        pap.addTabulatedFunction("gamma_3", Discrete2DFunction(nres, nres, gamma_3.flatten(order='F')))
     else:
         raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
     #
