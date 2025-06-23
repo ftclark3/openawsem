@@ -1075,13 +1075,11 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
             if not isChainEnd(i, oa.chain_ends, n=4):
                 pap.addAcceptor(ca[i], ca[i+4], -1, [i])
             if not isChainStart(i, oa.chain_starts, n=4):
-                if oa.n[i] != -1 and oa.n[i-4] != -1:
-                    pap.addDonor(oa.n[i], oa.n[i-4], -1, [i])
+                pap.addDonor(oa.ca[i], oa.ca[i-4], -1, [i])
         elif term_number == 2:
             if not isChainEnd(i, oa.chain_ends, n=4):
                 pap.addAcceptor(ca[i], ca[i+4], -1, [i])
-                if oa.n[i] != -1 and oa.n[i+4] != -1:
-                    pap.addDonor(oa.n[i], oa.n[i+4], -1, [i])           
+                pap.addDonor(oa.ca[i], oa.ca[i+4], -1, [i])   
         else:
             raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
     return pap
