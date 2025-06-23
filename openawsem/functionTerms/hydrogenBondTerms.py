@@ -885,7 +885,11 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
         Beta.setNonbondedMethod(Beta.CutoffNonPeriodic)        
     Beta.addPerDonorParameter("res_i")
     Beta.addPerAcceptorParameter("res_j")
-    Beta.addTabulatedFunction("lambda_term_number", Discrete2DFunction(nres, nres, lambda_term_number.T.flatten()))
+    # transpose to convert from our matrix-style indexing to OpenMM's cartesian-style indexing,
+    # then fortran (F) order flatteneing to match OpenMM's expectation.
+    # This is equivalent to lambda_term_number.T.T.flatten() and therefore also equivalent
+    # to lambda_term_number.flatten() (optionally adding the default argument order='C')
+    Beta.addTabulatedFunction("lambda_term_number", Discrete2DFunction(nres, nres, lambda_term_number.T.flatten(order='F')))
     Beta.setCutoffDistance(1.0)
     Beta.setForceGroup(forceGroup)
     #
@@ -1054,11 +1058,14 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
     pap.addPerAcceptorParameter("acceptor_idx")
     pap.setCutoffDistance(1.0)
     pap.setForceGroup(forceGroup)
+    #     Residue i is the acceptor and residue j is the donor and we index our gammas with (donor_idx,acceptor_idx),
+    #     so this is actually the cartesian indexing (as opposed to the matrix indexing) that openmm expects.
+    #     However, we still need to flatten our matrix in column-major (Fortran) order
     if term_number == 1:
-        pap.addTabulatedFunction("gamma_1", Discrete2DFunction(nres, nres, gamma_1.T.flatten()))
-        pap.addTabulatedFunction("gamma_2", Discrete2DFunction(nres, nres, gamma_2.T.flatten()))
+        pap.addTabulatedFunction("gamma_1", Discrete2DFunction(nres, nres, gamma_1.flatten(order='F')))
+        pap.addTabulatedFunction("gamma_2", Discrete2DFunction(nres, nres, gamma_2.flatten(order='F')))
     elif term_number == 2:
-        pap.addTabulatedFunction("gamma_3", Discrete2DFunction(nres, nres, gamma_3.T.flatten()))
+        pap.addTabulatedFunction("gamma_3", Discrete2DFunction(nres, nres, gamma_3.flatten(order='F')))
     else:
         raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
     #
