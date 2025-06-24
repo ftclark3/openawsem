@@ -886,7 +886,7 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
     Beta.addPerDonorParameter("res_i")
     Beta.addPerAcceptorParameter("res_j")
     # transpose to convert from our matrix-style indexing to OpenMM's cartesian-style indexing,
-    # then fortran (F) order flatteneing to match OpenMM's expectation.
+    # then fortran (F) order flattening to match OpenMM's expectation.
     # This is equivalent to lambda_term_number.T.T.flatten() and therefore also equivalent
     # to lambda_term_number.flatten() (optionally adding the default argument order='C')
     Beta.addTabulatedFunction("lambda_term_number", Discrete2DFunction(nres, nres, lambda_term_number.T.flatten(order='F')))
@@ -955,10 +955,9 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
         pap.setUsesPeriodicBoundaryConditions(False)
     # add Bonds to Force and set per-bond parameters (coefficients)
     for i in range(nres):
-        for j in range(nres): # unlike the beta terms, P_AP has the symmetry P_AP(i,j)==P_AP(j,i), so we only need to loop over each pair once
-                                  # WAIT, IT DOESN'T! THIS IS TRUE FOR THE PARALLEL PORTION OF P_AP BUT NOT FOR THE ANTIPARALLEL
-                                  # THE ANTIPARALLEL NU 
+        for j in range(nres):
             # check if we may be able to add an antiparallel hydrogen bond
+            delta = j-i
             if not two_only:
                 if inSameChain(i,i+4,oa.chain_starts,oa.chain_ends) and inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
                     # determine whether this bond should be hairpin or long-range antiparallel
@@ -971,12 +970,12 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
                         pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
                     else:
                         # bond may be either hairpin, long-range, or impossible
-                        if j-i<13:
+                        if delta<13:
                             pass
-                        elif 13<=j-i<17:
+                        elif 13<=delta<17:
                             K = gamma_aph # we don't rescale potential by k_beta_pred_p_ap for hairpin
                             pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
-                        elif 17<=j-i:
+                        elif 17<=delta:
                             if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                                 K = gamma_ap*k_beta_pred_p_ap
                             else:
@@ -996,7 +995,7 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
                         # we can add the bond regardless of sequence separation
                         pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
                     else:
-                        if j-i < 9:
+                        if delta < 9:
                             pass
                         else:
                             pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
