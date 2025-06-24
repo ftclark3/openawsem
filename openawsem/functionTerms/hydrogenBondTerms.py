@@ -955,12 +955,14 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
         pap.setUsesPeriodicBoundaryConditions(False)
     # add Bonds to Force and set per-bond parameters (coefficients)
     for i in range(nres):
-        in_same_chain_i = inSameChain(i,i+4,oa.chain_starts,oa.chain_ends)
+        if not inSameChain(i,i+4,oa.chain_starts,oa.chain_ends):
+            # Not a valid i
+            continue
         for j in range(nres):
             # check if we may be able to add an antiparallel hydrogen bond
             delta = j-i
             if not two_only:
-                if in_same_chain_i and inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
+                if inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
                     # determine whether this bond should be hairpin or long-range antiparallel
                     if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
                         # bond must be the long-range type for interchain interactions
@@ -984,7 +986,7 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
                     pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
             # check if we may be able to add a parallel hydrogen bond
             if not one_only:
-                if in_same_chain_i and inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
+                if inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
                     # we can assign the same K regardless of whether we're in the same chain or not
                     if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                         K = gamma_p*k_beta_pred_p_ap
