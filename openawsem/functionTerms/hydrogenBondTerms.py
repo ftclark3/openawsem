@@ -961,35 +961,27 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
         for j in range(nres):
             # check if we may be able to add an antiparallel hydrogen bond
             delta = j-i
+            intrachain = inSameChain(i,j,oa.chain_starts,oa.chain_ends)
             if not two_only:
                 if not inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
                     continue # Not a valid j
-                # determine whether this bond should be hairpin or long-range antiparallel
-                if inSameChain(i,j,oa.chain_starts,oa.chain_ends):
-                    # bond may be either hairpin, long-range, or impossible
-                    if delta<13:
-                        continue
-                    elif 13<=delta<17:
-                        K = gamma_aph # we don't rescale potential by k_beta_pred_p_ap for hairpin
-                    elif 17<=delta:
-                        if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
-                            K = gamma_ap*k_beta_pred_p_ap
-                        else:
-                            K = gamma_ap
-                    else:
-                        raise AssertionError("unexpected else block")
-                else:
-                    # bond must be the long-range type for interchain interactions
+                if intrachain and delta < 13: #The pair is too close to be a hairpin bond
+                    continue
+                elif intrachain and 13<=delta<17: # The pair is a hairpin, k_beta_pred_p_ap doesn't need to be scaled
+                    K = gamma_aph 
+                elif delta >= 17 or not intrachain: #Long-range antiparallel bond
                     if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                         K = gamma_ap*k_beta_pred_p_ap
                     else:
                         K = gamma_ap
+                else:
+                    raise AssertionError("unexpected else block")
                 pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
             # check if we may be able to add a parallel hydrogen bond
             if not one_only:
                 if not inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
                     continue # Not a valid j
-                if inSameChain(i,j,oa.chain_starts,oa.chain_ends) and delta < 9:
+                if intrachain and delta < 9:
                     # The pair is too close to be a parallel bond
                     continue
                 # we can assign the same K regardless of whether we're in the same chain or not
