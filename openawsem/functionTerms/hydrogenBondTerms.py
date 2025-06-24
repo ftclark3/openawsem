@@ -968,22 +968,20 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
                             K = gamma_ap*k_beta_pred_p_ap
                         else:
                             K = gamma_ap
-                        pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
                     else:
                         # bond may be either hairpin, long-range, or impossible
                         if delta<13:
-                            pass
+                            continue
                         elif 13<=delta<17:
                             K = gamma_aph # we don't rescale potential by k_beta_pred_p_ap for hairpin
-                            pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
                         elif 17<=delta:
                             if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                                 K = gamma_ap*k_beta_pred_p_ap
                             else:
                                 K = gamma_ap
-                            pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
                         else:
                             raise AssertionError("unexpected else block")
+                    pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
             # check if we may be able to add a parallel hydrogen bond
             if not one_only:
                 if in_same_chain_i and inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
@@ -992,14 +990,10 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
                         K = gamma_p*k_beta_pred_p_ap
                     else:
                         K = gamma_p
-                    if not inSameChain(i,j,oa.chain_starts,oa.chain_ends):
-                        # we can add the bond regardless of sequence separation
-                        pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
-                    else:
-                        if delta < 9:
-                            pass
-                        else:
-                            pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
+                    if inSameChain(i,j,oa.chain_starts,oa.chain_ends) and delta < 9:
+                        # we don't add a bond if the sequence separation is less than 9
+                        continue
+                    pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
             
     pap.setForceGroup(forceGroup)
     return pap
