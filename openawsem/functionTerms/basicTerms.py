@@ -278,7 +278,10 @@ def rama_ssweight_term(oa, k_rama_ssweight=8.368, num_rama_wells=2, w=[2.0, 2.0]
         if i not in oa.chain_starts and i not in oa.chain_ends and not oa.res_type[i] == "IGL" and not oa.res_type == "IPR":
             ramaSS.addBond([oa.c[i-1], oa.n[i], oa.ca[i], oa.c[i], oa.n[i+1]], [i])
     ssweight = np.loadtxt(ssweight_file)
-    ramaSS.addTabulatedFunction("ssweight", Discrete2DFunction(2, oa.nres, ssweight.flatten()))
+    try:
+        ramaSS.addTabulatedFunction("ssweight", Discrete2DFunction(2, oa.nres, ssweight.flatten()))
+    except:
+        raise Exception(f"Check your ssweight file and input structure. oa.nres was {oa.nres} and ssweight was length {ssweight.flatten().shape[0]/2}")
     ramaSS.setForceGroup(forceGroup)
     return ramaSS
 
