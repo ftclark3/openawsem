@@ -337,7 +337,7 @@ class AWSEMSimulationProject:
         # ], stdout="logfile")
 
         # Check and correct the fragment memory file
-        openawsem.helperFunctions.check_and_correct_fragment_memory("frags.mem")
+        #openawsem.helperFunctions.check_and_correct_fragment_memory("frags.mem")
 
         # Relocate the file to the fraglib folder
         openawsem.helperFunctions.relocate(fileLocation="frags.mem", toLocation="fraglib")
@@ -353,11 +353,35 @@ class AWSEMSimulationProject:
             extension = "cif"
         else:
             extension = "pdb"
+        io_class = openawsem.get_openmm_io_class(extension) 
+        temp = io_class(f"crystal_structure-cleaned.{extension}")
+        old_top = temp.getTopology()
+        pos = temp.getPositions(asNumpy=True)
         for c in self.chain:
             # print(f"convert chain {c} of crystal structure to Gro file")
-            self.run_command(["python", f"{__location__}/helperFunctions/Pdb2Gro.py", "crystal_structure-cleaned.pdb", f"{self.name}_{c}.gro", f"{c}"])
-        
-        seq_data = openawsem.helperFunctions.seq_length_from_pdb("crystal_structure-cleaned.pdb", self.chain)
+            #self.run_command(["python", f"{__location__}/helperFunctions/Pdb2Gro.py", f"crystal_structure-cleaned.{extension}", f"{self.name}_{c}.gro", f"{c}"])
+            for file_chain in old_top.chains():
+                if c == file_chain.id:
+                    new_top = openawsem.Topology() # really an openmm.app.Topology
+                    new_chain = new_top.addChain(id=file_chain.id)
+                    pos_indices = []
+                    for residue in file_chain.residues():
+                        # maybe add this check?
+                        #if residue.insertionCode != ' ':
+                        #    raise ValueError(f"""Chain {file_chain.id} residue id {residue.id} has insertion code {residue.insertionCode}.
+                        #                         Non-empty insertion codes are not allowed for single memory structures.
+                        #                         Check your crystal_structure-cleaned.{extension} file.""")
+                        #new_residue = new_top.addResidue(residue.name, new_chain, id=str(residue.index+1)) #,insertionCode=residue.insertionCode)
+                        new_residue = new_top.addResidue(residue.name, new_chain, id=residue.id) #,insertionCode=residue.insertionCode)
+                        for atom in residue.atoms():
+                            new_top.addAtom(atom.name, atom.element, new_residue, id=atom.id)
+                            pos_indices.append(atom.index)
+                    chain_pos = pos[pos_indices,:]
+                    io_class.writeFile(new_top, chain_pos, f'{self.name}_{c}.{extension}', keepIds=True)
+            
+        # something like [('A', 10, 115), ('B', 10, 115)] or [('A', 1, 115), ('B', 1, 115)], depending on --resetIds
+        top_for_seq_data = io_class(f"crystal_structure-cleaned.{extension}").getTopology()
+        seq_data = openawsem.helperFunctions.seq_length_from_pdb(top_for_seq_data, self.chain)
         with open("single_frags.mem", "w") as out:
             out.write("[Target]\nquery\n\n[Memories]\n")
             chain_index_start = 1
