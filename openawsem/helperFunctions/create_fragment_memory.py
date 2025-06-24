@@ -12,6 +12,7 @@ import requests
 import gzip
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import tempfile
+from openmm.app import *
 
 
 def update_failed_pdb_list(failed_pdb, failed_pdb_list_file):
@@ -227,6 +228,15 @@ def download_pdb_seqres(pdb_seqres):
         except Exception as e:
             logging.error(f"An error occurred: {e}")
         raise FileNotFoundError(f"Failed to download {pdb_seqres}. Make sure it exists in {pdb_seqres} or provide a valid path.")
+
+def get_openmm_io_class(file_type):
+    if file_type == "pdb":
+        io_class = PDBFile
+    elif file_type == "cif":
+        io_class = PDBxFile
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}")
+    return io_class
 
 def create_index_files(iter, line, N_mem, brain_damage,count, failed_pdb,homo, homo_count, weight, frag_lib_dir, pdb_dir, index_dir, pdb_seqres):
     Missing_count=0
