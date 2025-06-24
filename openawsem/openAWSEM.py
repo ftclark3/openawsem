@@ -42,6 +42,14 @@ three_to_one = {'ALA':'A', 'ARG':'R', 'ASN':'N', 'ASP':'D', 'CYS':'C',
                 'LEU':'L', 'LYS':'K', 'MET':'M', 'PHE':'F', 'PRO':'P',
                 'SER':'S', 'THR':'T', 'TRP':'W', 'TYR':'Y', 'VAL':'V'}
 
+def get_openmm_io_class(file_type):
+    if file_type == "pdb":
+        io_class = PDBFile
+    elif file_type == "cif":
+        io_class = PDBxFile
+    else:
+        raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}") 
+    return io_class
 
 def parsePDB(pdb_file):
     '''Reads a pdb file and outputs a pandas DataFrame'''
