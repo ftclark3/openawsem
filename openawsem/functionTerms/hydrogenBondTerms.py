@@ -527,11 +527,11 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     else:
         raise ValueError(f"version must be 'efficiency_optimized' or 'lammps_awsemmd', but was {version}")  
 
-def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_file="ssweight", one_only=False, two_only=False):
+def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_file="ssweight", enable_parallel_bonds=True, enable_antiparallel_bonds=True):
     """
     Wrapper that allows us to call hydrogenBondTerms.pap_term_old() in forces_setup.py as before.
     """
-    return _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only)
+    return _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_parallel_bonds, enable_parallel_bonds)
 
 def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
     """
@@ -929,7 +929,7 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
             raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
     return Beta
 
-def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only):
+def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_parallel_bonds=True, enable_antiparallel_bonds=True):
     print("pap term ON")
     # define constants
     nres, ca = oa.nres, oa.ca
@@ -962,7 +962,7 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
             # check if we may be able to add an antiparallel hydrogen bond
             delta = j-i
             intrachain = inSameChain(i,j,oa.chain_starts,oa.chain_ends)
-            if not two_only:
+            if enable_antiparallel_bonds:
                 if not inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
                     continue # Not a valid j
                 if intrachain and delta < 13: #The pair is too close to be a hairpin bond
@@ -978,7 +978,7 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, one_only, two_only
                     raise AssertionError("unexpected else block")
                 pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
             # check if we may be able to add a parallel hydrogen bond
-            if not one_only:
+            if enable_parallel_bonds:
                 if not inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
                     continue # Not a valid j
                 if intrachain and delta < 9:
