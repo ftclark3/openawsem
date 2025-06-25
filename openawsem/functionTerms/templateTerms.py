@@ -9,6 +9,7 @@ except ModuleNotFoundError:
 import numpy as np
 import pandas as pd
 import pickle
+import concurrent.futures
 
 ###################################
 #### MODIFIED FOR BACKWARDS COMPATIBILITY WITH GRO FRAGMEMS
@@ -103,7 +104,158 @@ def tbm_q_term(oa, k_tbm_q, rnative_dat="rnative.dat", tbm_q_min_seq_sep=3, tbm_
     tbm_q.setForceGroup(forceGroup)
     return tbm_q
 
+def process_fragment(frag_index, frag_file_list, frag_location_pre, oa, data_dic, max_seq_sep, min_seq_sep, fm_well_width, r_array, 
+                         raw_frag_table_update, raw_frag_table_count_update, interaction_list_update, full_interaction_info_update, testing):
+    #print(frag_index, flush=True)
+    if frag_index % 100 == 0:
+        print(f"Processing fragment {frag_index} of {len(frag_file_list)}",flush=True)
+    location = frag_file_list["location"].iloc[frag_index]
+    frag_name = os.path.join(frag_location_pre, location)
+    frag_len = frag_file_list["frag_len"].iloc[frag_index]
+    weight = frag_file_list["weight"].iloc[frag_index]
+    target_start = frag_file_list["target_start"].iloc[frag_index]  # residue id
+    fragment_start = frag_file_list["fragment_start"].iloc[frag_index]  # residue id
 
+    io_class = get_openmm_io_class(frag_name[-3:],full_name=frag_name)
+    temp = io_class(frag_name)
+    frag_top = temp.getTopology()
+    frag_pos = temp.getPositions(asNumpy=True)
+    frag_ca_cb_indices = []
+    frag_ca_cb_residue_ids = []
+    frag_ca_cb_atom_types = []
+    for residue in frag_top.residues():
+        #if fragment_start <= int(residue.index)+1 < fragment_start+frag_len: 
+            # Assuming target (the thing we're going to simulate) starts at residue 1, then correcting 0-indexed memory residue.index to compare.
+            # Instead of int(residue.index)+1, we could have said residue.id because we're assuming 1-indexed id
+        # ^^^ wait, but we're looping over frag, not target! int(residue.index)+1 != residue.id in general for frags!
+        if fragment_start <= int(residue.id) < fragment_start+frag_len: 
+            found_CA = False
+            found_CB = False
+            for atom in residue.atoms():
+                if atom.name == "CA":
+                    found_CA = True
+                    frag_ca_cb_indices.append(atom.index)
+                    #frag_ca_cb_residue_ids.append(residue.index+1)
+                    frag_ca_cb_residue_ids.append(residue.id)
+                    frag_ca_cb_atom_types.append(atom.name)
+                elif atom.name == "CB":
+                    found_CB = True
+                    frag_ca_cb_indices.append(atom.index)
+                    #frag_ca_cb_residue_ids.append(residue.index+1)
+                    frag_ca_cb_residue_ids.append(residue.id)
+                    frag_ca_cb_atom_types.append(atom.name)
+            if not (found_CA and found_CB) and residue.name != "GLY":
+                raise AssertionError(f"missing atom in fragment {frag_name} residue index (0-indexed) {residue.index}, number {residue.id}, {residue.name}")
+    f = frag_pos[frag_ca_cb_indices,:]
+    assert f.shape[0] == len(frag_ca_cb_indices)
+    assert f.shape[0] == len(frag_ca_cb_atom_types)
+    w_m = weight
+    gamma_ij = 1
+    for i in range(f.shape[0]):
+        for j in range(i, f.shape[0]):
+            res_id_i = frag_ca_cb_residue_ids[i] #frag["Res_id"].iloc[i]
+            res_id_j = frag_ca_cb_residue_ids[j] #frag["Res_id"].iloc[j]
+            target_res_id_i = int(res_id_i) - fragment_start + target_start
+            target_res_id_j = int(res_id_j) - fragment_start + target_start
+            seq_sep = int(res_id_j) - int(res_id_i)
+            if seq_sep > max_seq_sep:
+                continue
+            if seq_sep < min_seq_sep:
+                continue
+            # data_dic holds the information from the system that we are going to simulate.
+            # We need to figure out the separation of the residues in our target system 
+            # that correspond to the residues in our memory so that we can compute the fm potential.
+            #  
+            # For the short fragments that we typically use in openawsem, the sequence separation
+            # in our target is the same as the sequence separation in our memory (either the alignment
+            # algorithm doesn't consider gaps or the gap penalty is large enough to prevent gaps).
+            # But I guess we are enabling future flexibility by checking the sequence separation of 
+            # target residues instead of fragment residues
+            i_type = frag_ca_cb_atom_types[i] #frag["Type"].iloc[i]
+            j_type = frag_ca_cb_atom_types[j] #frag["Type"].iloc[j]
+            #print(i_type)
+            #print(len(i_type))
+            i_corresponds_to_GLY_CB = (i_type == "CB" and oa.resnames[target_res_id_i] == "IGL")
+            try:
+                j_corresponds_to_GLY_CB = (j_type == "CB" and oa.resnames[target_res_id_j] == "IGL")
+            except KeyError:
+                print(oa.resnames)
+                print(f'res_id_i: {res_id_i}')
+                print(f'res_id_j: {res_id_j}')
+                print(f'fragment start: {fragment_start}')
+                print(f'target start: {target_start}')
+                print(target_res_id_i)
+                print(target_res_id_j)
+                raise
+            if i_corresponds_to_GLY_CB or j_corresponds_to_GLY_CB:
+                continue # no CB in glycine residues
+            try:   
+                correspond_target_i = data_dic[(i_type, int(target_res_id_i))]
+                correspond_target_j = data_dic[(j_type, int(target_res_id_j))]
+                correspond_target_i = int(correspond_target_i)
+                correspond_target_j = int(correspond_target_j)
+                i_j_sep = int(correspond_target_j - correspond_target_i) #why do we take int(a-b) if a and b are already ints?
+                #if int(target_res_id_i) == 11 and int(target_res_id_j) == 20:
+                #    print(frag_name,fragment_start,frag_len)
+                #    print('11 and 20')
+                #    print(i_type,j_type)
+                #    print(i,j)
+                #    print(frag_ca_cb_atom_types[i:i+4])
+                #if int(target_res_id_i) == 23 and int(target_res_id_j) == 32:
+                #    print(frag_name,fragment_start,frag_len)
+                #    print('23 and 32')
+                #    print(i_type,j_type)
+                #    print(i,j)
+                #    print(frag_ca_cb_atom_types[i:i+4])
+                #if int(target_res_id_i) == 29 and int(target_res_id_j) == 38:
+                #    print(frag_name,fragment_start,frag_len)
+                #    print('29 to 38')
+                #    print(i_type,j_type)
+                #    print(i,j)
+                #    print(frag_ca_cb_atom_types[i:i+4])
+            except Exception as e:
+                print(data_dic)
+                print("\n\n\n\n\n\n\n\n\n\n\n\n\nTHAT EXCEPTION")
+                print(frag_index)
+                print(frag_name)
+                print(i)
+                print(j)
+                print(target_res_id_i,target_res_id_j)
+                print(f'fragment start: {fragment_start}')
+                print(f'target start: {target_start}')
+                print(i_type,j_type)
+                print(oa.resnames[target_res_id_i], oa.resnames[target_res_id_j])
+                print("\n\n\n\n\n\n\n\n\n\n\n\n\n")
+                print(oa.resnames)
+                raise
+            
+            fi_x = round(f[i,0].value_in_unit(nanometer),3) #f[i][4] 
+            fi_y = round(f[i,1].value_in_unit(nanometer),3)#f[i][5]
+            fi_z = round(f[i,2].value_in_unit(nanometer),3)#f[i][6]
+
+            fj_x = round(f[j,0].value_in_unit(nanometer),3)#f[j][4]
+            fj_y = round(f[j,1].value_in_unit(nanometer),3)#f[j][5]
+            fj_z = round(f[j,2].value_in_unit(nanometer),3)#f[j][6]
+            # print("----", fi_x, fi_y, fi_z, fj_x, fj_y, fj_z)
+            sigma_ij = fm_well_width*seq_sep**0.15
+            rm = ((fi_x-fj_x)**2 + (fi_y-fj_y)**2 + (fi_z-fj_z)**2)**0.5
+
+            #if correspond_target_i in [95,98,113,116,131,134,148,151,154,157,324,327]:
+            #with open(f'{correspond_target_i}_frags_new.txt','a') as number_write_file:
+            #    number_write_file.write(f'{frag_name[:-4]}, i: {i}, j: {j}\n')
+            #with open(f'{correspond_target_i}_energy_new.txt','a') as write_file:
+            #    write_file.write(str(w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))))
+            #with open(f'{correspond_target_i}_rm_new.txt','a') as write_file:
+            #    write_file.write(f'{rm}\n')
+            if testing:
+                full_interaction_info[correspond_target_i] += f'{frag_name[:-4]}, i: {i}, j: {j}\n'
+            # w_m is the weight of the memory, gamma_ij is weight of the pairwise interaction, sigma_ij is basically the width of the well
+            # typically, we set all w_m=1 for all m and gamma_ij=1 for all m, i, and j
+            raw_frag_table_update[correspond_target_i][i_j_sep] += w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))
+            raw_frag_table_count_update[correspond_target_i][i_j_sep] += 1
+            interaction_list_update.add((correspond_target_i, correspond_target_j))
+
+    return raw_frag_table_update, raw_frag_table_count_update, interaction_list_update, full_interaction_info_update
 
 def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy_frag_table="./frag_table.npy",
                     min_seq_sep=3, max_seq_sep=9, fm_well_width=0.1, UseSavedFragTable=True, caOnly=False, forceGroup=23,
@@ -112,8 +264,6 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
     r_array = np.arange(frag_table_rmin, frag_table_rmax, frag_table_dr)
     number_of_atoms = oa.natoms
     r_table_size = int((frag_table_rmax - frag_table_rmin)/frag_table_dr)  # 500 here.
-    raw_frag_table = np.zeros((number_of_atoms, 6*(1+max_seq_sep), r_table_size))
-    raw_frag_table_count = np.zeros((number_of_atoms, 6*(1+max_seq_sep), r_table_size))
     data_dic = {}
     # data_dic maps CA and CB atoms in our target structure to atom types and residue indices
     # ?? replace variable name res_id with res_index to better match distinction between Topology.Residue.id vs. Topology.Residue.index? ??
@@ -134,8 +284,6 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
             one_indexed_res_index = oa.resi[i]+1
             data_dic[("CB", one_indexed_res_index)] = i
             is_glycine.append(False) # glycine doesn't have a CB
-    if testing: # log interactions for each atom
-        full_interaction_info = {atom_index:'' for atom_index in data_dic.values()}
     frag_location_pre = os.path.dirname(frag_file_list_file)
     # frag_file_list_file = frag_location_pre + "frags.mem"
     # frag_table_file = frag_location_pre + "frag_table.npy"
@@ -153,163 +301,31 @@ def fragment_memory_term(oa, k_fm=0.04184, frag_file_list_file="./frag.mem", npy
         frag_file_list = pd.read_csv(frag_file_list_file, skiprows=4, sep="\s+", names=["location", "target_start", "fragment_start", "frag_len", "weight"], comment="#")
         interaction_list = set()
     
-
-
-
-
-    for frag_index in range(len(frag_file_list)):
-        if frag_index % 100 == 0:
-            print(f"frag_index: {frag_index}")
-        location = frag_file_list["location"].iloc[frag_index]
-        frag_name = os.path.join(frag_location_pre, location)
-        frag_len = frag_file_list["frag_len"].iloc[frag_index]
-        weight = frag_file_list["weight"].iloc[frag_index]
-        target_start = frag_file_list["target_start"].iloc[frag_index]  # residue id
-        fragment_start = frag_file_list["fragment_start"].iloc[frag_index]  # residue id
-
-        io_class = get_openmm_io_class(frag_name[-3:],full_name=frag_name)
-        temp = io_class(frag_name)
-        frag_top = temp.getTopology()
-        frag_pos = temp.getPositions(asNumpy=True)
-        frag_ca_cb_indices = []
-        frag_ca_cb_residue_ids = []
-        frag_ca_cb_atom_types = []
-        for residue in frag_top.residues():
-            #if fragment_start <= int(residue.index)+1 < fragment_start+frag_len: 
-                # Assuming target (the thing we're going to simulate) starts at residue 1, then correcting 0-indexed memory residue.index to compare.
-                # Instead of int(residue.index)+1, we could have said residue.id because we're assuming 1-indexed id
-            # ^^^ wait, but we're looping over frag, not target! int(residue.index)+1 != residue.id in general for frags!
-            if fragment_start <= int(residue.id) < fragment_start+frag_len: 
-                found_CA = False
-                found_CB = False
-                for atom in residue.atoms():
-                    if atom.name == "CA":
-                        found_CA = True
-                        frag_ca_cb_indices.append(atom.index)
-                        #frag_ca_cb_residue_ids.append(residue.index+1)
-                        frag_ca_cb_residue_ids.append(residue.id)
-                        frag_ca_cb_atom_types.append(atom.name)
-                    elif atom.name == "CB":
-                        found_CB = True
-                        frag_ca_cb_indices.append(atom.index)
-                        #frag_ca_cb_residue_ids.append(residue.index+1)
-                        frag_ca_cb_residue_ids.append(residue.id)
-                        frag_ca_cb_atom_types.append(atom.name)
-                if not (found_CA and found_CB) and residue.name != "GLY":
-                    raise AssertionError(f"missing atom in fragment {frag_name} residue index (0-indexed) {residue.index}, number {residue.id}, {residue.name}")
-        f = frag_pos[frag_ca_cb_indices,:]
-        assert f.shape[0] == len(frag_ca_cb_indices)
-        assert f.shape[0] == len(frag_ca_cb_atom_types)
-        w_m = weight
-        gamma_ij = 1
-        for i in range(f.shape[0]):
-            for j in range(i, f.shape[0]):
-                res_id_i = frag_ca_cb_residue_ids[i] #frag["Res_id"].iloc[i]
-                res_id_j = frag_ca_cb_residue_ids[j] #frag["Res_id"].iloc[j]
-                target_res_id_i = int(res_id_i) - fragment_start + target_start
-                target_res_id_j = int(res_id_j) - fragment_start + target_start
-                seq_sep = int(res_id_j) - int(res_id_i)
-                if seq_sep > max_seq_sep:
-                    continue
-                if seq_sep < min_seq_sep:
-                    continue
-                # data_dic holds the information from the system that we are going to simulate.
-                # We need to figure out the separation of the residues in our target system 
-                # that correspond to the residues in our memory so that we can compute the fm potential.
-                #  
-                # For the short fragments that we typically use in openawsem, the sequence separation
-                # in our target is the same as the sequence separation in our memory (either the alignment
-                # algorithm doesn't consider gaps or the gap penalty is large enough to prevent gaps).
-                # But I guess we are enabling future flexibility by checking the sequence separation of 
-                # target residues instead of fragment residues
-                i_type = frag_ca_cb_atom_types[i] #frag["Type"].iloc[i]
-                j_type = frag_ca_cb_atom_types[j] #frag["Type"].iloc[j]
-                #print(i_type)
-                #print(len(i_type))
-                i_corresponds_to_GLY_CB = (i_type == "CB" and oa.resnames[target_res_id_i] == "IGL")
-                try:
-                    j_corresponds_to_GLY_CB = (j_type == "CB" and oa.resnames[target_res_id_j] == "IGL")
-                except KeyError:
-                    print(oa.resnames)
-                    print(f'res_id_i: {res_id_i}')
-                    print(f'res_id_j: {res_id_j}')
-                    print(f'fragment start: {fragment_start}')
-                    print(f'target start: {target_start}')
-                    print(target_res_id_i)
-                    print(target_res_id_j)
-                    raise
-                if i_corresponds_to_GLY_CB or j_corresponds_to_GLY_CB:
-                    continue # no CB in glycine residues
-                try:   
-                    correspond_target_i = data_dic[(i_type, int(target_res_id_i))]
-                    correspond_target_j = data_dic[(j_type, int(target_res_id_j))]
-                    correspond_target_i = int(correspond_target_i)
-                    correspond_target_j = int(correspond_target_j)
-                    i_j_sep = int(correspond_target_j - correspond_target_i) #why do we take int(a-b) if a and b are already ints?
-                    #if int(target_res_id_i) == 11 and int(target_res_id_j) == 20:
-                    #    print(frag_name,fragment_start,frag_len)
-                    #    print('11 and 20')
-                    #    print(i_type,j_type)
-                    #    print(i,j)
-                    #    print(frag_ca_cb_atom_types[i:i+4])
-                    #if int(target_res_id_i) == 23 and int(target_res_id_j) == 32:
-                    #    print(frag_name,fragment_start,frag_len)
-                    #    print('23 and 32')
-                    #    print(i_type,j_type)
-                    #    print(i,j)
-                    #    print(frag_ca_cb_atom_types[i:i+4])
-                    #if int(target_res_id_i) == 29 and int(target_res_id_j) == 38:
-                    #    print(frag_name,fragment_start,frag_len)
-                    #    print('29 to 38')
-                    #    print(i_type,j_type)
-                    #    print(i,j)
-                    #    print(frag_ca_cb_atom_types[i:i+4])
-                except Exception as e:
-                    print(data_dic)
-                    print("\n\n\n\n\n\n\n\n\n\n\n\n\nTHAT EXCEPTION")
-                    print(frag_index)
-                    print(frag_name)
-                    print(i)
-                    print(j)
-                    print(target_res_id_i,target_res_id_j)
-                    print(f'fragment start: {fragment_start}')
-                    print(f'target start: {target_start}')
-                    print(i_type,j_type)
-                    print(oa.resnames[target_res_id_i], oa.resnames[target_res_id_j])
-                    print("\n\n\n\n\n\n\n\n\n\n\n\n\n")
-                    print(oa.resnames)
-                    raise
-                
-                fi_x = round(f[i,0].value_in_unit(nanometer),3) #f[i][4] 
-                fi_y = round(f[i,1].value_in_unit(nanometer),3)#f[i][5]
-                fi_z = round(f[i,2].value_in_unit(nanometer),3)#f[i][6]
-
-                fj_x = round(f[j,0].value_in_unit(nanometer),3)#f[j][4]
-                fj_y = round(f[j,1].value_in_unit(nanometer),3)#f[j][5]
-                fj_z = round(f[j,2].value_in_unit(nanometer),3)#f[j][6]
-                # print("----", fi_x, fi_y, fi_z, fj_x, fj_y, fj_z)
-                sigma_ij = fm_well_width*seq_sep**0.15
-                rm = ((fi_x-fj_x)**2 + (fi_y-fj_y)**2 + (fi_z-fj_z)**2)**0.5
-
-                #if correspond_target_i in [95,98,113,116,131,134,148,151,154,157,324,327]:
-                #with open(f'{correspond_target_i}_frags_new.txt','a') as number_write_file:
-                #    number_write_file.write(f'{frag_name[:-4]}, i: {i}, j: {j}\n')
-                #with open(f'{correspond_target_i}_energy_new.txt','a') as write_file:
-                #    write_file.write(str(w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))))
-                #with open(f'{correspond_target_i}_rm_new.txt','a') as write_file:
-                #    write_file.write(f'{rm}\n')
-                if testing:
-                    full_interaction_info[correspond_target_i] += f'{frag_name[:-4]}, i: {i}, j: {j}\n'
-                # w_m is the weight of the memory, gamma_ij is weight of the pairwise interaction, sigma_ij is basically the width of the well
-                # typically, we set all w_m=1 for all m and gamma_ij=1 for all m, i, and j
-                raw_frag_table[correspond_target_i][i_j_sep] += w_m*gamma_ij*np.exp((r_array-rm)**2/(-2.0*sigma_ij**2))
-                raw_frag_table_count[correspond_target_i][i_j_sep] += 1
-                interaction_list.add((correspond_target_i, correspond_target_j))
-        
-
-
-
-
+    zeros_table = np.zeros((number_of_atoms, 6*(1+max_seq_sep), r_table_size))
+    raw_frag_table = zeros_table.copy()
+    raw_frag_table_count = zeros_table.copy()
+    interaction_list = set()
+    full_interaction_info = {}
+    args_lists = [(frag_index, frag_file_list, frag_location_pre, oa, data_dic, max_seq_sep, min_seq_sep, 
+                       fm_well_width, r_array, zeros_table, zeros_table, interaction_list, full_interaction_info, testing)
+                            for frag_index in range(len(frag_file_list))]
+    #with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
+    #    futures = (executor.submit(process_fragment, *args_list) for args_list in args_lists)
+    #    for future in concurrent.futures.as_completed(futures):
+    if True:
+        futures = (process_fragment(*args_list) for args_list in args_lists)
+        for future in futures:
+            #raw_frag_table_update, raw_frag_table_count_update, interaction_list_update, full_interaction_info_update = future.result()
+            raw_frag_table_update, raw_frag_table_count_update, interaction_list_update, full_interaction_info_update = future
+            raw_frag_table += raw_frag_table_update
+            raw_frag_table_count += raw_frag_table_count_update
+            interaction_list.update(interaction_list_update) # interaction_list is a set defined above
+            if testing:
+                raise NotImplementedError("full_interaction_info is not supported for parallel processing.\
+                                            \nTry loading fragment memories in serial for debugging purposes")
+            else:
+                # we don't need full_interaction info
+                pass
     if (not os.path.isfile(frag_table_file)) or (not UseSavedFragTable):
         # Reduce memory usage.
         print("Saving fragment table as npy file to speed up future calculation.")
