@@ -816,7 +816,7 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta, bet
     Beta.setForceGroup(forceGroup)
     return Beta
 
-def _inner_loop_eoc(i,nres,chain_starts,chain_ends,rama_biases):
+def _inner_loop_eoc(term_number,i,nres,chain_starts,chain_ends,rama_biases,p_par, p_anti, p_antihb, p_antinhb, p_parhb, a):
     """
     Helper function for _beta_efficiency_optimized
     """
@@ -865,8 +865,8 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
     # calculate Lambda function depending on term number and zero out for short intrachain sequence separation if not both beta
     lambda_term_number = np.zeros((nres, nres))
     with ThreadPoolExecutor() as executor:
-        futures = (executor.submit(_inner_loop_eoc, i, nres, oa.chain_starts, oa.chain_ends, rama_biases,
-                                                     p_par, p_anti, p_antihb, p_antinhb, p_parhb, a) for i in range(nres))
+        futures = (executor.submit(_inner_loop_eoc, term_number, i, nres, oa.chain_starts, oa.chain_ends, rama_biases,
+                                                    p_par, p_anti, p_antihb, p_antinhb, p_parhb, a) for i in range(nres))
         for future in as_completed(futures):
             i, lambda_row = future.result()
             lambda_term_number[i, :] = lambda_row
