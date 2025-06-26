@@ -977,7 +977,10 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_antiparalle
                 else:
                     raise AssertionError("unexpected else block")
                 pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
+        for j in range(nres):
             # check if we may be able to add a parallel hydrogen bond
+            delta = j-i
+            intrachain = inSameChain(i,j,oa.chain_starts,oa.chain_ends)
             if enable_parallel:
                 if not inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
                     continue # Not a valid j
