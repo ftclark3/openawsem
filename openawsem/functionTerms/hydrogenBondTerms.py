@@ -964,32 +964,30 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_antiparalle
             intrachain = inSameChain(i,j,oa.chain_starts,oa.chain_ends)
             if enable_antiparallel:
                 if not inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
-                    continue # Not a valid j
-                if intrachain and delta < 13: #The pair is too close to be a hairpin bond
-                    continue
-                elif intrachain and 13<=delta<17: # The pair is a hairpin, k_beta_pred_p_ap doesn't need to be scaled
-                    K = gamma_aph 
-                elif delta >= 17 or not intrachain: #Long-range antiparallel bond
+                    K = 0 # Not a valid j
+                elif intrachain and delta < 13: 
+                    K = 0 #The pair is too close to be a hairpin bond
+                elif intrachain and 13<=delta<17: 
+                    K = gamma_aph # The pair is a hairpin, k_beta_pred_p_ap doesn't need to be scaled
+                elif delta >= 17 or not intrachain:
+                    K = gamma_ap
                     if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
-                        K = gamma_ap*k_beta_pred_p_ap
-                    else:
-                        K = gamma_ap
+                        K *= k_beta_pred_p_ap
                 else:
                     raise AssertionError("unexpected else block")
-                pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
-            # check if we may be able to add a parallel hydrogen bond
+                if K:
+                    pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
             if enable_parallel:
                 if not inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
-                    continue # Not a valid j
-                if intrachain and delta < 9:
-                    # The pair is too close to be a parallel bond
-                    continue
-                # we can assign the same K regardless of whether we're in the same chain or not
-                if rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
+                    K=0 #Not a valid j
+                elif intrachain and delta < 9:
+                    K=0 # The pair is too close to be a parallel bond
+                elif rama_biases[i][1] == 1 and rama_biases[j][1] == 1:
                     K = gamma_p*k_beta_pred_p_ap
                 else:
                     K = gamma_p
-                pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
+                if K:
+                    pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
             
     pap.setForceGroup(forceGroup)
     return pap
