@@ -10,6 +10,7 @@ import numpy as np
 from pathlib import Path
 import openawsem
 import warnings
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # GLOBALS
 
@@ -815,6 +816,31 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta, bet
     Beta.setForceGroup(forceGroup)
     return Beta
 
+def _inner_loop_eoc(i,nres,chain_starts,chain_ends,rama_biases):
+    """
+    Helper function for _beta_efficiency_optimized
+    """
+    lambda_row = np.zeros(nres)
+    for j in range(nres):
+        if 4<=abs(i-j)<18 and inSameChain(i,j,chain_starts,chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
+            lambda_row[j] = 0
+        else:
+            if term_number == 1:
+                lambda_row[j] = get_lambda_by_index(i, j, 0, chain_starts, chain_ends)
+            elif term_number == 2:
+                if isChainEdge(i,chain_starts,chain_ends,n=1) or isChainEdge(j,chain_starts,chain_ends,n=1):
+                    continue # i+1 or i-1 or j+1 or j-1 don't exist so we won't be able to get a[i-1] and/or a[i+1] and/or a[j-1] and/or a[j+1]
+                                # such groups end up not being added to the potential anyway (see below), but this is needed to get the code to run
+                lambda_row[j] = get_Lambda_2(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends)
+            elif term_number == 3:
+                if isChainEnd(i,chain_ends,n=1):
+                    continue # i+1 doesn't exist so we won't be able to get a[i+1]
+                                # such groups end up not being added to the potential anyway (see below), but this is needed to get the code to run
+                lambda_row[j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, chain_starts, chain_ends)
+            else:
+                raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
+    return i, lambda_row
+
 def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_beta):
     # set constants
     k_beta = convert_units(k_beta) * oa.k_awsem
@@ -838,6 +864,13 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
     #
     # calculate Lambda function depending on term number and zero out for short intrachain sequence separation if not both beta
     lambda_term_number = np.zeros((nres, nres))
+    with ThreadPoolExecutor() as executor:
+        futures = (executor.submit(_inner_loop_eoc, i, nres, oa.chain_starts, oa.chain_ends, rama_biases,
+                                                     p_par, p_anti, p_antihb, p_antinhb, p_parhb, a) for i in range(nres))
+        for future in as_completed(futures):
+            i, lambda_row = future.result()
+            lambda_term_number[i, :] = lambda_row
+    """
     for i in range(nres):
         for j in range(nres):
             if 4<=abs(i-j)<18 and inSameChain(i,j,oa.chain_starts,oa.chain_ends) and not (rama_biases[i][1] and rama_biases[j][1]): # in same chain, seqsep<18, not both beta
@@ -857,6 +890,7 @@ def _beta_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k_bet
                     lambda_term_number[i][j] = get_Lambda_3(i, j, p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, oa.chain_starts, oa.chain_ends)
                 else:
                     raise ValueError(f"term_number must be 1, 2, or 3, but was {term_number}")
+    """
     #
     # define energy functions
     theta_ij =   f"exp(-(r_Oi_Nj-{r_ON})^2/(2*{sigma_NO}^2)-(r_Oi_Hj-{r_OH})^2/(2*{sigma_HO}^2))"
@@ -1076,3 +1110,18 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
         else:
             raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
     return pap
+
+"""
+def _beta_lammps_awsemmd_alternate(oa,ssweight_file,forceGroup):
+    # begin with the efficiency-optimized beta terms
+    beta1 = hydrogenBondTerms.beta_term_1(oa),
+    beta2 = hydrogenBondTerms.beta_term_2(oa),
+    beta3 = hydrogenBondTerms.beta_term_3(oa),
+    # define nu energy so that total energy is nu energy * beta energy
+    #    this works if nu is a CustomHbondForce where i-2,i+2 are the donor/acceptor groups
+    #    and the interaction between donors and acceptors is nu_i*nu_j
+    #    by the CustomHbondForce definition, the nu energy is the sum of all these i,j pairwise interactions
+    #    so multiply nu by beta gives us nu_i*nu_j*beta_ij + a bunch of other terms, some involving only i,
+    #    some involving only j, and st involving neither.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^i'm not sure this is correct. need to think about it more
+"""
