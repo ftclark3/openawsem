@@ -1017,9 +1017,9 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
     for i in range(nres):
         for j in range(nres):
             resId1 = i
-            chain1 = inWhichChain(resId1, oa.chain_ends)
+            chain1 = find_chain_index(resId1, oa.chain_ends)
             resId2 = j
-            chain2 = inWhichChain(resId2, oa.chain_ends)
+            chain2 = find_chain_index(resId2, oa.chain_ends)
             gamma_1[i][j] = get_pap_gamma_APH(i, j, chain1, chain2, gamma_aph)
             gamma_2[i][j] = get_pap_gamma_AP(i, j, chain1, chain2, gamma_ap, ssweight)
             gamma_3[i][j] = get_pap_gamma_P(i, j, chain1, chain2, gamma_p, ssweight)
