@@ -624,10 +624,6 @@ def z_dependent_helical_term(oa, k_helical=4.184, membrane_center=0*angstrom, z_
 #     For clarity and backwards compatibility, the user must be allowed to access these terms in multiple ways,
 #     So we provide those interfaces in the main API, then they all call one of these functions
 
-def _loop_lammps_1(term_number, i, nres, chain_starts, chain_ends, rama_biases,
-                   p_par, p_anti, p_antihb, p_antinhb, p_parhb, a, res_type):
-
-
 def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta, beta_nu_on):
     """ 
     Function to compute either beta 1, beta 2, or beta 3, as implemented in a particular LAMMPS AWSEM-MD commit,
