@@ -1022,6 +1022,8 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
     # define energy functions
     if pap_nu_on:
         constraint_i_and_i4 = f"0.5*(1+tanh({eta_pap}*(distance(a1,a2)-{dis_i_to_i4})))"
+        # note that we will not call addBond when i and i+4 are in different chains or i+4 does not exist,
+        # so we don't have to worry about including those conditionals in our definition of constraint_i_and_i4
     else:
         constraint_i_and_i4 = "1"
     if term_number == 1:
