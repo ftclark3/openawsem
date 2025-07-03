@@ -125,10 +125,12 @@ def run(args):
     oa.addForcesWithDefaultForceGroup(myForces)
 
     if args.fromCheckPoint:
+        reporter_append = True
         integrator = LangevinIntegrator(Tstart*kelvin, 1/picosecond, args.timeStep*femtoseconds)
         simulation = Simulation(oa.pdb.topology, oa.system, integrator, platform)
         simulation.loadCheckpoint(checkPointPath)
     else:
+        reporter_append = False
         # output the native and the structure after minimization
         integrator = CustomIntegrator(0.001)
         simulation = Simulation(oa.pdb.topology, oa.system, integrator, platform)
@@ -161,8 +163,8 @@ def run(args):
 
     print("report_interval", args.reportInterval)
     print("num_frames", args.numFrames)
-    simulation.reporters.append(StateDataReporter(sys.stdout, args.reportInterval, step=True, potentialEnergy=True, temperature=True))  # output energy and temperature during simulation
-    simulation.reporters.append(StateDataReporter(os.path.join(toPath, "output.log"), args.reportInterval, step=True, potentialEnergy=True, temperature=True)) # output energy and temperature to a file
+    simulation.reporters.append(StateDataReporter(sys.stdout, args.reportInterval, step=True, potentialEnergy=True, temperature=True, append=reporter_append))  # output energy and temperature during simulation
+    simulation.reporters.append(StateDataReporter(os.path.join(toPath, "output.log"), args.reportInterval, step=True, potentialEnergy=True, temperature=True, append=reporter_append)) # output energy and temperature to a file
     if extension == "pdb": # we might not be able to write cif file as pdb
         simulation.reporters.append(PDBReporter(os.path.join(toPath, "movie.pdb"), reportInterval=args.reportInterval))  # output PDBs of simulated structures
     else:
