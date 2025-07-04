@@ -124,6 +124,8 @@ def run(args):
         oa.system.removeForce(0)
     oa.addForcesWithDefaultForceGroup(myForces)
 
+    PDBxFile.writeFile(oa.pdb.topology,oa.pdb.positions,file='reindexed.cif')
+
     if args.fromCheckPoint:
         integrator = LangevinIntegrator(Tstart*kelvin, 1/picosecond, args.timeStep*femtoseconds)
         simulation = Simulation(oa.pdb.topology, oa.system, integrator, platform)
