@@ -125,6 +125,7 @@ def run(args):
     oa.addForcesWithDefaultForceGroup(myForces)
 
     PDBxFile.writeFile(oa.pdb.topology,oa.pdb.positions,file='reindexed.cif')
+    PDBxFile.writeFile(oa.pdb.topology,oa.pdb.positions,file='reindexed.pdb')
 
     if args.fromCheckPoint:
         reporter_append = True
