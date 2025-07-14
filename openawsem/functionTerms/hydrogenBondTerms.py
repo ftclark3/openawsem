@@ -534,7 +534,7 @@ def pap_term_old(oa, k_pap=4.184, forceGroup=26, ssweight_file="ssweight", enabl
     """
     return _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_antiparallel, enable_parallel)
 
-def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
+def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29, r_ON=0.298, r_OH=0.206):
     """
     Note that this term is not exactly the same as the LAMMPS AWSEM-MD helical term.
     I think the only difference is the treatment of proline at the i+4 position.

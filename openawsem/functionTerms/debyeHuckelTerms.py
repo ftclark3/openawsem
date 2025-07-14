@@ -11,7 +11,7 @@ import numpy as np
 def debye_huckel_term(oa, k_dh=4.15*4.184, forceGroup=30, screening_length=1.0, chargeFile=None):
         # screening_length (in the unit of nanometers)
         print("Debye Huckel term is ON")
-        k_dh *= oa.k_awsem*0.1
+        k_dh *= oa.k_awsem*0.1 # the 0.1 is a unit conversion because r in our energy expression is in nm and lammps operates in angstroms
         k_screening = 1.0
         # screening_length = 1.0  # (in the unit of nanometers)
         min_seq_sep = 1
