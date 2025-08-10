@@ -19,7 +19,7 @@ def constraint_by_distance(oa, res1, res2,  d0=0*angstrom, forceGroup=3, k=1*kil
     constraint.setForceGroup(forceGroup)
     return constraint
 
-def group_constraint_by_distance(oa, d0=0*angstrom, group1=[oa.ca[0], oa.ca[1]], group2=[oa.ca[2], oa.ca[3]], forceGroup=3, k=1*kilocalorie_per_mole):
+def group_constraint_by_distance(oa, d0=0*angstrom, group1=None, group2=None, forceGroup=3, k=1*kilocalorie_per_mole, smaller_only=False):
     # CustomCentroidBondForce only work with CUDA not OpenCL.
     #
     # note added 11 Jun 2025: CustomCentroidBondForce worked for me on OpenCL on my workstation, ws1808
@@ -28,7 +28,13 @@ def group_constraint_by_distance(oa, d0=0*angstrom, group1=[oa.ca[0], oa.ca[1]],
     k = k.value_in_unit(kilojoule_per_mole)   # convert to kilojoule_per_mole, openMM default uses kilojoule_per_mole as energy.
     k_constraint = k * oa.k_awsem
     d0 = d0.value_in_unit(nanometer)   # convert to nm
-    constraint = CustomCentroidBondForce(2, f"0.5*{k_constraint}*(distance(g1,g2)-{d0})^2")
+    if smaller_only:
+        # (1-step(distance(g1,g2)-{d0})) is 0 if distance(g1,g2)>=d0, 1 if distance(g1,g2)<d0
+        # so we're basically applying just half of a harmonic restraint to prevent the groups from going too close to each other
+        expression = f"(1-step(distance(g1,g2)-{d0}))*(0.5*{k_constraint}*(distance(g1,g2)-{d0})^2)"
+    else:
+        expression = f"0.5*{k_constraint}*(distance(g1,g2)-{d0})^2"
+    constraint = CustomCentroidBondForce(2, expression)
     # example group set up group1=[oa.ca[7], oa.cb[7]] use the ca and cb of residue 8.
     constraint.addGroup(group1)    # group use particle index.
     constraint.addGroup(group2)
