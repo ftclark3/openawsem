@@ -46,8 +46,37 @@ def get_openmm_io_class(file_type,full_name=None):
     else:
         raise ValueError(f"Expected file_type 'pdb' or 'cif' but got file_type={file_type}") 
     return io_class
-###################################
+##############################################################################
+# USED FOR ASSIGNING SIGMAS FOR INTERCHAIN PAIRS IN Q BIAS
+def inSameChain(i,j,chain_starts,chain_ends):
+    # determine whether residues are in the same chain
+    #
+    # sometimes, one of the residues might not exist
+    # we'll treat not existing as being part of a different chain
+    # but it shouldn't really affect anything
+    if i<0 or j<0:
+        if i<0 and j<0:
+            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+        else:
+            return False
+    if i>chain_ends[-1] or j>chain_ends[-1]:
+        if i>chain_ends[-1] and j>chain_ends[-1]:
+            raise AssertionError(f"Residues i and j do not exist! i: {i}, j: {j}")
+        else:
+            return False
+    # if we've made it this far, we know that both residues exist
+    wombat = [int(chain_start<=i and i<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(wombat) == 1, f"i: {i}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
+    chain_index_1 = wombat.index(1)
+    wombat = [int(chain_start<=j and j<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(wombat) == 1, f"j: {j}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {wombat}"
+    chain_index_2 = wombat.index(1)
+    same_chain = chain_index_1==chain_index_2
+    return same_chain
+###############################################################################
 
+
+def read_reference_structure_for_q_calculation_4(oa, contact_threshold,rnative_dat, min_seq_sep=3, max_seq_sep=np.inf):
     # use contact matrix for Q calculation
     # this change use the canonical Qw/Qo calculation for reference Q
     # for Qw calculation is 0; Qo is 1;
@@ -75,12 +104,37 @@ def get_openmm_io_class(file_type,full_name=None):
     return structure_interactions
 
 
+def read_reference_structure_for_q_calculation_5(oa, contact_threshold, rnative_dat, allowed_residues, min_seq_sep=3, max_seq_sep=np.inf):
+    # allows you to specify particular pairs only
+    in_rnative = np.loadtxt(rnative_dat)  # read in rnative_dat file for Q calculation
+    structure_interactions = []
+    for i in range(oa.nres):
+        for j in range(oa.nres):
+            if j-i >= min_seq_sep and j-i <= max_seq_sep:  # taking the signed value to avoid double counting
+                r_ijN = in_rnative[i][j]/10.0 * nanometers  # convert to nm
+                if r_ijN < contact_threshold:
+                    continue
+                if i not in allowed_residues and j not in allowed_residues:
+                    continue
+                if inSameChain(i, j, oa.chain_starts, oa.chain_ends):
+                    sigma_ij = 0.1*abs(i-j)**0.15  # 0.1 nm = 1 A
+                else:
+                    sigma_ij = 0.1*(1+(oa.nres//2))**0.15
+                gamma_ij = 1.0
+                i_index = oa.ca[i]
+                j_index = oa.ca[j]
+                structure_interaction = [i_index, j_index, [gamma_ij, r_ijN, sigma_ij]]
+                # print(i, j, r_ijN)
+                structure_interactions.append(structure_interaction)
+    return structure_interactions
 
-def q_value_dat(oa, contact_threshold, rnative_dat="rnative.dat", min_seq_sep=3, max_seq_sep=np.inf):
+
+def q_value_dat(oa, contact_threshold, rnative_dat="rnative.dat", min_seq_sep=3, max_seq_sep=np.inf, allowed_residues=list(range(10000))):
     ### Added by Mingchen
     ### this function is solely used for template based modelling from rnative.dat file
     ### for details, refer to Chen, Lin & Lu Wolynes JCTC 2018
-    structure_interactions_tbm_q = read_reference_structure_for_q_calculation_4(oa, contact_threshold=contact_threshold,rnative_dat=rnative_dat, min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep)
+    #structure_interactions_tbm_q = read_reference_structure_for_q_calculation_4(oa, contact_threshold=contact_threshold,rnative_dat=rnative_dat, min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep)
+    structure_interactions_tbm_q = read_reference_structure_for_q_calculation_5(oa, contact_threshold, rnative_dat, allowed_residues, min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep)
     normalization = len(structure_interactions_tbm_q)
     qvalue_dat = CustomBondForce(f"(1/{normalization})*gamma_ij*exp(-(r-r_ijN)^2/(2*sigma_ij^2))")
     qvalue_dat.addPerBondParameter("gamma_ij")
@@ -92,7 +146,7 @@ def q_value_dat(oa, contact_threshold, rnative_dat="rnative.dat", min_seq_sep=3,
     return qvalue_dat
 
 
-def tbm_q_term(oa, k_tbm_q, rnative_dat="rnative.dat", tbm_q_min_seq_sep=3, tbm_q_cutoff=0.2*nanometers, tbm_q_well_width=0.1, target_q=1.0, forceGroup=26):
+def tbm_q_term(oa, k_tbm_q, rnative_dat="rnative.dat", tbm_q_min_seq_sep=3, tbm_q_cutoff=0.2*nanometers, tbm_q_well_width=0.1, target_q=1.0, forceGroup=26, allowed_residues=list(range(10000))):
     ### Added by Mingchen Chen
     ### this function is solely used for template based modelling from rnative.dat file
     ### for details, refer to Chen, Lin & Lu Wolynes JCTC 2018
