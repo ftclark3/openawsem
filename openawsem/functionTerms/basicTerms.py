@@ -282,7 +282,7 @@ def rama_ssweight_term(oa, k_rama_ssweight=8.368, num_rama_wells=2, w=[2.0, 2.0]
     ramaSS.setForceGroup(forceGroup)
     return ramaSS
 
-def rama_AM_term(oa, memory_angles, k_rama=8.368, forceGroup=21):
+def rama_AM_term(oa, memory_angles, memory_weights=None, k_rama=8.368, forceGroup=21):
     # associative memory ramachandran potential
     # memory_angles: np.ndarray with shape (oa.nres-2, 2, number memories)
     #     where indices [:,0,:] describe the phi values of each memory
@@ -308,7 +308,12 @@ def rama_AM_term(oa, memory_angles, k_rama=8.368, forceGroup=21):
     # load/calculate basic parameters
     num_residues = memory_angles.shape[0] # assign to descriptively named variable to clarify meaning of this axis
     num_memories = memory_angles.shape[2] # assign to descriptively named variable to clarify meaning of this axis
-    memory_weights = np.ones((num_residues, num_memories))
+    if not memory_weights:
+        memory_weights = np.ones((num_residues, num_memories))
+    else:
+        if not memory_weights.shape == ((num_residues, num_memories)):
+            raise ValueError(f"memory_weights should have shape (num_residues,num_memories)=={(num_residues, num_memories)}, \
+                               but was {memory_weights.shape}")
     sigma = np.ones((num_residues, num_memories))*100
     omega_phi = np.ones((num_residues, num_memories))
     omega_psi = np.ones((num_residues, num_memories))
