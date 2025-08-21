@@ -308,7 +308,7 @@ def rama_AM_term(oa, memory_angles, memory_weights=None, k_rama=8.368, forceGrou
     # load/calculate basic parameters
     num_residues = memory_angles.shape[0] # assign to descriptively named variable to clarify meaning of this axis
     num_memories = memory_angles.shape[2] # assign to descriptively named variable to clarify meaning of this axis
-    if not memory_weights:
+    if memory_weights==None:
         memory_weights = np.ones((num_residues, num_memories))
     else:
         if not memory_weights.shape == ((num_residues, num_memories)):
