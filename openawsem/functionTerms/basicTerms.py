@@ -315,8 +315,8 @@ def rama_AM_term(oa, memory_angles, memory_weights=None, k_rama=8.368, forceGrou
             raise ValueError(f"memory_weights should have shape (num_residues,num_memories)=={(num_residues, num_memories)}, \
                                but was {memory_weights.shape}")
     sigma = np.ones((num_residues, num_memories))*100*num_memories # sharped the well for each memory as we add more and more memories
-    omega_phi = memory_weights
-    omega_psi = memory_weights
+    omega_phi = np.ones((num_residues, num_memories))
+    omega_psi = np.ones((num_residues, num_memories))
     k_rama *= oa.k_awsem
 
     """
@@ -339,8 +339,9 @@ def rama_AM_term(oa, memory_angles, memory_weights=None, k_rama=8.368, forceGrou
             rama_function += f"{memory_weights[i,k]}*exp(-{sigma[i,k]}*({omega_phi[i,k]}*{phi_term[i][k]}^2+{omega_psi[i,k]}*{psi_term[i][k]}^2))+"
     rama_function = f'-{k_rama}*(' + rama_function[:-1] + ")" # cut off trailing "+" from rama_function
     """
-    
-    rama_string_base = "".join([f"2*exp(-(sigma(res_index,{mem_index})*\
+    # the other rama functions set w to 2 by default, but we expect it here to be normalized to 1,
+    # so we multiply w by 2 in the energy string
+    rama_string_base = "".join([f"2*w(res_index,{mem_index})*exp(-(sigma(res_index,{mem_index})*\
         (omega_phi(res_index,{mem_index})*(cos(dihedral(p1,p2,p3,p4)-phi_memories(res_index,{mem_index}))-1)^2\
          +omega_psi(res_index,{mem_index})*(cos(dihedral(p2,p3,p4,p5)-psi_memories(res_index,{mem_index}))-1)^2)))+" for mem_index in range(num_memories)])
     rama_string_full = f"-2*{k_rama}*({rama_string_base[:-1]})" # removes trailing + from energy expression
