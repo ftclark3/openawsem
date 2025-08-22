@@ -314,9 +314,9 @@ def rama_AM_term(oa, memory_angles, memory_weights=None, k_rama=8.368, forceGrou
         if not memory_weights.shape == ((num_residues, num_memories)):
             raise ValueError(f"memory_weights should have shape (num_residues,num_memories)=={(num_residues, num_memories)}, \
                                but was {memory_weights.shape}")
-    sigma = np.ones((num_residues, num_memories))*100
-    omega_phi = np.ones((num_residues, num_memories))
-    omega_psi = np.ones((num_residues, num_memories))
+    sigma = np.ones((num_residues, num_memories))*100*num_memories # sharped the well for each memory as we add more and more memories
+    omega_phi = memory_weights
+    omega_psi = memory_weights
     k_rama *= oa.k_awsem
 
     """
