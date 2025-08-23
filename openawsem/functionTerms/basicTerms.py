@@ -349,6 +349,7 @@ def rama_AM_term(oa, memory_angles, memory_weights=None, k_rama=8.368, forceGrou
                            # but this Force is intended to be used alone
     ramaAM = CustomCompoundBondForce(5, rama_string_full)
     ramaAM.addPerBondParameter("res_index") # will be used to look up the row holding all of our memories for each residue
+    ramaAM.addTabulatedFunction("w", Discrete2DFunction(num_residues, num_memories, memory_weights.T.flatten()))
     ramaAM.addTabulatedFunction("sigma", Discrete2DFunction(num_residues, num_memories, sigma.T.flatten()))
     ramaAM.addTabulatedFunction("omega_phi", Discrete2DFunction(num_residues, num_memories, omega_phi.T.flatten()))
     ramaAM.addTabulatedFunction("omega_psi", Discrete2DFunction(num_residues, num_memories, omega_psi.T.flatten()))
