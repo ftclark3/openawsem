@@ -816,7 +816,8 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta, bet
     Beta.setForceGroup(forceGroup)
     return Beta
 
-def _inner_loop_eoc(i,nres,chain_starts,chain_ends,rama_biases):
+def _inner_loop_eoc(i,nres,chain_starts,chain_ends,rama_biases,
+                      p_par, p_anti, p_antihb, p_antinhb, p_parhb,):
     """
     Helper function for _beta_efficiency_optimized
     """
