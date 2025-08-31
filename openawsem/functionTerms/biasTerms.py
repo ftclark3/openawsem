@@ -9,7 +9,8 @@ except ModuleNotFoundError:
 import numpy as np
 from Bio.PDB.PDBParser import PDBParser
 
-def read_reference_structure_for_q_calculation_3(oa, pdb_file, reference_chain_name="ALL", min_seq_sep=3, max_seq_sep=np.inf, contact_threshold=0.95*nanometers, Qflag=0, a=0.1, removeDNAchains=True):
+def read_reference_structure_for_q_calculation_3(oa, pdb_file, reference_chain_name="ALL", min_seq_sep=3, max_seq_sep=np.inf, contact_threshold=0.95*nanometers, Qflag=0, a=0.1, removeDNAchains=True,
+                                                     zero_indexed_residue_indices_to_use=None):
     # default use all chains in pdb file.
     # this change use the canonical Qw/Qo calculation for reference Q
     # for Qw calculation is 0; Qo is 1;
@@ -37,7 +38,11 @@ def read_reference_structure_for_q_calculation_3(oa, pdb_file, reference_chain_n
         for i, residue_i in enumerate(chain.get_residues()):
             #  print(i, residue_i)
             count +=1
+            if zero_indexed_residue_indices_to_use and i not in zero_indexed_residue_indices_to_use:
+                continue
             for j, residue_j in enumerate(chain.get_residues()):
+                if zero_indexed_residue_indices_to_use and j not in zero_indexed_residue_indices_to_use:
+                    continue
                 if abs(i-j) >= min_seq_sep and abs(i-j) <= max_seq_sep:  # taking the signed value to avoid double counting
                     ca_i = residue_i['CA']
 
@@ -96,13 +101,13 @@ def read_reference_structure_for_qc_calculation(oa, pdb_file, min_seq_sep=3, a=0
                     structure_interactions.append(structure_interaction)
     return structure_interactions
 
-def q_value(oa, reference_pdb_file, reference_chain_name="ALL", min_seq_sep=3, max_seq_sep=np.inf, contact_threshold=0.95*nanometers, forceGroup=1):
+def q_value(oa, reference_pdb_file, reference_chain_name="ALL", min_seq_sep=3, max_seq_sep=np.inf, contact_threshold=0.95*nanometers, forceGroup=1, zero_indexed_residue_indices_to_use=None):
     ### Modified by Mingchen to compute canonical QW/QO
 
     # create bonds
     # structure_interactions = oa.read_reference_structure_for_q_calculation(reference_pdb_file, reference_chain_name, min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep, contact_threshold=contact_threshold)
     structure_interactions = read_reference_structure_for_q_calculation_3(oa, reference_pdb_file, reference_chain_name=reference_chain_name,
-        min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep, contact_threshold=contact_threshold, Qflag=0)
+        min_seq_sep=min_seq_sep, max_seq_sep=max_seq_sep, contact_threshold=contact_threshold, Qflag=0, zero_indexed_residue_indices_to_use=None)
     # print(len(structure_interactions))
     # print(structure_interactions)
     # create bond force for q calculation
@@ -156,11 +161,13 @@ def partial_q_value(oa, reference_pdb_file, min_seq_sep=3, a=0.1, startResidueIn
     qvalue.setForceGroup(forceGroup)
     return qvalue
 
-def qbias_term(oa,reference_pdb_file, q0, reference_chain_name="ALL", k_qbias=100*kilocalorie_per_mole, qbias_min_seq_sep=3, qbias_max_seq_sep=np.inf, qbias_contact_threshold=0.8*nanometers, forceGroup=4):
+def qbias_term(oa,reference_pdb_file, q0, reference_chain_name="ALL", k_qbias=100*kilocalorie_per_mole, qbias_min_seq_sep=3, qbias_max_seq_sep=np.inf, qbias_contact_threshold=0.8*nanometers, forceGroup=4,
+                  zero_indexed_residue_indices_to_use=None):
     k_qbias = k_qbias.value_in_unit(kilojoule_per_mole)   # convert to kilojoule_per_mole, openMM default uses kilojoule_per_mole as energy.
     qbias = CustomCVForce(f"0.5*{k_qbias}*(q-{q0})^2")
     # qbias = CustomCVForce(f"0.5*{k_qbias}*(q-q0)^2")
-    q = q_value(oa, reference_pdb_file, reference_chain_name, min_seq_sep=qbias_min_seq_sep, max_seq_sep=qbias_max_seq_sep, contact_threshold=qbias_contact_threshold)
+    q = q_value(oa, reference_pdb_file, reference_chain_name, min_seq_sep=qbias_min_seq_sep, max_seq_sep=qbias_max_seq_sep, contact_threshold=qbias_contact_threshold,
+                    zero_indexed_residue_indices_to_use=None)
     if oa.periodic_box:
         q.setUsesPeriodicBoundaryConditions(True)
     qbias.addCollectiveVariable("q", q)
