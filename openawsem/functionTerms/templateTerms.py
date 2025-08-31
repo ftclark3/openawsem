@@ -152,7 +152,7 @@ def tbm_q_term(oa, k_tbm_q, rnative_dat="rnative.dat", tbm_q_min_seq_sep=3, tbm_
     ### for details, refer to Chen, Lin & Lu Wolynes JCTC 2018
     print("TBM_Q term ON")
     tbm_q = CustomCVForce(f"{k_tbm_q}*(q-{target_q})^2")
-    q = q_value_dat(oa, contact_threshold=tbm_q_cutoff, rnative_dat=rnative_dat, min_seq_sep=tbm_q_min_seq_sep, max_seq_sep=np.inf)
+    q = q_value_dat(oa, contact_threshold=tbm_q_cutoff, rnative_dat=rnative_dat, min_seq_sep=tbm_q_min_seq_sep, max_seq_sep=np.inf, allowed_residues=allowed_residues)
     tbm_q.addCollectiveVariable("q", q)
     tbm_q.setForceGroup(forceGroup)
     return tbm_q
