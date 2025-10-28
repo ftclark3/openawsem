@@ -312,6 +312,34 @@ def AM_rama(oa, k_rama=4.184, forceGroup=21, map_dir=f'{os.environ.get("OPENAWSE
     ramaAM.setForceGroup(forceGroup)
     return ramaAM
 
+def disulfide_term(oa, text_file, index_id_offset=0, k=50208, forceGroup=20):
+    # boilerplate
+    k_disulfide = k*oa.k_awsem # default connectivity term weight seems reasonable
+    disulfide = HarmonicBondForce() # HarmonicBondForce units: kJ/mol/nm/nm
+
+    # load distances
+    res1s = []
+    res2s = []
+    dists = []
+    with open(text_file, 'r') as f:
+        for line in f:
+            info = line.strip().split(" ")
+            res1s.append(int(info[0])-index_id_offset) # convert from resid in text_file to 0-indexed resindex
+            res2s.append(int(info[1])-index_id_offset) # convert from resid in text_file to 0-indexed resindex
+            dists.append(float(info[2]))
+
+    # add bonds
+    for res1, res2, dist in zip(res1s, res2s, dists):
+        disulfide.addBond(oa.cb[res1], oa.cb[res2], dist*angstroms, k_disulfide)
+
+    # boilerplate
+    if oa.periodic_box:
+        disulfide.setUsesPeriodicBoundaryConditions(True)
+        print('\ndisulfide_term is periodic')
+    disulfide.setForceGroup(forceGroup)  
+    return disulfide
+
+
 def side_chain_term(oa, k=1*kilocalorie_per_mole, gmmFileFolder="/Users/weilu/opt/parameters/side_chain", forceGroup=25):
     # add chi forces
     # The sign of the equilibrium value is opposite and magnitude differs slightly
