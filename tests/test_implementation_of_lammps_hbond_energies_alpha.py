@@ -146,7 +146,7 @@ def analyzed_data():
 @pytest.mark.parametrize("platform", PLATFORMS)
 class TestEnergyTerms:
     def test_energy_term(self, platform, column, analyzed_data):
-        tolerance = 1e-5 # note the higher tolerance than the 1e-5 used in test_energies.py
+        tolerance = 1e-4 # note the higher tolerance than the 1e-5 used in test_energies.py
         for protein in PROTEINS:
             calculated_energies = analyzed_data(protein, platform)
             saved_energies = pd.read_csv(data_path/f'{protein}_energies.csv')

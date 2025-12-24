@@ -903,7 +903,7 @@ def density_dependent_helical_term(oa, k_helical=4.184, inMembrane=False, forceG
                 continue # we would have violated min seq sep rho of 2 if we included this residue in the rho calculation
         rho_i += ')'
         #rho_ip4 += ')'
-        break
+        #break
     rho_i += ')'
     rho_ip4 = "(0"
     for i in range(4,oa.nres):
