@@ -15,11 +15,12 @@ compares OpenAWSEM implementation of alpha helical hbond energy from LAMMPS AWSE
 """
 
 
-PROTEINS = ["2mlt_1to5","2mlt_frag1"]
-COLUMNS = ["Beta","Pap","Helical"] 
+PROTEINS = ["2mlt_1to5","2mlt_frag1","2mlt_frag2",]#"2mlt_full"] # 2mlt_full too big, leading to super slow energy evaluation i guess
+                                                   #(the number of terms in the energy string are O(N^2) where N is the number of residues)
+COLUMNS = ["Beta","Pap","Helical"]
 # we include the Beta and P-AP columns, but they aren't expected to be interesting for these structures
 # or meaningfully test the implementation of those terms
-PLATFORMS = ['Reference']#, 'CPU', 'OpenCL', 'CUDA']
+PLATFORMS = ['Reference', 'CPU', 'CUDA'] # ["OpenCL"] # even these smaller systems were eating RAM on OpenCL on my desktop
 data_path = Path('tests')/'data'/'test_implementation_of_lammps_hbond_energies'
 
 
