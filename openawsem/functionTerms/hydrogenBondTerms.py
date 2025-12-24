@@ -699,7 +699,7 @@ def density_dependent_helical_term(oa, k_helical=4.184, inMembrane=False, forceG
 
     # set up Force
     HB = CustomCompoundBondForce(6+oa.nres-1, energy_string) # see below for how we calculate the number of atoms needed
-    HB.addPerBondParameter("i")
+    HB.addPerBondParameter("i") #                note that we don't use get_helical_f here because it has a different proline parameter
     HB.addTabulatedFunction('helical_propensities', Discrete1DFunction([helical_gamma_i[arnd.index(one_letter_code)] for one_letter_code in oa.seq]))
 
     # get particle indices and set up each Bond
@@ -716,14 +716,7 @@ def density_dependent_helical_term(oa, k_helical=4.184, inMembrane=False, forceG
             cb_fixed = [x if x > 0 else y for x,y in zip(oa.cb,oa.ca)]
             particles += cb_fixed
             assert len(particles) == oa.nres+5, particles
-            with open('temp_coord_check.txt','w') as f:
-                for particle in particles:
-                    f.write(f'{str(oa.pdb.positions[particle])}\n')
             HB.addBond(particles, [i])  # perbondparameter "i" indicates the 0-indexed residue index of the acceptor
-            with open('rho_i_info.txt','a') as f:
-                f.write('bond added')
-            with open('rho_ip4_info.txt','a') as f:
-                f.write('bond added')
     HB.setForceGroup(forceGroup)
     return HB
 
