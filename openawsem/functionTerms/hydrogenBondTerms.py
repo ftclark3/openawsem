@@ -598,8 +598,8 @@ def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
     helical.setForceGroup(forceGroup)
     return helical
 
-def density_dependent_helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29,
-    helical_gamma_i=[0.77,0.68,0.07,0.15,0.23,0.33,0.27,0.0,0.06,0.23,0.62,0.65,0.50,0.41,-3.0,0.35,0.11,0.45,0.17,0.14]):
+def density_dependent_helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
+    helical_gamma_i=[0.77,0.68,0.07,0.15,0.23,0.33,0.27,0.0,0.06,0.23,0.62,0.65,0.50,0.41,-3.0,0.35,0.11,0.45,0.17,0.14]
     arnd = 'ARNDCQEGHILKMFPSTWYV'
     """
     WARNING: THIS TERM IS EXPECTED TO BE VERY SLOW AND/OR RAM-INTENSIVE
@@ -648,6 +648,9 @@ def density_dependent_helical_term(oa, k_helical=4.184, inMembrane=False, forceG
     gives a negative (favorable) potential. It would probably make more sense to 
     just exclude pairs (i,i+4) with PRO at i+4 from the potential.
     """
+    if inMembrane:
+        raise NotImplementedError("inMembrane option=True not supported for density_dependent_helical_term")
+
     # some useful parameters
     k_helical *= oa.k_awsem
     sigma_NO = 0.068
