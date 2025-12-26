@@ -899,7 +899,7 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta, bet
                 # so there's no need to add a bond if |i-j|=3
                 continue
             # if sequence separation is less than 18, i and j are in the same chain, and both are not designated as beta in ssweight,
-            #     then we alway set the energy to 0, so we can just exclude the Bond from the Force
+            #     then we always set the energy to 0, so we can just exclude the Bond from the Force
             elif abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i][1]==0 or rama_biases[j][1]==0):
                 continue
             # the lammps code excludes certain pairs of residues from Beta2 but not the others
@@ -1136,10 +1136,10 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_antiparalle
             # Not a valid i
             continue
         for j in range(nres):
-            # check if we may be able to add an antiparallel hydrogen bond
             delta = j-i
             intrachain = inSameChain(i,j,oa.chain_starts,oa.chain_ends)
             if enable_antiparallel:
+                # check if we may be able to add an antiparallel hydrogen bond
                 if not inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
                     K = 0 # Not a valid j
                 elif intrachain and delta < 13: 
@@ -1152,9 +1152,10 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_antiparalle
                         K *= k_beta_pred_p_ap
                 else:
                     raise AssertionError("unexpected else block")
-                if K:
+                if K: # add the Bond unless its energy would always be 0
                     pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
             if enable_parallel:
+                # check if we may be able to add a parallel hydrogen bond
                 if not inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
                     K=0 #Not a valid j
                 elif intrachain and delta < 9:
@@ -1163,9 +1164,9 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_antiparalle
                     K = gamma_p*k_beta_pred_p_ap
                 else:
                     K = gamma_p
-                if K:
+                if K: # add the Bond unless its energy would always be 0
                     pap.addBond([ca[i],ca[j],ca[i+4],ca[j+4]], [K])
-            
+    # finalize and return Force 
     pap.setForceGroup(forceGroup)
     return pap
 
