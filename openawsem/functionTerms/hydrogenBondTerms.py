@@ -599,6 +599,7 @@ def helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
     return helical
 
 def density_dependent_helical_term(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
+    # we avoid get_helical_f here so that we can reproduce old work
     helical_gamma_i=[0.77,0.68,0.07,0.15,0.23,0.33,0.27,0.0,0.06,0.23,0.62,0.65,0.50,0.41,-3.0,0.35,0.11,0.45,0.17,0.14]
     arnd = 'ARNDCQEGHILKMFPSTWYV'
     """
@@ -720,6 +721,81 @@ def density_dependent_helical_term(oa, k_helical=4.184, inMembrane=False, forceG
             particles += cb_fixed
             assert len(particles) == oa.nres+5, particles
             HB.addBond(particles, [i])  # perbondparameter "i" indicates the 0-indexed residue index of the acceptor
+    HB.setForceGroup(forceGroup)
+    return HB
+
+def density_dependent_helical_term_approximate(oa, k_helical=4.184, inMembrane=False, forceGroup=29):
+    # we avoid get_helical_f here so that we can reproduce old work                        -3.0
+    helical_gamma_i=[0.77,0.68,0.07,0.15,0.23,0.33,0.27,0.0,0.06,0.23,0.62,0.65,0.50,0.41,0.0,0.35,0.11,0.45,0.17,0.14]
+    arnd = 'ARNDCQEGHILKMFPSTWYV'
+    # just do this for now until we decide how to implement membrane parameters
+    if inMembrane:
+        raise NotImplementedError("still figuring out how density-dependent helical term should mix with membrane gammas")
+    """ 
+    Efficient approximation to density_dependent_helical_term with density dependence.
+    The approximation lies in the use of combined attractive and repulsive PAIRWISE interactions
+    to give an effectively directional hydrogen bond.
+    """
+    # the general implementation strategy here is to use a CustomCompoundBondForce
+    # to get rho just like we do for the contact term, then add pairwise energy terms
+    # to the Force to implement the attractive and repulsive interactions ONLY
+    # between residues i and i+4. Since pairs (i,i+4) are excluded from the Beta
+    # and P-AP hydrogen bonding terms, there shouldn't be any side effects of 
+    # changing the form of the interaction; we just want to get as close as 
+    # reasonably possible to the lammps version.
+
+    # some useful parameters
+    k_helical *= oa.k_awsem
+    sigma_NO = 0.068
+    sigma_HO = 0.076
+    r_ON = 0.29862#0.298 # mingchen/weihua used 2.9862, at least for the helical hbond sigma
+    r_OH = 0.21558#0.206 # mingchen/weihua used 2.1558, at least for the helical hbond sigma
+    # parameters for the sigma involved in the helical hbonds
+    helix_eta = 7 # CAREFUL: THIS NUMBER HAS UNITS OF 1/ANGSTROM, SO WE MULTIPLY THE DISTANCES (IN nm) BY 10 (SEE BELOW)
+    helix_eta_sigma = 7.0
+    helix_rho_0 = 3.0
+
+    # set up Force
+    HB = CustomGBForce()
+    HB.addPerParticleParameter("resId")
+    HB.addPerParticleParameter("isCb")
+    HB.addPerParticleParameter("isN") 
+    HB.addPerParticleParameter("isO")
+    HB.addPerParticleParameter("isCa")
+    HB.addPerParticleParameter("isCp") # C prime (backbone carbonyl carbon)
+    HB.addTabulatedFunction('helical_propensities', Discrete1DFunction([helical_gamma_i[arnd.index(one_letter_code)] for one_letter_code in oa.seq]))
+    # HB.addTabulatedFunction('helical_propensities', Discrete1DFunction([get_helical_f(oa.seq[i], inMembrane=inMembrane) for one_letter_code in oa.seq]))
+    #     should consider contributes for residue with sequence separation of less that 2 (meaning 1) if 
+    #     the two residues are in different chains
+    HB.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({helix_eta}*(10*r-4.5)))*(1+tanh({helix_eta}*(6.5-10*r)))", CustomGBForce.ParticlePair)
+
+    # add particles to Force
+    #     replace cb with ca for GLY
+    cb_fixed = [x if x > 0 else y for x,y in zip(oa.cb,oa.ca)]
+    none_cb_fixed = [i for i in range(oa.natoms) if i not in cb_fixed]
+    assert len(cb_fixed) == oa.nres, f"Number of atoms in cb_fixed (non-GLY CB and GLY CA atoms), {len(cb_fixed)}, does not match number of residues {oa.nres}."
+    for i in range(oa.natoms):
+        HB.addParticle([oa.resi[i], int(i in cb_fixed), int(i in oa.n), int(i in oa.o), int(i in oa.ca), int(i in oa.c)]) 
+
+    # define energy
+    #definitions =    f';sigma_helix_term=2\
+    definitions = f';sigma_helix_term=(2-3*sigma_helix)\
+        ;sigma_helix=0.25*(1-tanh({helix_eta_sigma}*(rho1-{helix_rho_0})))*(1-tanh({helix_eta_sigma}*(rho2-{helix_rho_0})))\
+        ;propensity=(helical_propensities(resId1)+helical_propensities(resId2))\
+        ;LJ=(-isO1*isN2*tanh(0.03*((2/(10*r-3.43))^2))+(isCp1*isCp2+isCp1*isCa2+isCa1*isN2+isN1*isN2)*tanh(0.03*((2/(10*r-2))^2)))'
+        #;LJ=(-isO1*isN2*tanh(0.03*((2/(10*r-3.43))^2)))'
+        #;LJ=(-isO1*isN2+isCp1*isCp2+isCp1*isCa2)*tanh(0.03*((2/(10*r-3.43))^2))'
+        #;LJ=isO1*isN2*(5*((2.0/(10*r-1.43))^(12))-6*((2.0/(10*r-1.43))^(10)))' # converting r from nm to Angstrom to match units of constants
+    # no leading negative sign in energy string because LJ term is sort of like a negative helix theta
+    energy_string = f"{k_helical}*delta((resId2-resId1)-4)*sigma_helix_term*propensity*LJ{definitions}"
+    HB.addEnergyTerm(energy_string, CustomGBForce.ParticlePair)
+
+    # finalize and return Force
+    #     cutoff shouldn't matter because i and i+4 should always be close in space
+    if oa.periodic_box:
+        HB.setNonbondedMethod(HB.CutoffPeriodic)
+    else:
+        HB.setNonbondedMethod(HB.CutoffNonPeriodic)
     HB.setForceGroup(forceGroup)
     return HB
 
