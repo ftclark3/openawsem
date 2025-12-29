@@ -70,6 +70,15 @@ def contact_term_with_density_dependent_helical_HB(
     oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.5, inMembrane=False, membrane_center=0*angstrom, k_relative_mem=1.0, parametersLocation=None, burialPartOn=True, withExclusion=False, forceGroup=22,
     gammaName="gamma.dat", burialGammaName="burial_gamma.dat", membraneGammaName="membrane_gamma.dat", r_min=0.45,min_sequence_separation=10,min_sequence_separation_mem=10,
     direct_mask_ij=None, water_mask_ij=None, protein_mask_ij=None, k_helical=4.184, helical_gamma_i=[0.77,0.68,0.07,0.15,0.23,0.33,0.27,0.0,0.06,0.23,0.62,0.65,0.50,0.41,-3.0,0.35,0.11,0.45,0.17,0.14]):
+    """
+    THIS DOESN'T WORK BECAUSE THE CustomGBForce ONLY ALLOWS PAIRWISE 
+    INTERACTIONS ONCE RHO IS CALCULATED, BUT CALCULATING THE REAL HB
+    FORCE REQUIRES AT LEAST 3 SITES PER BOND. WE CAN APPROXIMATE
+    WITH A PAIRWISE INTERACTION, BUT GENERALLY THE HELICAL RHO 
+    CALCULATION HAS DIFFERENT PARAMETERS FOR THAT, SO WE HAVE A 
+    DIFFERENT TERM FOR IT (hydrogenBondTerms.density_dependent_helical_term_approximate)
+    """
+    raise NotImplementedError("this term doesn't work (see documentation)")
     # helical_gamma_i is in ARND order because that's the order of gamma_se_map_1_letter
     # set up masks to reweight contacts
     if direct_mask_ij is not None and direct_mask_ij.shape != (oa.nres, oa.nres):
