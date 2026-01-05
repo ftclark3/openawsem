@@ -127,7 +127,7 @@ def excl_term(oa, k_excl=8368, excludeCB=False, forceGroup=20):
         res = oa.resi[i]
         chain = find_chain_index(res, oa.chain_starts, oa.chain_ends)
         #                             VVVV change to 0.35 and tests will pass
-        excl.addParticle([chain, res, 0.35 if i in oa.o else 0.35])
+        excl.addParticle([chain, res, 0.45 if i in oa.o else 0.35])
     # set groups of interacting particles
     excl.addInteractionGroup(oa.ca, oa.ca)
     if not excludeCB:
