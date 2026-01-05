@@ -19,6 +19,14 @@ three_to_one = {'ALA':'A', 'ARG':'R', 'ASN':'N', 'ASP':'D', 'CYS':'C',
                 'LEU':'L', 'LYS':'K', 'MET':'M', 'PHE':'F', 'PRO':'P',
                 'SER':'S', 'THR':'T', 'TRP':'W', 'TYR':'Y', 'VAL':'V'}
 
+def find_chain_index(res: int, chain_starts, chain_ends) -> int:
+    """
+    Find the index of the chain that contains the residue with index `res`.
+    """
+
+    chain_index = [int(chain_start<=res and res<=chain_end) for chain_start,chain_end in zip(chain_starts,chain_ends)]
+    assert sum(chain_index) == 1, f"res: {res}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {chain_index}"
+    return chain_index.index(1)
 
 def con_term(oa, k_con=50208, bond_lengths=[.3816, .240, .276, .153], forceGroup=20):
     # add con forces
@@ -97,32 +105,43 @@ def chi_term(oa, k_chi=251.04, chi0=-0.71, forceGroup=20):
     chi.setForceGroup(forceGroup)
     return chi
 
-def excl_term(oa, k_excl=8368, r_excl=0.35, excludeCB=False, forceGroup=20):
+def excl_term(oa, k_excl=8368, excludeCB=False, forceGroup=20):
     # add excluded volume
-    # Still need to add element specific parameters
     # 8368 = 20 * 4.184 * 100 kJ/nm^2, converted from default value in LAMMPS AWSEM
+    #
     # multiply interaction strength by overall scaling
-    # Openawsem doesn't have the distance range (r_excl) change from 0.35 to 0.45 when the sequence separtation more than 5
     k_excl *= oa.k_awsem
-    excl = CustomNonbondedForce(f"{k_excl}*step({r_excl}-r)*(r-{r_excl})^2")
-
-    if oa.periodic_box:
-        excl.setNonbondedMethod(excl.CutoffPeriodic)
-        print('\nexcl_term is periodic')
-    else:
-        excl.setNonbondedMethod(excl.CutoffNonPeriodic)
-
-    pos = oa.pdb.positions
+    # initialize Force
+    base_energy_string = f"{k_excl}*(caseIbool*step(rI-r)*((rI-r)^2)+caseIIbool*step(rII-r)*((rII-r)^2))"
+    definitions = ";rI=0.35\
+        ;rII=max(r_preferred2,r_preferred1)\
+        ;caseIIbool=1-caseIbool\
+        ;caseIbool=((1-delta(chainId2-chainId1))+step(abs(resId2-resId1)-5))" # minseqsep5 or different chains
+    energy_string = f'{base_energy_string}{definitions}'
+    excl = CustomNonbondedForce(energy_string)
+    # set parameters and add particles
+    excl.addPerParticleParameter("chainId")
+    excl.addPerParticleParameter("resId")
+    excl.addPerParticleParameter("r_preferred")
     for i in range(oa.natoms):
-        excl.addParticle()
+        res = oa.resi[i]
+        chain = find_chain_index(res, oa.chain_starts, oa.chain_ends)
+        #print(i, res, chain)
+        excl.addParticle([chain, res, 0.45 if i in oa.o else 0.35])
+    # set groups of interacting particles
     excl.addInteractionGroup(oa.ca, oa.ca)
     if not excludeCB:
         excl.addInteractionGroup([x for x in oa.cb if x > 0], [x for x in oa.cb if x > 0])
     excl.addInteractionGroup(oa.ca, [x for x in oa.cb if x > 0])
     excl.addInteractionGroup(oa.o, oa.o)
-
-    excl.setCutoffDistance(r_excl)
+    # finalize and return Force
+    excl.setCutoffDistance(0.45)
     excl.createExclusionsFromBonds(oa.bonds, 1)
+    if oa.periodic_box:
+        excl.setNonbondedMethod(excl.CutoffPeriodic)
+        print('\nexcl_term is periodic')
+    else:
+        excl.setNonbondedMethod(excl.CutoffNonPeriodic)
     excl.setForceGroup(forceGroup)
     return excl
 
