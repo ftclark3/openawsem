@@ -402,7 +402,7 @@ def additive_amhgo_term(oa, pdb_file, chain_name, k_amhgo=4.184, amhgo_min_seq_s
     import itertools
     # multiply interaction strength by overall scaling
     print("AMH-GO structure based term is ON")
-    k_amhgo *= oa.k_awsem
+    #k_amhgo *= oa.k_awsem
     # create contact force
     amhgo = CustomBondForce(f"-{k_amhgo}*gamma_ij*exp(-(r-r_ijN)^2/(2*sigma_ij^2))")
     # # add global parameters

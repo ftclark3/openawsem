@@ -1,3 +1,4 @@
+from functionTerms import constraints
 from functionTerms import basicTerms
 from functionTerms import contactTerms
 from functionTerms import debyeHuckelTerms

@@ -25,7 +25,8 @@ from functionTerms.qBiasTerms import *
 from functionTerms.debyeHuckelTerms import *
 from functionTerms.templateTerms import *
 from functionTerms.membraneTerms import *
-
+from functionTerms.Elecbias import *
+from functionTerms.amhgochainTerm import *
 se_map_3_letter = {'ALA': 0,  'PRO': 1,  'LYS': 2,  'ASN': 3,  'ARG': 4,
                    'PHE': 5,  'ASP': 6,  'GLN': 7,  'GLU': 8,  'GLY': 9,
                    'ILE': 10, 'HIS': 11, 'LEU': 12, 'CYS': 13, 'MET': 14,
