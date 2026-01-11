@@ -2,9 +2,9 @@ from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
 import numpy as np
-from simtk.unit.quantity import Quantity
+#from simtk.unit.quantity import Quantity
 import pandas as pd
-from Bio.PDB.Polypeptide import three_to_one
+from Bio.PDB.Polypeptide import protein_letters_3to1
 
 
 gamma_se_map_1_letter = {   'A': 0,  'R': 1,  'N': 2,  'D': 3,  'C': 4,

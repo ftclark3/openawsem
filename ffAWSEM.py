@@ -6,7 +6,7 @@ import shutil
 import functionTerms
 import create_single_memory_from_pdb
 functionTerms=functionTerms
-from Bio.PDB.Polypeptide import three_to_one
+from Bio.PDB.Polypeptide import protein_letters_3to1
 
 __location__ = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
 __author__ = 'Carlos Bueno'

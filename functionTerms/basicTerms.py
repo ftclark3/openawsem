@@ -2,9 +2,14 @@ from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
 import numpy as np
-from Bio.PDB.Polypeptide import one_to_three
+#from Bio.PDB.Polypeptide import one_to_three
 import pandas as pd
-from Bio.PDB.Polypeptide import three_to_one
+from Bio.PDB.Polypeptide import protein_letters_3to1
+
+def one_to_three(one): # one: string of one letter code
+    #return Bio.PDB.Polypeptide.standard_aa_names[Bio.PDB.Polypeptide.d1_to_index[one]]
+    code_dict = {'A':'ALA','C':'CYS','D':'ASP','E':'GLU','F':'PHE','G':'GLY','H':'HIS','I':'ILE','K':'LYS','L':'LEU','M':'MET','N':'ASN','P':'PRO','Q':'GLN','R':'ARG','S':'SER','T':'THR','V':'VAL','W':'TRP','Y':'TYR'}
+    return code_dict[one]
 
 def con_term(oa, k_con=50208, bond_lengths=[.3816, .240, .276, .153], forceGroup=20):
     # add con forces
