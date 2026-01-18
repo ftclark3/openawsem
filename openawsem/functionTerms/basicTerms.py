@@ -112,11 +112,12 @@ def excl_term(oa, k_excl=8368, excludeCB=False, forceGroup=20):
     # multiply interaction strength by overall scaling
     k_excl *= oa.k_awsem
     # initialize Force
-    base_energy_string = f"{k_excl}*(caseIbool*step(rI-r)*((rI-r)^2)+caseIIbool*step(rII-r)*((rII-r)^2))"
+    base_energy_string = f"{k_excl}*(close_in_sequence*step(rI-r)*((rI-r)^2)+(1-close_in_sequence)*step(rII-r)*((rII-r)^2))"
     definitions = ";rI=0.35\
         ;rII=max(r_preferred2,r_preferred1)\
-        ;caseIIbool=1-caseIbool\
-        ;caseIbool=((1-delta(chainId2-chainId1))+step(abs(resId2-resId1)-5))" # minseqsep5 or different chains
+        ;close_in_sequence=same_chain*(1-at_least_5)\
+        ;at_least_5=step(abs(resId2-resId1)-5)\
+        ;same_chain=delta(chainId2-chainId1)" 
     energy_string = f'{base_energy_string}{definitions}'
     excl = CustomNonbondedForce(energy_string)
     # set parameters and add particles
