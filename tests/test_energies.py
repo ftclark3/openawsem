@@ -115,7 +115,7 @@ def analyze(protein, simulation_platform):
     simulation = openmm.app.Simulation(oa.pdb.topology, oa.system, integrator, platform)
 
     # "Backbone" test returns the Con+Chi+Chain+Excluded sum, since set_up_forces was called with force_name=None
-    # (see note in set_up_force function)
+    # (see the note in the set_up_forces function defined at the beginning of his file)
     forceGroupTable = {"Backbone": 20, "Rama": 21, "Contact": 22, "Fragment": 23, "Membrane": 24, "ER": 25, "TBM_Q": 26, "Beta": 27, "Pap": 28, "Helical": 29,
                        "Q": 1, "Rg": 2, "Qc": 3, "Helix_orientation": 18, "Pulling": 19}
 
