@@ -126,7 +126,13 @@ def excl_term(oa, k_excl=8368, excludeCB=False, forceGroup=20):
     excl.addPerParticleParameter("r_preferred")
     for i in range(oa.natoms):
         res = oa.resi[i]
-        chain = find_chain_index(res, oa.chain_starts, oa.chain_ends)
+        if res != -1:
+            chain = find_chain_index(res, oa.chain_starts, oa.chain_ends)
+        else: # resi==-1 reserved for DNA residues that shouldn't be included
+            chain = -1 # dummy parameter for when we add the particle to the Force
+                       # (all particles must be added to the Force, but non-protein
+                       # particles won't interact with anything because they're not
+                       # included in any InteractionGroups)
         #                             VVVV change to 0.35 and tests will pass
         excl.addParticle([chain, res, 0.45 if i in oa.o else 0.35])
     # set groups of interacting particles
