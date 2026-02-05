@@ -152,7 +152,7 @@ def excl_term(oa, k_excl=8368, excludeCB=False, forceGroup=20):
                        # particles won't interact with anything because they're not
                        # included in any InteractionGroups)
         #                             VVVV change to 0.35 and tests will pass
-        excl.addParticle([chain, res, 0.35 if i in oa.o else 0.35, 1 if i in oa.ca else 0])
+        excl.addParticle([chain, res, 0.45 if i in oa.o else 0.35, 1 if i in oa.ca else 0])
     # set groups of interacting particles
     excl.addInteractionGroup(oa.ca, oa.ca)
     if not excludeCB:
