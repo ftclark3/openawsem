@@ -441,7 +441,10 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb, within a tolerance of 0.01 kcal/mol 
     on all tested systems and computational Platforms. It should be noted that not all LAMMPS AWSEM-MD versions are identical.
 
-    However, the LAMMPS AWSEM-MD potential is implemented as a single term that should be accessed using pap_term_old.
+    I believe using pap_nu_on=False with version='efficiency_optimized' is equivalent to but maybe more efficient than 
+    using version='lammps_awsemmd' (pap_nu_on is irrelevant in this case). I'll check this soon.
+
+    The rigorously tested LAMMPS AWSEM-MD potential is implemented as a single term that should be accessed using pap_term_old.
 
     The OpenAWSEM paper:
     Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
@@ -491,7 +494,10 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     https://github.com/adavtyan/awsemmd/tree/cea754f1208fde6332d4d0f1cae3212bf7e8afbb, within a tolerance of 0.01 kcal/mol 
     on all tested systems and computational Platforms. It should be noted that not all LAMMPS AWSEM-MD versions are identical.
 
-    However, the LAMMPS AWSEM-MD potential is implemented as a single term that should be accessed using pap_term_old.
+    I believe using pap_nu_on=False with version='efficiency_optimized' is equivalent to but maybe more efficient than 
+    using version='lammps_awsemmd' (pap_nu_on is irrelevant in this case). I'll check this soon.
+
+    The rigorously tested LAMMPS AWSEM-MD potential is implemented as a single term that should be accessed using pap_term_old.
 
     The OpenAWSEM paper:
     Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
