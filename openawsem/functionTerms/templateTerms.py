@@ -84,7 +84,7 @@ def interface_q_term(oa, pairs, rnatives, sigma, target_q, k, forceGroup=26):
     q.addPerBondParameter("r_ijN")
     q.addPerBondParameter("sigma_ij")
     for pair, rnative in zip(pairs, rnatives):
-        q.addBond([pair[0], pair[1], 1, rnative, sigma])
+        q.addBond([pair[0], pair[1], [1, rnative, sigma]])
     # set up Force
     q_force = CustomCVForce(f"{k}*(q-{target_q})^2")
     q_force.addCollectiveVariable("q", q)
