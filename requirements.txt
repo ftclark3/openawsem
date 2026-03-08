@@ -6,3 +6,4 @@ openmm
 pdbfixer
 mdtraj
 requests
+py3Dmol
