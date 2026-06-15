@@ -206,7 +206,10 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     contact.addPerParticleParameter("resName")
     contact.addPerParticleParameter("resId")
     contact.addPerParticleParameter("isCb")
-
+    #step(abs(resId1-resId2)-2) == 1 and 1-inSameChain==1: far away in sequence and in different chains ==> max(a,b) == 1 and we count the pair
+    #step(abs(resId1-resId2)-2) == 1 and 1-inSameChain==0: far away in sequence and in same chain ==> max(a,b)==1 and we count the pair
+    #step(abs(resId1-resId2)-2) == 0 and 1-inSameChain==1: close in sequence and in different chains ==> max(a,b)==1 and we count the pair
+    #step(abs(resId1-resId2)-2) == 0 and 1-inSameChain==0: close in sequence and in same chain ==> max(a,b)==0 and we do not count the pair
     contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
     #contact.addComputedValue("rho_test",f"isCb1*isCb2*step(abs(resId1-resId2)-2)", CustomGBForce.ParticlePair)
 
