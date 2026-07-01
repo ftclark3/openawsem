@@ -206,8 +206,8 @@ def contact_term(oa, k_contact=4.184, k_burial = None, z_dependent=False, z_m=1.
     contact.addPerParticleParameter("resName")
     contact.addPerParticleParameter("resId")
     contact.addPerParticleParameter("isCb")
-
-    contact.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
+ 
+    contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
     #contact.addComputedValue("rho_test",f"isCb1*isCb2*step(abs(resId1-resId2)-2)", CustomGBForce.ParticlePair)
 
     # if z_dependent:
@@ -429,7 +429,7 @@ def contact_term_reference(oa, k_contact=4.184, z_dependent=False, z_m=1.5, inMe
     contact.addPerParticleParameter("resId")
     contact.addPerParticleParameter("isCb")
 
-    contact.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
+    contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
 
 
     # if z_dependent:
@@ -643,7 +643,7 @@ def index_based_contact_term(oa, gamma_folder="ff_contact", k_contact=4.184, z_d
     contact.addPerParticleParameter("resId")
     contact.addPerParticleParameter("isCb")
 
-    contact.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
+    contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
 
     # if z_dependent:
     #     contact.addComputedValue("isInMembrane", f"step({z_m}-abs(z))", CustomGBForce.SingleParticle)
@@ -802,7 +802,7 @@ def expand_contact_table_contact_term(oa, k_contact=4.184, pre=None):
     contact.addGlobalParameter("rmaxII", r_maxII)
     contact.addGlobalParameter("burial_kappa", burial_kappa)
 
-    contact.addComputedValue("rho", "isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh(eta*(r-rmin)))*(1+tanh(eta*(rmax-r)))", CustomGBForce.ParticlePair)
+    contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
 
     # replace cb with ca for GLY
     cb_fixed = [x if x > 0 else y for x,y in zip(oa.cb,oa.ca)]
@@ -1014,7 +1014,7 @@ def hybrid_contact_term(oa, k_contact=4.184, z_m=1.5, membrane_center=0*angstrom
     contact.addGlobalParameter("rmaxII", r_maxII)
     contact.addGlobalParameter("burial_kappa", burial_kappa)
 
-    contact.addComputedValue("rho", "isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh(eta*(r-rmin)))*(1+tanh(eta*(rmax-r)))", CustomGBForce.ParticlePair)
+    contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
 
     # if z_dependent:
     #     contact.addComputedValue("isInMembrane", f"step({z_m}-abs(z))", CustomGBForce.SingleParticle)
@@ -1115,8 +1115,8 @@ def disulfide_bond_term(oa, k=1*kilocalorie_per_mole, cutoff=4.2*angstrom, k_bin
     disulfide_bond.addPerParticleParameter("resNameA")
     disulfide_bond.addPerParticleParameter("cysResId")
     disulfide_bond.addPerParticleParameter("cysCB")
-    # disulfide_bond.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
-    disulfide_bond.addComputedValue("rhoCys", f"cysCB1*cysCB2*step(abs(cysResId1-cysResId2)-2)*0.5*(1-tanh({k_bin}*(r-{cutoff})))", CustomGBForce.ParticlePair)
+    # disulfide_bond.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
+    disulfide_bond.addComputedValue("rhoCys", f"cysCB1*cysCB2*max(step(abs(cysResId1-cysResId2)-2),1-inSameChain(cysResId1,cysResId2))*0.5*(1-tanh({k_bin}*(r-{cutoff})))", CustomGBForce.ParticlePair)
     # disulfide_bond.addComputedValue("dummy", f"0", CustomGBForce.SingleParticle)
 
     cysCount = 0
@@ -1324,9 +1324,9 @@ def contact_term_shift_well_center(oa, k_contact=4.184, z_dependent=False, z_m=1
 
     if wellCenter:
         # contact.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
-        contact.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-r_min_direct_table(resName1,resName2))))*(1+tanh({eta}*(r_max_direct_table(resName1,resName2)-r)))", CustomGBForce.ParticlePair)
+        contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-r_min_direct_table(resName1,resName2))))*(1+tanh({eta}*(r_max_direct_table(resName1,resName2)-r)))", CustomGBForce.ParticlePair)
     else:
-        contact.addComputedValue("rho", f"isCb1*isCb2*step(abs(resId1-resId2)-2)*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
+        contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
 
     # if z_dependent:
     #     contact.addComputedValue("isInMembrane", f"step({z_m}-abs(z))", CustomGBForce.SingleParticle)
@@ -1521,7 +1521,7 @@ def burial_term(oa, k_burial=4.184, parametersLocation=None, burialGammaName="bu
     burial.addGlobalParameter("burial_kappa", burial_kappa)
     burial.addGlobalParameter("rmin", r_min)
     burial.addGlobalParameter("rmax", r_max)
-    index = burial.addComputedValue("rho", "step(abs(resId1-resId2)-2)*0.25*(1+tanh(eta*(r-rmin)))*(1+tanh(eta*(rmax-r)))", CustomGBForce.ParticlePair)
+    index = burial.addComputedValue("rho", "max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh(eta*(r-rmin)))*(1+tanh(eta*(rmax-r)))", CustomGBForce.ParticlePair)
     # print(burial.getComputedValueParameters(index))
 
     # replace cb with ca for GLY
