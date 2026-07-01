@@ -802,7 +802,7 @@ def expand_contact_table_contact_term(oa, k_contact=4.184, pre=None):
     contact.addGlobalParameter("rmaxII", r_maxII)
     contact.addGlobalParameter("burial_kappa", burial_kappa)
 
-    contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
+    contact.addComputedValue("rho", "isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh(eta*(r-rmin)))*(1+tanh(eta*(rmax-r)))", CustomGBForce.ParticlePair)
 
     # replace cb with ca for GLY
     cb_fixed = [x if x > 0 else y for x,y in zip(oa.cb,oa.ca)]
@@ -1014,7 +1014,7 @@ def hybrid_contact_term(oa, k_contact=4.184, z_m=1.5, membrane_center=0*angstrom
     contact.addGlobalParameter("rmaxII", r_maxII)
     contact.addGlobalParameter("burial_kappa", burial_kappa)
 
-    contact.addComputedValue("rho", f"isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh({eta}*(r-{r_min})))*(1+tanh({eta}*({r_max}-r)))", CustomGBForce.ParticlePair)
+    contact.addComputedValue("rho", "isCb1*isCb2*max(step(abs(resId1-resId2)-2),1-inSameChain(resId1,resId2))*0.25*(1+tanh(eta*(r-rmin)))*(1+tanh(eta*(rmax-r)))", CustomGBForce.ParticlePair)
 
     # if z_dependent:
     #     contact.addComputedValue("isInMembrane", f"step({z_m}-abs(z))", CustomGBForce.SingleParticle)
