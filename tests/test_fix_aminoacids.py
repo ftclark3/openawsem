@@ -79,8 +79,12 @@ class TestGetSeqDic:
         assert len(seq_dic) == 2
         assert len(seq_dic['A']) == 274
         assert len(seq_dic['B']) == 313
-        assert seq_dic['A'].startswith('MAYVEII')
-        assert seq_dic['B'].startswith('MGPYLQI')
+        first_7_A = seq_dic['A'][0] + seq_dic['A'][1] + seq_dic['A'][2] + seq_dic['A'][3] +\
+            seq_dic['A'][4] + seq_dic['A'][5] + seq_dic['A'][6]
+        assert first_7_A == 'MAYVEII'
+        first_7_B = seq_dic['B'][274] + seq_dic['B'][275] + seq_dic['B'][276] + seq_dic['B'][277] +\
+            seq_dic['B'][278] + seq_dic['B'][279] + seq_dic['B'][280]
+        assert first_7_B == 'MGPYLQI'
 
     def test_single_sequence_deprecated(self):
         """Test that plain sequence files emit deprecation warning."""
@@ -90,5 +94,8 @@ class TestGetSeqDic:
         assert 'Unknown' in seq_dic
         assert len(seq_dic) == 1
         assert len(seq_dic['Unknown']) == 587  # 274 + 313
-        assert seq_dic['Unknown'].startswith('MAYVEII'), f"Sequence starts incorrectly: {seq_dic['Unknown'][:10]}"
-        assert seq_dic['Unknown'].endswith('YYPE'), f"Sequence ends incorrectly: {seq_dic['Unknown'][-10:]}"
+        start_7 = seq_dic['Unknown'][0] + seq_dic['Unknown'][1] + seq_dic['Unknown'][2] +\
+            seq_dic['Unknown'][3] + seq_dic['Unknown'][4] + seq_dic['Unknown'][5] + seq_dic['Unknown'][6]
+        assert start_7 == 'MAYVEII', f"Sequence starts incorrectly: {start_7}"
+        end_4 = seq_dic['Unknown'][583] + seq_dic['Unknown'][584] + seq_dic['Unknown'][585] + seq_dic['Unknown'][586] 
+        assert end_4 == 'YYPE', f"Sequence ends incorrectly: {end_4}"
