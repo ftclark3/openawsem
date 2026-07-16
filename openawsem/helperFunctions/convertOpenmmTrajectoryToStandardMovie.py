@@ -79,7 +79,7 @@ def get_seq_dic(fasta: str | PathLike = "../crystal_structure.fasta") -> dict[st
 
 def convert_openMM_to_standard_pdb(
     fileName: str | PathLike = "last_frame.pdb",
-    seq_dic: dict[str, str] | None = None,
+    seq_dic: dict[str, dict[int, str]] | None = None,
     back: bool = True
 ) -> None:
     code = {"GLY": "G", "ALA": "A", "LEU": "L", "ILE": "I",
