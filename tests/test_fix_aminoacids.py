@@ -35,6 +35,18 @@ def assert_chain_boundary_residues(residues):
     assert residues.get(('B', 1)) == 'MET'
     assert residues.get(('B', 313)) == 'GLU'
 
+def assert_chain_boundary_residues_resnum_offset(residues):
+    """Similar to assert_chain_boundary_residues,
+       but uses the residue numbers and names from
+       the resnum_offset test system"""
+    with open('test_foo.txt','w') as f:
+        for thing in residues.items():
+            f.write(f'{thing}\n')
+    assert residues.get(('A', 1)) == 'ALA', residues
+    assert residues.get(('A', 302)) == 'GLY'
+    assert residues.get(('B', 303)) == 'MET'
+    assert residues.get(('B', 615)) ==  'GLU'
+
 
 class TestFixAminoacids:
     """Tests for the fix_aminoacids reconstruction workflow."""
@@ -50,6 +62,22 @@ class TestFixAminoacids:
         result = pdb_copy.read_text()
         assert_residues_converted(result)
         assert_chain_boundary_residues(parse_pdb_residues(result))
+
+    def test_reconstruction_with_multiple_chain_fasta_resnum_offset(self, tmp_path):
+        """Test reconstruction with properly formatted multi-chain FASTA.
+           The key difference between this test and test_reconstruction_with_multiple_chain_fasta
+           is that the chain B residue numbering starts at 303 instead of 1."""
+        pdb_copy = tmp_path / 'test.pdb'
+
+        # these files don't have DNA in them, but we'll use the same data_path
+        # folder that we used for the previous test just to keep things organized
+        shutil.copy(data_path / 'NFKB_chainB303.pdb', pdb_copy)
+        seq_dic = get_seq_dic(fasta=data_path / 'NFKB_chainB303.fasta')
+        convert_openMM_to_standard_pdb(fileName=pdb_copy, seq_dic=seq_dic, back=False)
+        
+        result = pdb_copy.read_text()
+        assert_residues_converted(result)
+        assert_chain_boundary_residues_resnum_offset(parse_pdb_residues(result))
 
     def test_reconstruction_with_single_sequence_fasta(self, tmp_path):
         """Test reconstruction with deprecated single-sequence file (no chain headers)."""
