@@ -81,7 +81,7 @@ def find_chain_index(res: int, chain_starts, chain_ends) -> int:
     assert sum(chain_index) == 1, f"res: {res}, chain_starts: {chain_starts}, chain_ends: {chain_ends}, list: {chain_index}"
     return chain_index.index(1)
 
-def inSameChain(res_i: int,res_j: int,chain_starts,chain_ends) -> bool:
+def inSameChain(res_i: int, res_j: int, chain_starts, chain_ends) -> bool:
     """
     Return True if residues i and j lie in the same chain; False if exactly one of them 
     is out of any chain. If both are out of chain bounds, raise an AssertionError.
@@ -450,7 +450,8 @@ def pap_term_1(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     may be found in tests/data/test_implementation_of_lammps_hbond_energies/lammps_setup_parameters.   
     It should be noted that not all LAMMPS AWSEM-MD versions are identical.
 
-    However, the LAMMPS AWSEM-MD potential is implemented as a single term that should be accessed using pap_term_old.
+    The LAMMPS AWSEM-MD potential is also implemented as a single term that may be accessed using pap_term_old,
+    but that version may be slower.
 
     The OpenAWSEM paper:
     Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
@@ -502,7 +503,8 @@ def pap_term_2(oa, k=0.5*kilocalories_per_mole, dis_i_to_i4=1.2, forceGroup=28, 
     may be found in tests/data/test_implementation_of_lammps_hbond_energies/lammps_setup_parameters.   
     It should be noted that not all LAMMPS AWSEM-MD versions are identical.
 
-    However, the LAMMPS AWSEM-MD potential is implemented as a single term that should be accessed using pap_term_old.
+    The LAMMPS AWSEM-MD potential is also implemented as a single term that may be accessed using pap_term_old,
+    but that version may be slower.
 
     The OpenAWSEM paper:
     Lu, W.; Bueno, C.; Schafer, N. P.; Moller, J.; Jin, S.; Chen, X.; Chen, M.; Gu, X.; 
@@ -753,7 +755,7 @@ def _beta_lammps_awsemmd(oa, term_number, ssweight_file, forceGroup, k_beta, bet
                 # so there's no need to add a bond if |i-j|=3
                 continue
             # if sequence separation is less than 18, i and j are in the same chain, and both are not designated as beta in ssweight,
-            #     then we alway set the energy to 0, so we can just exclude the Bond from the Force
+            #     then we always set the energy to 0, so we can just exclude the Bond from the Force
             elif abs(i-j) < 18 and inSameChain(i, j, oa.chain_starts, oa.chain_ends) and (rama_biases[i][1]==0 or rama_biases[j][1]==0):
                 continue
             # the lammps code excludes certain pairs of residues from Beta2 but not the others
@@ -990,10 +992,10 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_antiparalle
             # Not a valid i
             continue
         for j in range(nres):
-            # check if we may be able to add an antiparallel hydrogen bond
             delta = j-i
             intrachain = inSameChain(i,j,oa.chain_starts,oa.chain_ends)
             if enable_antiparallel:
+                # check if we may be able to add an antiparallel hydrogen bond
                 if not inSameChain(j,j-4,oa.chain_starts,oa.chain_ends):
                     K = 0 # Not a valid j
                 elif intrachain and delta < 13: 
@@ -1009,6 +1011,7 @@ def _pap_lammps_awsemmd(oa, ssweight_file, forceGroup, k_pap, enable_antiparalle
                 if K:
                     pap.addBond([ca[i],ca[j],ca[i+4],ca[j-4]], [K])
             if enable_parallel:
+                # check if we may be able to add a parallel hydrogen bond
                 if not inSameChain(j,j+4,oa.chain_starts,oa.chain_ends):
                     K=0 #Not a valid j
                 elif intrachain and delta < 9:
@@ -1091,16 +1094,62 @@ def _pap_efficiency_optimized(oa, term_number, ssweight_file, forceGroup, k, dis
         raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
     #
     # add donor and acceptor groups
+    # here is why we make the unusual decision to add Exclusions:
+    #     Adding exclusions is risky for nonbonded forces,
+    #     so we try to avoid exclusions and build those into the
+    #     hamiltonian instead. However, CustomHbondForce is
+    #     not implemented as a nonbonded force, so it is safer.
+    #     It would still be nice to avoid exclusions for
+    #     stylistic consistency, and we will try to 
+    #     build them into the hamiltonian wherever possible.
+    #     We have kind of done that here: it doesn't make physical sense
+    #     for pairs of donors/acceptors sharing one or two common
+    #     atoms to interact with each other through this potential and,
+    #     by the design of the energy function, this interaction should
+    #     always be 0. 
+    #
+    #     But, for these Forces, apparently only on the CPU Platform,
+    #     there is another problem unrelated to the 
+    #     cancellation of unwanted potential energy terms.
+    #     You can read about this problem at
+    #     https://github.com/cabb99/openawsem/issues/94
+    #
+    #     Basically, even if their interaction energy ends up being 0,
+    #     donor-acceptor interactions involving the distance between a pair of particles --
+    #     both donors, both acceptors, or one of each -- 
+    #     that are actually the same particle in the underlying topology can
+    #     cause issues with the force calculation on the CPU platform, 
+    #     leading to overflow errors when coordinate updates are attempted
+    i_to_idx = {'donors':{}, 'acceptors':{}} # convert residue number of d1 or a1 to donor/acceptor index; needed only for term_number==1
     for i in range(nres):
         if term_number == 1:
+            acc_idx = -1 # represents not having added an acceptor on this iteration
+            don_idx = -1 # represents not having added a donor on this iteration
             if not isChainEnd(i, oa.chain_ends, n=4):
-                pap.addAcceptor(ca[i], ca[i+4], -1, [i])
+                acc_idx = pap.addAcceptor(ca[i], ca[i+4], -1, [i])
+                i_to_idx['acceptors'].update({i:acc_idx})
             if not isChainStart(i, oa.chain_starts, n=4):
-                pap.addDonor(oa.ca[i], oa.ca[i-4], -1, [i])
+                don_idx = pap.addDonor(oa.ca[i], oa.ca[i-4], -1, [i])
+                i_to_idx['donors'].update({i:don_idx})
+            if acc_idx != -1 and don_idx != -1:
+                pap.addExclusion(don_idx, acc_idx)
+            if inSameChain(i, i-8, oa.chain_starts, oa.chain_ends):
+                # i-8's a2 is the same atom as i's d2, so distance(a2,d2),
+                # which factors into the energy function, is always 0 and causes problems on CPU
+                pap.addExclusion(i_to_idx['donors'][i], i_to_idx['acceptors'][i-8])
+            else:
+                try:
+                    pap.addExclusion(i_to_idx['donors'][i], i_to_idx['acceptors'][i-8])
+                except KeyError:
+                    continue
+                raise AssertionError("something unexpected happened. is there an i/i+4 or i/i-4 pair crossing a chain break?")
         elif term_number == 2:
             if not isChainEnd(i, oa.chain_ends, n=4):
-                pap.addAcceptor(ca[i], ca[i+4], -1, [i])
-                pap.addDonor(oa.ca[i], oa.ca[i+4], -1, [i])   
+                acc_idx = pap.addAcceptor(ca[i], ca[i+4], -1, [i])
+                don_idx = pap.addDonor(oa.ca[i], oa.ca[i+4], -1, [i])   
+                pap.addExclusion(don_idx, acc_idx) 
         else:
             raise ValueError(f"term_number must be 1 or 2, but was {term_number}")
+    # sanity check
+    assert pap.getNumDonors() == pap.getNumAcceptors() # there might be an edge case for very short chains where this should be expected to fail
     return pap
